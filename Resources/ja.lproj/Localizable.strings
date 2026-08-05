@@ -366,3 +366,7 @@
 "help.act.speak" = "選択テキストを読み上げ";
 "help.act.speakNote" = "選択があれば読み上げ。なければ前回分を再読、読み上げ中なら停止。速度は設定の speechRate";
 "hud.nothingToSpeak" = "読み上げる内容がありません";
+"keys.actionFaster" = "読み上げ加速";
+"keys.actionSlower" = "読み上げ減速";
+"hud.speechRate" = "速度 %ld%%";
+"help.act.rateNote" = "1 段階 10%%、範囲 50–200%%。読み上げ中は次のセグメントから反映";

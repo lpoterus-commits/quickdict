@@ -131,6 +131,8 @@ if CommandLine.arguments.contains("--diag") {
         case .clipboard: detail = "拼行后复制"
         case .qrcode: detail = "识别二维码"
         case .speak: detail = "朗读"
+        case .speakFaster: detail = "朗读加速"
+        case .speakSlower: detail = "朗读减速"
         case .lookup:
             detail = binding.targetDictionary
                 .flatMap { id in config.dictionaries.first { $0.id == id }?.name ?? "⚠️ 找不到词典 \(id)" }

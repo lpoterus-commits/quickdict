@@ -366,3 +366,7 @@
 "help.act.speak" = "Đọc phần đang chọn";
 "help.act.speakNote" = "Đọc phần chọn; không có thì đọc lại đoạn trước, đang đọc thì dừng. Tốc độ chỉnh bằng speechRate";
 "hud.nothingToSpeak" = "Không có gì để đọc";
+"keys.actionFaster" = "Đọc nhanh hơn";
+"keys.actionSlower" = "Đọc chậm hơn";
+"hud.speechRate" = "Tốc độ %ld%%";
+"help.act.rateNote" = "Mỗi nấc 10%%, khoảng 50–200%%. Đang đọc thì áp dụng từ đoạn kế";

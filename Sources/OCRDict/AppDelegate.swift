@@ -94,6 +94,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func dispatch(_ binding: HotKeyBinding) {
+        // 调速和取词来源无关，先拦下
+        switch binding.captureAction {
+        case .speakFaster: adjustSpeechRate(by: 0.1); return
+        case .speakSlower: adjustSpeechRate(by: -0.1); return
+        default: break
+        }
         switch binding.captureSource {
         case .screenshot: captureScreen(binding)
         case .selection:
@@ -164,6 +170,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                         }
                         Speech.shared.speak(joined.text, config: cfg)
                     }
+
+                case .speakFaster, .speakSlower:
+                    // dispatch 在截图前就把调速拦下了，到不了这里
+                    DispatchQueue.main.async { self?.isBusy = false }
 
                 case .lookup:
                     let raw = OCR.recognize(image: image, languages: cfg.ocrLanguages,
@@ -236,6 +246,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         NSWorkspace.shared.open(url)
         // 二维码是不可读的，把实际打开的域名亮出来，扫到奇怪的东西能立刻发现
         HUD.shared.show(t("hud.barcodeOpened", url.host ?? url.absoluteString), duration: 2.5)
+    }
+
+    /// 朗读语速加减一档。存进配置（下次启动还是这个速度），
+    /// 正在读的话**从下一段起**就是新速度 —— 不打断、不重放。
+    private func adjustSpeechRate(by delta: Double) {
+        let value = (min(max(config.speechRate + delta, 0.5), 2.0) * 10).rounded() / 10
+        config.speechRate = value
+        ConfigStore.save(config)
+        Speech.shared.setRate(value)
+        HUD.shared.show(t("hud.speechRate", Int(value * 100)), duration: 1.2)
     }
 
     /// 朗读选中的文字。原脚本（左Alt+Q）的行为原样保留：
@@ -489,6 +509,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         case .clipboard: return t("action.clipboard", source)
         case .qrcode: return t("action.qrcode", source)
         case .speak: return t("action.speak", source)
+        case .speakFaster: return t("keys.actionFaster")
+        case .speakSlower: return t("keys.actionSlower")
         case .lookup:
             let target = binding.targetDictionary
                 .flatMap { id in config.dictionaries.first { $0.id == id }?.name }

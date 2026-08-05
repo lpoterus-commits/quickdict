@@ -364,3 +364,7 @@
 "help.act.speak" = "Speak the selection";
 "help.act.speakNote" = "Reads the selection; with none, repeats the last text or stops if speaking. Rate via speechRate in the config";
 "hud.nothingToSpeak" = "Nothing to speak";
+"keys.actionFaster" = "Speak faster";
+"keys.actionSlower" = "Speak slower";
+"hud.speechRate" = "Rate %ld%%";
+"help.act.rateNote" = "10%% per step, 50–200%%. Takes effect from the next segment while speaking";

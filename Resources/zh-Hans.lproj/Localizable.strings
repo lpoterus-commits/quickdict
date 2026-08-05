@@ -364,3 +364,7 @@
 "help.act.speak" = "朗读选中的文字";
 "help.act.speakNote" = "有选中读选中；没选中重读上一段；正在读就停。语速在配置里 speechRate 调";
 "hud.nothingToSpeak" = "没有可朗读的内容";
+"keys.actionFaster" = "朗读加速";
+"keys.actionSlower" = "朗读减速";
+"hud.speechRate" = "语速 %ld%%";
+"help.act.rateNote" = "一档 10%%，范围 50–200%%。正在读时下一段起生效";

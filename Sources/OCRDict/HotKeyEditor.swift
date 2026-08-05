@@ -237,12 +237,15 @@ final class HotKeyEditorController: NSObject, NSWindowDelegate {
 
         let action = NSPopUpButton()
         action.addItems(withTitles: [t("keys.actionLookup"), t("keys.actionClipboard"),
-                                     t("keys.actionQR"), t("keys.actionSpeak")])
+                                     t("keys.actionQR"), t("keys.actionSpeak"),
+                                     t("keys.actionFaster"), t("keys.actionSlower")])
         switch binding.captureAction {
         case .lookup: action.selectItem(at: 0)
         case .clipboard: action.selectItem(at: 1)
         case .qrcode: action.selectItem(at: 2)
         case .speak: action.selectItem(at: 3)
+        case .speakFaster: action.selectItem(at: 4)
+        case .speakSlower: action.selectItem(at: 5)
         }
         // 自己输入时没有取到的文字，「只放剪贴板」「扫码」无从谈起
         action.isEnabled = binding.captureSource != .manual
@@ -291,7 +294,7 @@ final class HotKeyEditorController: NSObject, NSWindowDelegate {
     }
 
     @objc private func actionChanged(_ sender: NSPopUpButton) {
-        let actions: [CaptureAction] = [.lookup, .clipboard, .qrcode, .speak]
+        let actions: [CaptureAction] = [.lookup, .clipboard, .qrcode, .speak, .speakFaster, .speakSlower]
         bindings[sender.tag].action = actions[sender.indexOfSelectedItem].rawValue
         validateAndRefresh()
     }

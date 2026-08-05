@@ -17,6 +17,10 @@ final class Speech: NSObject, AVSpeechSynthesizerDelegate {
     private let synthesizer = AVSpeechSynthesizer()
     /// 上一次读的内容。快捷键按下时没有选中文字，就重读它。
     private var cached = ""
+    /// 待读队列。**不一次性塞给合成器**，读完一段再喂下一段 ——
+    /// 这样中途调语速，下一段就是新速度，不用停下来重放。
+    private var queue: [(text: String, language: String, stanzaEnd: Bool)] = []
+    private var currentRate = AVSpeechUtteranceDefaultSpeechRate
 
     private override init() {
         super.init()
@@ -50,26 +54,42 @@ final class Speech: NSObject, AVSpeechSynthesizerDelegate {
             return
         }
         cached = text
-
-        // 语速：配置里 1.0 = 正常。AVSpeech 的刻度上 0.5 才是正常，换算过去。
-        let rate = Float(min(max(config.speechRate, 0.5), 2.0)) * AVSpeechUtteranceDefaultSpeechRate
+        setRate(config.speechRate)
 
         for stanza in stanzas {
             // 行内混排也各读各的：「사랑이라고 해요，意思是爱」拆成韩语段 + 中文段，
             // 各配各的嗓音。只按节切的话，整节用一个嗓音，混进来的那种语言会被啃坏。
             let runs = Self.runs(of: stanza, config: config)
             for (index, run) in runs.enumerated() {
-                let utterance = AVSpeechUtterance(string: run.text)
-                utterance.voice = Self.voice(for: run.language)
-                utterance.rate = rate
-                // 节尾停一拍（原脚本对空行的处理）；节内换语言不停，读起来才连贯
-                utterance.postUtteranceDelay = index == runs.count - 1 ? 0.3 : 0
-                synthesizer.speak(utterance)
+                queue.append((run.text, run.language, index == runs.count - 1))
             }
         }
+        speakNext()
+    }
+
+    /// 语速改了从**下一段**起生效 —— 已经在嘴里的那句让它说完
+    func setRate(_ multiplier: Double) {
+        currentRate = Float(min(max(multiplier, 0.5), 2.0)) * AVSpeechUtteranceDefaultSpeechRate
+    }
+
+    private func speakNext() {
+        guard !queue.isEmpty else { return }
+        let item = queue.removeFirst()
+        let utterance = AVSpeechUtterance(string: item.text)
+        utterance.voice = Self.voice(for: item.language)
+        utterance.rate = currentRate
+        // 节尾停一拍（原脚本对空行的处理）；节内换语言不停，读起来才连贯
+        utterance.postUtteranceDelay = item.stanzaEnd ? 0.3 : 0
+        synthesizer.speak(utterance)
+    }
+
+    func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer,
+                           didFinish utterance: AVSpeechUtterance) {
+        speakNext()
     }
 
     func stop() {
+        queue.removeAll()
         if synthesizer.isSpeaking { synthesizer.stopSpeaking(at: .immediate) }
     }
 

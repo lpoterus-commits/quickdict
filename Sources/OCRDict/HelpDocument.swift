@@ -146,6 +146,8 @@ enum HelpDocument {
         case .clipboard: return (t("help.act.clipboard"), t("help.act.clipboardNote"))
         case .qrcode: return (t("help.act.qr"), t("help.act.qrNote"))
         case .speak: return (t("help.act.speak"), t("help.act.speakNote"))
+        case .speakFaster: return (t("keys.actionFaster"), t("help.act.rateNote"))
+        case .speakSlower: return (t("keys.actionSlower"), t("help.act.rateNote"))
         case .lookup:
             guard let id = binding.targetDictionary else {
                 return (t("help.act.lookupAuto"), t("help.act.lookupAutoNote"))

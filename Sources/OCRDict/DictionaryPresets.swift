@@ -175,6 +175,9 @@ enum DictionaryPresets {
             .make(key: "F", option: true, command: true, source: .manual),
             // 原浏览器脚本用左Alt+Q，全局热键抢 ⌥Q 会挡住打特殊字符，加上 ⌘
             .make(key: "Q", option: true, command: true, source: .selection, action: .speak),
+            // 原脚本用裸 ] [ 调速，全局热键得带修饰键
+            .make(key: "]", option: true, command: true, source: .selection, action: .speakFaster),
+            .make(key: "[", option: true, command: true, source: .selection, action: .speakSlower),
         ]
         // 助记字母取自词典的品牌名，和界面语言无关
         let mnemonics = [("naver", "N"), ("naverko", "K"), ("papago", "P"), ("gtrans", "G")]

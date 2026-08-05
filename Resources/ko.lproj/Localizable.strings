@@ -366,3 +366,7 @@
 "help.act.speak" = "선택한 텍스트 읽기";
 "help.act.speakNote" = "선택이 있으면 읽고, 없으면 직전 내용을 다시 읽거나 재생 중이면 멈춥니다. 속도는 설정의 speechRate";
 "hud.nothingToSpeak" = "읽을 내용이 없습니다";
+"keys.actionFaster" = "읽기 빠르게";
+"keys.actionSlower" = "읽기 느리게";
+"hud.speechRate" = "속도 %ld%%";
+"help.act.rateNote" = "한 단계 10%%, 범위 50–200%%. 재생 중에는 다음 구간부터 적용";
