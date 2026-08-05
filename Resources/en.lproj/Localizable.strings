@@ -1,0 +1,236 @@
+/* QuickDict — English (base language) */
+
+/* ---- Menu bar ---- */
+"menu.lookup"              = "Look up from screenshot";
+"menu.selection"           = "Look up selection";
+"menu.clipboard"           = "Screenshot to text";
+"menu.clipboard.tip"       = "OCR, rejoin broken words, copy to clipboard. No lookup.";
+"menu.qrcode"              = "Scan QR code";
+"menu.hotkeys"             = "Keyboard Shortcuts…";
+"menu.help"                = "User Guide…";
+"menu.help.tip"            = "All shortcuts, dictionaries, permissions and settings — generated from your current config.";
+"menu.editConfig"          = "Edit Config File…";
+"menu.reloadConfig"        = "Reload Config";
+"menu.clearData"           = "Clear Browsing Data (%@)";
+"menu.clearData.tip"       = "Clears cookies, localStorage and cache of the built-in window. Dictionary sites store your recent searches there.";
+"menu.clearOnQuit"         = "Clear on Quit";
+"menu.launchAtLogin"       = "Launch at Login";
+"menu.diagnostics"         = "Permissions & Languages…";
+"menu.about"               = "About QuickDict";
+"menu.quit"                = "Quit";
+"menu.hideWindow"          = "Close Window";
+"menu.edit"                = "Edit";
+"menu.undo"                = "Undo";
+"menu.redo"                = "Redo";
+"menu.cut"                 = "Cut";
+"menu.copy"                = "Copy";
+"menu.paste"               = "Paste";
+"menu.selectAll"           = "Select All";
+"menu.helpMenu"            = "Help";
+
+/* ---- HUD messages ---- */
+"hud.needScreenRecording"  = "Screen Recording permission required.\nEnable it in System Settings, then restart this app.";
+"hud.needAccessibility"    = "Selection lookup needs Accessibility permission.\nEnable it in System Settings, then restart this app.";
+"hud.captureFailed"        = "Could not start screen capture: %@";
+"hud.decodeFailed"         = "Could not decode the screenshot";
+"hud.noText"               = "No text recognized";
+"hud.noSelection"          = "Nothing selected";
+"hud.noDictionary"         = "No usable dictionary configured";
+"hud.badURL"               = "Dictionary URL is invalid";
+"hud.copied"               = "Copied %d characters\n%@";
+"hud.copiedAmbiguous"      = "Copied %1$d characters\n%2$@\n\n⚠️ Merged here, but could legitimately be separate words:\n%3$@";
+"hud.andMore"              = " and %d more";
+"hud.noBarcode"            = "No QR code or barcode found";
+"hud.barcodeNotURL"        = "[%1$@] Not a URL, copied instead:\n%2$@";
+"hud.barcodeOpened"        = "Opened %@";
+"hud.linkCopied"           = "Link copied";
+"hud.configReloaded"       = "Config reloaded";
+"hud.dataCleared"          = "Browsing data cleared\nFreed %@";
+"hud.clearOnQuitOn"        = "Browsing data will be cleared on quit";
+"hud.clearOnQuitOff"       = "Browsing data will be kept on quit";
+"hud.loginItemOn"          = "Launch at login enabled";
+"hud.loginItemOff"         = "Launch at login disabled";
+"hud.loginItemFailed"      = "Could not change setting: %@";
+"hud.hotkeysUpdated"       = "Shortcuts updated";
+"hud.hotkeysFailed"        = "These shortcuts failed to register:\n%@\nThey may be taken by another app.";
+
+/* ---- QR confirmation ---- */
+"qr.confirmTitle"          = "Open this link?";
+"qr.open"                  = "Open";
+"qr.copyOnly"              = "Copy only";
+"qr.cancel"                = "Cancel";
+
+/* ---- Diagnostics ---- */
+"diag.title"               = "QuickDict — Diagnostics";
+"diag.screenRecording"     = "Screen Recording: %@";
+"diag.accessibility"       = "Accessibility: %@";
+"diag.granted"             = "granted";
+"diag.deniedScreen"        = "not granted (screenshot actions will fail)";
+"diag.deniedAX"            = "not granted (selection actions will fail)";
+"diag.autoDetect"          = "Automatic language detection: %@";
+"diag.on"                  = "on";
+"diag.off"                 = "off";
+"diag.shortcuts"           = "Shortcuts:";
+"diag.hintLanguages"       = "Language hints: %@";
+"diag.unsupported"         = "⚠️ Not supported on this Mac: %@";
+"diag.supportedAll"        = "All recognition languages supported by this Mac:";
+"diag.configPath"          = "Config file: %@";
+"diag.ok"                  = "OK";
+"diag.openScreenSettings"  = "Open Screen Recording Settings";
+"diag.openAXSettings"      = "Open Accessibility Settings";
+
+/* ---- Action descriptions (diagnostics, about, help) ---- */
+"action.screenshot"        = "Screenshot";
+"action.selection"         = "Selection";
+"action.clipboard"         = "%@ → rejoin lines, copy to clipboard";
+"action.qrcode"            = "%@ → scan QR code and open the link";
+"action.lookupAuto"        = "%@ → detect language automatically";
+"action.lookupFixed"       = "%1$@ → %2$@";
+"action.notSet"            = "not set";
+
+/* ---- About ---- */
+"about.title"              = "QuickDict";
+"about.body"               = "Capture → detect language → open the right dictionary.\nScreenshot mode handles images and PDFs; selection mode handles text you can select.\n\n%@\n\n⌘1…⌘9\tSwitch dictionary\n⌘L\tEdit the term (Enter to search again)\nesc\tClose window\n\nFull guide: menu bar → User Guide, or press ⌘?";
+
+/* ---- Result window ---- */
+"window.title"             = "QuickDict";
+"window.queryPlaceholder"  = "Recognized text (editable, Enter to search)";
+"window.openInBrowser"     = "Open in default browser";
+"window.pin"               = "Keep on top";
+"window.pinned"            = "Pinned — click to unpin";
+"window.langUncertain"     = "Language detection is unreliable (%@ confidence). Use ⌘1…⌘9 to switch manually.";
+"window.langCertain"       = "Detected language: %@";
+"window.external"          = " (opens in default browser)";
+
+/* ---- Hotkey editor ---- */
+"keys.title"               = "Keyboard Shortcuts";
+"keys.colShortcut"         = "Shortcut";
+"keys.colSource"           = "Text from";
+"keys.colAction"           = "Action";
+"keys.colDictionary"       = "Dictionary";
+"keys.setKey"              = "Click to set";
+"keys.recording"           = "Press keys…";
+"keys.sourceScreenshot"    = "Screenshot";
+"keys.sourceSelection"     = "Selection";
+"keys.actionLookup"        = "Look up";
+"keys.actionClipboard"     = "To clipboard";
+"keys.actionQR"            = "Scan QR code";
+"keys.dictAuto"            = "Detect automatically";
+"keys.add"                 = "＋ Add";
+"keys.reset"               = "Restore Defaults";
+"keys.cancel"              = "Cancel";
+"keys.save"                = "Save";
+"keys.delete"              = "Delete this row";
+"keys.hint"                = "Click a shortcut field, then press the combination you want. At least one modifier is required.";
+"keys.saved"               = "Saved and active";
+"keys.savedWithFailures"   = "Saved, but these failed to register (may be taken by another app): %@";
+"keys.registerFailedTip"   = "This combination failed to register — it may be taken by another app";
+"keys.needKey"             = "One row has no shortcut yet. Record one or delete the row.";
+"keys.duplicate"           = "%@ is used twice. One combination can only trigger one action.";
+"keys.newRowHint"          = "The new row has no shortcut yet — click its field to record one";
+"keys.resetHint"           = "Defaults restored. Click Save to apply.";
+"keys.pressSave"           = "Click Save to apply";
+
+/* ---- Language names ---- */
+"lang.ko" = "Korean";      "lang.ja" = "Japanese";   "lang.zh" = "Chinese";
+"lang.en" = "English";     "lang.it" = "Italian";    "lang.fr" = "French";
+"lang.de" = "German";      "lang.es" = "Spanish";    "lang.pt" = "Portuguese";
+"lang.ru" = "Russian";     "lang.nl" = "Dutch";      "lang.sv" = "Swedish";
+"lang.da" = "Danish";      "lang.nb" = "Norwegian";  "lang.fi" = "Finnish";
+"lang.pl" = "Polish";      "lang.cs" = "Czech";      "lang.tr" = "Turkish";
+"lang.vi" = "Vietnamese";  "lang.id" = "Indonesian"; "lang.ms" = "Malay";
+"lang.ro" = "Romanian";    "lang.hu" = "Hungarian";  "lang.ca" = "Catalan";
+"lang.th" = "Thai";        "lang.ar" = "Arabic";     "lang.uk" = "Ukrainian";
+
+/* ---- Key names ---- */
+"key.space"  = "Space";
+"key.return" = "Return";
+"key.tab"    = "Tab";
+"key.esc"    = "esc";
+
+/* ---- User guide ---- */
+"help.lead"        = "Capture or select → detect the language → open the right dictionary. All recognition runs on your Mac, offline.";
+"help.foot"        = "This page is generated from your current config — change the config, click “Reload Config”, and this page follows.";
+"help.colKey"      = "Key";
+"help.colWhat"     = "Does what";
+"help.colNote"     = "Notes";
+"help.colName"     = "Name";
+"help.colWhen"     = "Opens automatically for";
+"help.colPermission" = "Permission";
+"help.colUsedFor"  = "Used for";
+"help.colIfDenied" = "If not granted";
+"help.colWant"     = "To change";
+"help.colWhere"    = "Where";
+"help.colSymptom"  = "Symptom";
+"help.colCause"    = "Cause";
+
+"help.h.shortcuts"    = "Shortcuts";
+"help.h.screenshot"   = "Screenshot — drag to select an area (esc cancels)";
+"help.h.selection"    = "Selection — reads the currently selected text, no dragging";
+"help.h.window"       = "In the result window";
+"help.h.dictionaries" = "Dictionaries";
+"help.h.permissions"  = "Two permissions";
+"help.h.settings"     = "Settings";
+"help.h.trouble"      = "Troubleshooting";
+
+"help.tip.sources"    = "Screenshot mode handles text you <b>cannot select</b> — images, scanned PDFs, video subtitles. Selection mode handles selectable text: no recognition errors and no dragging.<br>To change these combinations: menu bar → <b>Keyboard Shortcuts</b>, click a field and press the new combination.";
+"help.tip.level"      = "Without the pin, the window floats on top only at the moment it appears — click any other window and it drops behind, out of your way.";
+"help.tip.detection"  = "Language detection: Hangul → Korean, kana → Japanese, Han → Chinese — one character settles it. Only Latin script needs statistical guessing; when it is unsure the language label in the top-left turns <b class=warn>orange with a question mark</b>, and you can switch with <kbd>⌘1</kbd>…<kbd>⌘9</kbd>.";
+"help.tip.diagnostics" = "Menu bar → “Permissions & Languages” shows the current state at any time.";
+"help.tip.privacy"    = "Browsing data of the built-in window is cleared on quit (currently: <b>%@</b>). This app never records your lookup history, but dictionary sites store “recent searches” in browser storage — hence the default.";
+
+"help.win.switch"     = "Switch dictionary";
+"help.win.edit"       = "Edit the term";
+"help.win.editNote"   = "Fix a misrecognized character and press Enter to search again";
+"help.win.close"      = "Close the window";
+"help.win.closeNote"  = "Only hidden, so the next lookup opens faster";
+"help.win.pin"        = "Keep on top";
+"help.win.pinNote"    = "For copying text while the dictionary stays visible";
+"help.win.browser"    = "Open in browser";
+"help.win.browserNote" = "Sends the current query to your default browser";
+
+"help.dict.manual"    = "never automatic — switch manually";
+"help.dict.fallback"  = "everything else (fallback)";
+"help.dict.external"  = "opens in default browser ↗";
+
+"help.perm.intro"       = "Both are in <b>System Settings → Privacy & Security</b>. <b class=warn>You must restart this app after granting</b> — macOS only applies permissions to a fresh process.";
+"help.perm.screen"      = "Screen Recording";
+"help.perm.screenUse"   = "Dragging a screenshot area";
+"help.perm.screenDenied" = "All screenshot shortcuts fail";
+"help.perm.ax"          = "Accessibility";
+"help.perm.axUse"       = "Reading selected text in other apps";
+"help.perm.axDenied"    = "All selection shortcuts fail";
+
+"help.cfg.hotkeys"    = "<b>Shortcuts have their own editor</b>: menu bar → “Keyboard Shortcuts”. Click a field to start recording, then press the combination you want (at least one modifier; esc cancels). You can also change the capture source, the action and the target dictionary, and add or remove rows. Saving re-registers immediately, and combinations taken by another app are flagged in red.";
+"help.cfg.file"       = "Everything else lives in the config file. Click “Reload Config” after editing — no restart needed.";
+"help.cfg.targetLang" = "Look words up in another language";
+"help.cfg.targetLangHow" = "Swap the Naver subdomain (<code>en</code> / <code>zh</code> / <code>ja</code>) and the translator target code. All Naver language pairs share the same path.";
+"help.cfg.addDict"    = "Add a dictionary";
+"help.cfg.addDictHow" = "Append an entry to <code>dictionaries</code>; <code>{q}</code> marks where the query goes";
+"help.cfg.aiPrompt"   = "Change how the AI is asked";
+"help.cfg.aiPromptHow" = "The <code>suffix</code> of the AI entry — add “honorific level”, “verb conjugation”, whatever you want";
+"help.cfg.needLogin"  = "A site needs your login";
+"help.cfg.needLoginHow" = "Add <code>\"external\": true</code> — it will open in your default browser instead";
+"help.cfg.alwaysTop"  = "Always keep the window on top";
+"help.cfg.qrConfirm"  = "Confirm QR links before opening";
+
+"help.act.clipboard"        = "To text, to clipboard";
+"help.act.clipboardNote"    = "Rejoins words broken by line wrapping; flags merges that could legitimately be separate";
+"help.act.qr"               = "Scan QR code";
+"help.act.qrNote"           = "Opens URLs in your default browser; anything else is copied instead";
+"help.act.lookupAuto"       = "Look up (detect language)";
+"help.act.lookupAutoNote"   = "Picks the dictionary from the detected language";
+"help.act.lookupFixedNote"  = "Skips detection and uses this dictionary directly";
+
+"help.tr.noResponse"    = "A shortcut does nothing at all";
+"help.tr.noResponseWhy" = "The combination is taken by another app (Hammerspoon, Raycast…). Pick another one, or quit that app.";
+"help.tr.nothingAfterCapture"    = "Nothing happens after dragging";
+"help.tr.nothingAfterCaptureWhy" = "Screen Recording not granted, or granted without restarting the app";
+"help.tr.noSelection"    = "Selection lookup says “Nothing selected”";
+"help.tr.noSelectionWhy" = "Accessibility not granted; or that app does not expose its selection (some Electron apps)";
+"help.tr.permsLost"      = "Permissions stopped working after a rebuild";
+"help.tr.permsLostWhy"   = "Expected. Rebuilding changes the code signature — grant them again in System Settings.";
+"help.tr.badJoin"        = "A Korean word was rejoined incorrectly";
+"help.tr.badJoinWhy"     = "Rejoining consults the system Korean dictionary — make sure it is enabled in the Dictionary app. A few cases are genuinely ambiguous; glance at the text before pasting.";
+"help.tr.langMissing"    = "A language is not recognized";
+"help.tr.langMissingWhy" = "“Permissions & Languages” lists every recognition language this Mac supports";

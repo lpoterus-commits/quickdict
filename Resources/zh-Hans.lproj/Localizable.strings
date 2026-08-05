@@ -1,0 +1,236 @@
+/* 快捷查词助手 — 简体中文 */
+
+/* ---- 菜单栏 ---- */
+"menu.lookup"              = "截图取词";
+"menu.selection"           = "划词取词";
+"menu.clipboard"           = "截图转文字";
+"menu.clipboard.tip"       = "OCR 后智能拼行，只放剪贴板，不查词";
+"menu.qrcode"              = "扫二维码";
+"menu.hotkeys"             = "快捷键设置…";
+"menu.help"                = "使用说明…";
+"menu.help.tip"            = "所有快捷键、词典、权限和配置说明，按当前配置实时生成";
+"menu.editConfig"          = "编辑配置文件…";
+"menu.reloadConfig"        = "重新载入配置";
+"menu.clearData"           = "清除浏览数据（%@）";
+"menu.clearData.tip"       = "清空内嵌窗口的 Cookie、localStorage 和缓存。词典网站的「最近搜索」就存在这里。";
+"menu.clearOnQuit"         = "退出时自动清除";
+"menu.launchAtLogin"       = "开机自动启动";
+"menu.diagnostics"         = "权限与识别语言自检…";
+"menu.about"               = "关于 快捷查词助手";
+"menu.quit"                = "退出";
+"menu.hideWindow"          = "关闭窗口";
+"menu.edit"                = "编辑";
+"menu.undo"                = "撤销";
+"menu.redo"                = "重做";
+"menu.cut"                 = "剪切";
+"menu.copy"                = "拷贝";
+"menu.paste"               = "粘贴";
+"menu.selectAll"           = "全选";
+"menu.helpMenu"            = "帮助";
+
+/* ---- HUD 提示 ---- */
+"hud.needScreenRecording"  = "需要「屏幕录制」权限\n请在系统设置中勾选后重新启动本 App";
+"hud.needAccessibility"    = "划词取词需要「辅助功能」权限\n请在系统设置中勾选后重新启动本 App";
+"hud.captureFailed"        = "无法启动截图：%@";
+"hud.decodeFailed"         = "截图解码失败";
+"hud.noText"               = "未识别到文字";
+"hud.noSelection"          = "没有选中文字";
+"hud.noDictionary"         = "没有可用的词典配置";
+"hud.badURL"               = "词典链接无效";
+"hud.copied"               = "已复制 %d 字\n%@";
+"hud.copiedAmbiguous"      = "已复制 %1$d 字\n%2$@\n\n⚠️ 这些地方合并了，但拆开写也讲得通：\n%3$@";
+"hud.andMore"              = " 等 %d 处";
+"hud.noBarcode"            = "没有识别到二维码或条形码";
+"hud.barcodeNotURL"        = "[%1$@] 不是网址，已复制：\n%2$@";
+"hud.barcodeOpened"        = "已打开 %@";
+"hud.linkCopied"           = "已复制链接";
+"hud.configReloaded"       = "配置已重新载入";
+"hud.dataCleared"          = "已清除浏览数据\n释放 %@";
+"hud.clearOnQuitOn"        = "退出时将自动清除浏览数据";
+"hud.clearOnQuitOff"       = "退出时不再清除浏览数据";
+"hud.loginItemOn"          = "已开启开机自动启动";
+"hud.loginItemOff"         = "已关闭开机自动启动";
+"hud.loginItemFailed"      = "设置失败：%@";
+"hud.hotkeysUpdated"       = "快捷键已更新";
+"hud.hotkeysFailed"        = "以下快捷键注册失败：\n%@\n可能已被其他程序占用";
+
+/* ---- 二维码确认 ---- */
+"qr.confirmTitle"          = "打开这个链接？";
+"qr.open"                  = "打开";
+"qr.copyOnly"              = "只复制";
+"qr.cancel"                = "取消";
+
+/* ---- 自检 ---- */
+"diag.title"               = "快捷查词助手 — 自检";
+"diag.screenRecording"     = "屏幕录制权限：%@";
+"diag.accessibility"       = "辅助功能权限：%@";
+"diag.granted"             = "已授权";
+"diag.deniedScreen"        = "未授权（截图类功能会失败）";
+"diag.deniedAX"            = "未授权（划词类功能会失败）";
+"diag.autoDetect"          = "自动识别语种：%@";
+"diag.on"                  = "开";
+"diag.off"                 = "关";
+"diag.shortcuts"           = "快捷键：";
+"diag.hintLanguages"       = "语言提示列表：%@";
+"diag.unsupported"         = "⚠️ 本机不支持：%@";
+"diag.supportedAll"        = "本机 Vision 支持的全部语言：";
+"diag.configPath"          = "配置文件：%@";
+"diag.ok"                  = "好";
+"diag.openScreenSettings"  = "打开屏幕录制设置";
+"diag.openAXSettings"      = "打开辅助功能设置";
+
+/* ---- 动作描述 ---- */
+"action.screenshot"        = "截图";
+"action.selection"         = "划词";
+"action.clipboard"         = "%@ → 拼行后复制到剪贴板";
+"action.qrcode"            = "%@ → 识别二维码并打开链接";
+"action.lookupAuto"        = "%@ → 自动判断语种";
+"action.lookupFixed"       = "%1$@ → %2$@";
+"action.notSet"            = "未设置";
+
+/* ---- 关于 ---- */
+"about.title"              = "快捷查词助手";
+"about.body"               = "取词 → 判断语种 → 打开对应词典。\n截图取词管图片和 PDF，划词取词管能选中的文本。\n\n%@\n\n⌘1…⌘9\t切换词典\n⌘L\t编辑词条（回车重查）\nesc\t关闭窗口\n\n完整说明见菜单栏「使用说明」，或随时按 ⌘?";
+
+/* ---- 结果窗口 ---- */
+"window.title"             = "快捷查词助手";
+"window.queryPlaceholder"  = "识别结果（可改，回车重查）";
+"window.openInBrowser"     = "在默认浏览器中打开";
+"window.pin"               = "置顶（压在其他窗口之上）";
+"window.pinned"            = "已置顶，点击取消";
+"window.langUncertain"     = "语种判定不可靠（置信度 %@），可用 ⌘1…⌘9 手动切换词典";
+"window.langCertain"       = "识别语种：%@";
+"window.external"          = "（在默认浏览器中打开）";
+
+/* ---- 快捷键设置 ---- */
+"keys.title"               = "快捷键设置";
+"keys.colShortcut"         = "快捷键";
+"keys.colSource"           = "从哪里取字";
+"keys.colAction"           = "做什么";
+"keys.colDictionary"       = "用哪个词典";
+"keys.setKey"              = "点击设置";
+"keys.recording"           = "按下组合键…";
+"keys.sourceScreenshot"    = "截图框选";
+"keys.sourceSelection"     = "读选中文字";
+"keys.actionLookup"        = "查词";
+"keys.actionClipboard"     = "转文字存剪贴板";
+"keys.actionQR"            = "扫二维码";
+"keys.dictAuto"            = "自动判断语种";
+"keys.add"                 = "＋ 添加一条";
+"keys.reset"               = "恢复默认";
+"keys.cancel"              = "取消";
+"keys.save"                = "保存";
+"keys.delete"              = "删除这条";
+"keys.hint"                = "点左边的按键框，然后直接按下想要的组合键。至少要带一个修饰键。";
+"keys.saved"               = "已保存并生效";
+"keys.savedWithFailures"   = "已保存，但这些注册失败（可能被其他程序占用）：%@";
+"keys.registerFailedTip"   = "这个组合注册失败，可能已被其他程序占用";
+"keys.needKey"             = "有一条还没设置按键，先录一个或把它删掉";
+"keys.duplicate"           = "%@ 被用了两次，同一个组合只能对应一个动作";
+"keys.newRowHint"          = "新加的这条还没设按键，点它的按键框录制一个";
+"keys.resetHint"           = "已恢复默认，点保存生效";
+"keys.pressSave"           = "点保存生效";
+
+/* ---- 语言名 ---- */
+"lang.ko" = "韩语";   "lang.ja" = "日语";   "lang.zh" = "中文";
+"lang.en" = "英语";   "lang.it" = "意大利语"; "lang.fr" = "法语";
+"lang.de" = "德语";   "lang.es" = "西班牙语"; "lang.pt" = "葡萄牙语";
+"lang.ru" = "俄语";   "lang.nl" = "荷兰语";  "lang.sv" = "瑞典语";
+"lang.da" = "丹麦语"; "lang.nb" = "挪威语";  "lang.fi" = "芬兰语";
+"lang.pl" = "波兰语"; "lang.cs" = "捷克语";  "lang.tr" = "土耳其语";
+"lang.vi" = "越南语"; "lang.id" = "印尼语";  "lang.ms" = "马来语";
+"lang.ro" = "罗马尼亚语"; "lang.hu" = "匈牙利语"; "lang.ca" = "加泰罗尼亚语";
+"lang.th" = "泰语";   "lang.ar" = "阿拉伯语"; "lang.uk" = "乌克兰语";
+
+/* ---- 按键名 ---- */
+"key.space"  = "空格";
+"key.return" = "回车";
+"key.tab"    = "Tab";
+"key.esc"    = "esc";
+
+/* ---- 使用说明 ---- */
+"help.lead"        = "截图或划词 → 判断语种 → 打开对应词典。识别全部在本机完成，不联网。";
+"help.foot"        = "本页由当前配置实时生成 —— 改了配置点菜单栏「重新载入配置」，这里也会跟着变。";
+"help.colKey"      = "按键";
+"help.colWhat"     = "做什么";
+"help.colNote"     = "说明";
+"help.colName"     = "名称";
+"help.colWhen"     = "什么时候自动打开";
+"help.colPermission" = "权限";
+"help.colUsedFor"  = "干什么用";
+"help.colIfDenied" = "不给会怎样";
+"help.colWant"     = "想改什么";
+"help.colWhere"    = "改哪里";
+"help.colSymptom"  = "现象";
+"help.colCause"    = "原因";
+
+"help.h.shortcuts"    = "快捷键";
+"help.h.screenshot"   = "截图类 · 先框选屏幕上的一块区域（框选时按 esc 取消）";
+"help.h.selection"    = "划词类 · 直接读当前选中的文字，不用框选";
+"help.h.window"       = "结果窗口里能做什么";
+"help.h.dictionaries" = "词典";
+"help.h.permissions"  = "两个权限";
+"help.h.settings"     = "改配置";
+"help.h.trouble"      = "出问题时";
+
+"help.tip.sources"    = "截图类管图片、PDF 扫描件、视频字幕这些<b>选不中</b>的字；划词类管能选中的文本，没有识别误差，也更快。<br>想改这些组合：菜单栏 → <b>快捷键设置</b>，点按键框然后直接按新组合就行。";
+"help.tip.level"      = "不按图钉时，窗口只在<b>弹出瞬间</b>浮在最上面，你一点别的窗口它就自动沉下去，不会挡路。";
+"help.tip.detection"  = "语种判断是：谚文→韩语、假名→日语、汉字→中文，这些一个字就能定死；拉丁字母才需要统计判断，判不准时窗口左上角的语种标签会变<b class=warn>橙色带问号</b>，这时直接 <kbd>⌘1</kbd>…<kbd>⌘9</kbd> 手动切就行。";
+"help.tip.diagnostics" = "菜单栏 →「权限与识别语言自检」可以随时看当前状态。";
+"help.tip.privacy"    = "退出时会自动清空内嵌窗口的 Cookie 和缓存（当前设置：<b>%@</b>）。本 App 自己不记任何查询历史，但词典网站会往浏览器存储里塞「最近搜索」，所以默认退出即清。";
+
+"help.win.switch"     = "切换词典";
+"help.win.edit"       = "编辑词条";
+"help.win.editNote"   = "识别错字时改一下，回车重新查";
+"help.win.close"      = "关闭窗口";
+"help.win.closeNote"  = "窗口只是隐藏，下次弹出更快";
+"help.win.pin"        = "常驻置顶";
+"help.win.pinNote"    = "一边查一边抄写时用";
+"help.win.browser"    = "丢到浏览器";
+"help.win.browserNote" = "把当前查询转到默认浏览器打开";
+
+"help.dict.manual"    = "不自动命中，手动切";
+"help.dict.fallback"  = "其余所有语种（兜底）";
+"help.dict.external"  = "跳默认浏览器 ↗";
+
+"help.perm.intro"       = "都在 <b>系统设置 → 隐私与安全性</b> 里勾选。<b class=warn>勾完必须重启本 App</b> —— macOS 的权限要重启进程才生效。";
+"help.perm.screen"      = "屏幕录制";
+"help.perm.screenUse"   = "框选截图";
+"help.perm.screenDenied" = "所有截图类快捷键失效";
+"help.perm.ax"          = "辅助功能";
+"help.perm.axUse"       = "读其他 App 里选中的文字";
+"help.perm.axDenied"    = "所有划词类快捷键失效";
+
+"help.cfg.hotkeys"    = "<b>换快捷键有专门的界面</b>：菜单栏 →「快捷键设置」。点按键框进入录制，直接按下想要的组合（至少带一个修饰键，esc 取消）。还能改每条的取字方式、动作、目标词典，也能增删。保存时会当场重新注册，被别的程序占用的组合会标红提示。";
+"help.cfg.file"       = "其余设置在配置文件里改，改完点「重新载入配置」立即生效，不用重启。";
+"help.cfg.targetLang" = "查到别的语言";
+"help.cfg.targetLangHow" = "换 Naver 的子域名（<code>zh</code> / <code>en</code> / <code>ja</code>）和翻译器的目标语言代码。Naver 各语言对路径完全一样。";
+"help.cfg.addDict"    = "加一个词典";
+"help.cfg.addDictHow" = "往 <code>dictionaries</code> 里加一项，<code>{q}</code> 是查询词的位置";
+"help.cfg.aiPrompt"   = "改 AI 的提问方式";
+"help.cfg.aiPromptHow" = "AI 那一项的 <code>suffix</code>，比如加「敬语等级」「动词变位」";
+"help.cfg.needLogin"  = "某个网站要用登录态";
+"help.cfg.needLoginHow" = "给它加 <code>\"external\": true</code>，会改成跳默认浏览器";
+"help.cfg.alwaysTop"  = "窗口一直置顶";
+"help.cfg.qrConfirm"  = "扫码前先确认网址";
+
+"help.act.clipboard"        = "转文字，存剪贴板";
+"help.act.clipboardNote"    = "自动把被换行切断的词拼回去；拆开也讲得通的地方会提示";
+"help.act.qr"               = "扫二维码";
+"help.act.qrNote"           = "是网址就用默认浏览器打开，不是网址就复制";
+"help.act.lookupAuto"       = "查词（自动判语种）";
+"help.act.lookupAutoNote"   = "按识别出的语种选词典";
+"help.act.lookupFixedNote"  = "跳过语种判断，直接用这个词典";
+
+"help.tr.noResponse"    = "按快捷键完全没反应";
+"help.tr.noResponseWhy" = "组合被别的程序占了（Hammerspoon、Raycast 之类）。换个键，或退出那个程序";
+"help.tr.nothingAfterCapture"    = "框选完没有下文";
+"help.tr.nothingAfterCaptureWhy" = "屏幕录制权限没给，或给了没重启 App";
+"help.tr.noSelection"    = "划词提示「没有选中文字」";
+"help.tr.noSelectionWhy" = "辅助功能权限没给；或该 App 不暴露选区（少数 Electron 应用）";
+"help.tr.permsLost"      = "重装后权限突然失效";
+"help.tr.permsLostWhy"   = "正常。重新编译后签名指纹变了，去系统设置重新勾一次";
+"help.tr.badJoin"        = "韩语词被拼错了";
+"help.tr.badJoinWhy"     = "断词还原会查系统韩语词典，确认「词典」App 里启用了韩语词典；少数真歧义无解，粘贴前扫一眼";
+"help.tr.langMissing"    = "识别不出某种语言";
+"help.tr.langMissingWhy" = "「权限与识别语言自检」里看本机 Vision 支持哪些语言";

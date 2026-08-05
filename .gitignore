@@ -1,0 +1,17 @@
+# SwiftPM
+.build/
+.swiftpm/
+Package.resolved
+
+# build.sh 产物
+build/
+
+# 本地打包归档，不进仓库
+releases/
+
+# macOS
+.DS_Store
+
+# 分架构编译的临时目录
+.build-arm64/
+.build-x86/
