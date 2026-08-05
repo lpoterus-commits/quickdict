@@ -77,6 +77,38 @@ if CommandLine.arguments.count >= 3, CommandLine.arguments[1] == "--join" {
     exit(0)
 }
 
+// 调试入口：--notes <file.md> 把笔记解析结果打成 TSV。
+// 测试脚本靠它盯住整条转换管线：标题识别、目录跳过、搜索键生成、活用推导。
+// 键按字典序打印 —— 生成时按长度排序，等长键的顺序没有保证，直接比会闪失败。
+if CommandLine.arguments.count >= 3, CommandLine.arguments[1] == "--notes" {
+    let url = URL(fileURLWithPath: CommandLine.arguments[2])
+    for entry in Notes.parse(url) {
+        let keys = entry.keys.sorted().joined(separator: "|")
+        print("\(entry.num)\t\(entry.form)\t\(entry.cat)\t\(entry.gloss)\t\(keys)")
+    }
+    exit(0)
+}
+
+// 调试入口：--speak <文本> 直接跑朗读引擎，验证清洗、分节、语种、发声
+if CommandLine.arguments.count >= 3,
+   CommandLine.arguments[1] == "--speak" || CommandLine.arguments[1] == "--speak-dry" {
+    let config = ConfigStore.load()
+    let text = CommandLine.arguments[2]
+    for (i, stanza) in Speech.stanzas(of: text, skipNumbers: config.speechSkipsNumbers).enumerated() {
+        for run in Speech.runs(of: stanza, config: config) {
+            print("节\(i + 1) [\(run.language)] \(run.text)")
+        }
+    }
+    if CommandLine.arguments[1] == "--speak-dry" { exit(0) }
+    Speech.shared.speak(text, config: config)
+    // 合成是异步的，等它读完
+    while Speech.shared.isSpeaking || CFRunLoopRunInMode(.defaultMode, 0.2, false) == .handledSource {
+        if !Speech.shared.isSpeaking { break }
+    }
+    Thread.sleep(forTimeInterval: 0.5)
+    exit(0)
+}
+
 // 调试入口：打印解析后的配置和权限状态，不启动 GUI
 if CommandLine.arguments.contains("--diag") {
     let config = ConfigStore.load()
@@ -88,11 +120,17 @@ if CommandLine.arguments.contains("--diag") {
     print("辅助功能权限: \(SelectionReader.isTrusted ? "已授权" : "未授权")")
     print("\n快捷键 (\(config.hotkeys.count) 条):")
     for binding in config.hotkeys {
-        let source = binding.captureSource == .selection ? "划词" : "截图"
+        let source: String
+        switch binding.captureSource {
+        case .selection: source = "划词"
+        case .screenshot: source = "截图"
+        case .manual: source = "自输"
+        }
         let detail: String
         switch binding.captureAction {
         case .clipboard: detail = "拼行后复制"
         case .qrcode: detail = "识别二维码"
+        case .speak: detail = "朗读"
         case .lookup:
             detail = binding.targetDictionary
                 .flatMap { id in config.dictionaries.first { $0.id == id }?.name ?? "⚠️ 找不到词典 \(id)" }

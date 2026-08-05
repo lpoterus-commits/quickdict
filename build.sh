@@ -1,12 +1,14 @@
 #!/bin/bash
-# 编译并组装 QuickDict.app
+# 编译并组装 QuickDict 3.app
+# 3.x 用独立的名字和 bundle ID，好让冻结的 2.0（QuickDict.app）继续能用。
+# 等 3.0 正式取代 2.0 时，把 APP_NAME 改回 "QuickDict" 即可。
 #   ./build.sh            只构建，产物在 build/
 #   ./build.sh install    构建并安装到 /Applications，然后启动
 set -euo pipefail
 cd "$(dirname "$0")"
 
-APP_NAME="QuickDict"
-BUNDLE_ID="com.poterus.ocrdict"
+APP_NAME="QuickDict 3"
+BUNDLE_ID="com.quickdict.app"
 APP="build/${APP_NAME}.app"
 
 # 通用二进制。SwiftPM 的 --arch 需要 Xcode 的构建系统，只装了 Command Line Tools 时用不了，

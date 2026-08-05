@@ -45,6 +45,19 @@ enum LineJoiner {
         var ambiguous: [String]
     }
 
+    /// 用户在配置里补充的条目，和内置表合并使用。
+    /// 内置表继续随版本更新，用户的补充不会被覆盖 —— 所以是「合并」而不是「替换」。
+    private static var extraParticles: Set<String> = []
+    private static var extraStandalone: Set<String> = []
+
+    static func configure(extraParticles: [String], extraStandalone: [String]) {
+        self.extraParticles = Set(extraParticles)
+        self.extraStandalone = Set(extraStandalone)
+    }
+
+    private static var particles: Set<String> { danglingParticles.union(extraParticles) }
+    private static var standalone: Set<String> { standaloneSyllables.union(extraStandalone) }
+
     static func joined(_ lines: [OCRLine]) -> Result {
         let cleaned = lines
             .map { OCRLine(text: $0.text.trimmingCharacters(in: .whitespaces), box: $0.box) }
@@ -131,7 +144,7 @@ enum LineJoiner {
         guard !head.isEmpty else { return (false, false) }
 
         // 1. 下一行开头是孤立的助词/词尾（그리움 | 은 언제나）。黏着语素，不可能独立成词，确定。
-        if danglingParticles.contains(head) { return (true, false) }
+        if particles.contains(head) { return (true, false) }
 
         // 2. 拼起来能在系统韩语词典里查到跨接缝的词（이 | 성적인 → 이성적）。
         //    这一条是唯一可能误判的：如果上半截本身也成词，那原文就有可能真是分开写的
@@ -141,10 +154,10 @@ enum LineJoiner {
         }
 
         // 3. 下一行开头是不能独立成词的单音节（띄 | 어 쓰는）
-        if head.count == 1, !standaloneSyllables.contains(head) { return (true, false) }
+        if head.count == 1, !standalone.contains(head) { return (true, false) }
         // 4. 上一行末尾是单音节碎片。但要先确认下一行开头本身不成词 ——
         //    否则 `할 | 때` 这种两边都是正经词的会被误连成 `할때`。
-        if tail.count == 1, !standaloneSyllables.contains(tail), !hasDefinition(head) {
+        if tail.count == 1, !standalone.contains(tail), !hasDefinition(head) {
             return (true, false)
         }
         return (false, false)

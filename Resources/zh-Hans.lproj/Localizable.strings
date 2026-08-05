@@ -143,10 +143,6 @@
 "lang.th" = "泰语";   "lang.ar" = "阿拉伯语"; "lang.uk" = "乌克兰语";
 
 /* ---- 按键名 ---- */
-"key.space"  = "空格";
-"key.return" = "回车";
-"key.tab"    = "Tab";
-"key.esc"    = "esc";
 
 /* ---- 使用说明 ---- */
 "help.lead"        = "截图或划词 → 判断语种 → 打开对应词典。识别全部在本机完成，不联网。";
@@ -234,3 +230,137 @@
 "help.tr.badJoinWhy"     = "断词还原会查系统韩语词典，确认「词典」App 里启用了韩语词典；少数真歧义无解，粘贴前扫一眼";
 "help.tr.langMissing"    = "识别不出某种语言";
 "help.tr.langMissingWhy" = "「权限与识别语言自检」里看本机 Vision 支持哪些语言";
+
+/* ---- 首次启动向导 ---- */
+"onboard.windowTitle"     = "欢迎";
+"onboard.title"           = "快捷查词助手";
+"onboard.subtitle"        = "框选或划中屏幕上的韩语，立刻出词典释义。设置两件事就能开始用。";
+"onboard.langTitle"       = "查到哪种语言";
+"onboard.langNote"        = "已按你的系统语言选好。改这个会整套替换词典，之后随时能在菜单栏里换。";
+"onboard.permTitle"       = "权限";
+"onboard.permNote"        = "两个都要给，否则 App 什么都看不到。它们不向外发送任何数据 —— 识别全部在本机完成。";
+"onboard.permScreenUse"   = "用来截取你框选的区域";
+"onboard.permAXUse"       = "用来读取你在别的 App 里选中的文字";
+"onboard.grant"           = "去授权…";
+"onboard.notGranted"      = "未授权";
+"onboard.restartHint"     = "macOS 的权限只对重新启动后的进程生效 —— 重启一下才能用。";
+"onboard.restart"         = "立即重启";
+"onboard.quarantine"      = "macOS 把这个 App 标记为「从网上下载」，会挡住部分功能。在终端里跑一次下面的命令即可。";
+"onboard.quarantineFix"   = "复制命令";
+"onboard.quarantineCopied" = "命令已复制 —— 粘贴到终端里回车执行";
+"onboard.start"           = "开始使用";
+"menu.dictLanguage"       = "我的母语";
+"menu.onboarding"         = "设置向导…";
+
+/* ---- 要查的外语 ---- */
+"menu.sourceLanguages" = "要查的外语";
+"hud.sourceAdded"      = "已加入 %@";
+"hud.sourceRemoved"    = "已移除 %@";
+"menu.localDictionaries" = "本地词典 App";
+"hud.localAdded"   = "已加入 %@ —— 在配置里给它写 languages 就能自动命中";
+"hud.localRemoved" = "已移除 %@";
+"menu.dictionaries"      = "词典设置…";
+"menu.dictionaries.tip"  = "指定哪种语言用哪个网站，也可以加自己的";
+"dict.title"             = "词典设置";
+"dict.colName"           = "名称";
+"dict.colLanguages"      = "命中语言";
+"dict.add"               = "＋ 添加";
+"dict.reset"             = "恢复默认";
+"dict.hint" = "点「＋ 添加」加一本新词典 —— 可以从常用词典里挑，也可以选本机的文件或词典 App。「命中语言」决定识别到哪种语言时自动跳它。";
+"dict.needName"          = "有一行还没填名称";
+"hud.dictionariesSaved"  = "已保存 —— 共 %d 个词典";
+
+/* 打开查词窗口 */
+"menu.openWindow" = "打开查词窗口…";
+"menu.openWindow.tip" = "不取词，直接开窗口自己输入。配好的词典（含本地文件）都能用。";
+"keys.sourceManual" = "自己输入";
+"help.h.manual" = "直接输入";
+"help.act.manual" = "打开查词窗口";
+"help.act.manualNote" = "空着打开，光标在输入框里。回车查询，⌘1…⌘9 换词典。";
+"action.manual" = "打开查词窗口，自己输入";
+"window.queryPlaceholderManual" = "输入要查的词，回车查询";
+"window.blank.title" = "输入要查的词，按回车";
+"window.blank.switch" = "⌘1…⌘9 切换词典 · 罗盘按钮丢给浏览器";
+"window.blank.local" = "本地词典和自己整理的资料在这里也能查";
+
+/* 词典设置：添加/更改表单 */
+"dict.colTarget" = "去哪儿";
+"dict.change" = "更改…";
+"dict.sum.web" = "网页 · %@";
+"dict.sum.file" = "本地文件 · %@";
+"dict.sum.app" = "本地 App · %@";
+"dict.langManual" = "只能手动切";
+"dict.langFallback" = "兜底（其余全部）";
+"dict.addedHint" = "已添加「%@」。点「保存」生效。";
+"sheet.addTitle" = "添加词典";
+"sheet.editTitle" = "更改词典";
+"sheet.kind" = "这本词典在哪儿";
+"sheet.kindPreset" = "常用词典";
+"sheet.kindFile" = "本地文件";
+"sheet.kindApp" = "本地词典 App";
+"sheet.kindCustom" = "自己填网址";
+"sheet.chooseFile" = "选择文件…";
+"sheet.noFile" = "还没选";
+"sheet.noApps" = "本机没装词典 App";
+"sheet.filePrompt" = "选你的 Markdown 笔记（.md），可以多选，也可以直接选文件夹";
+"sheet.customHint" = "查询词的位置写成 {q}。例：https://example.com/search?q={q}";
+"sheet.name" = "显示名称";
+"sheet.namePlaceholder" = "按钮上显示的名字";
+"sheet.add" = "添加";
+"sheet.errPreset" = "先选一本常用词典";
+"sheet.errFile" = "先点「选择文件…」挑一个文件";
+"sheet.errApp" = "先选一个词典 App";
+"sheet.errQ" = "网址里要有 {q}，标出查询词放在哪儿";
+"sheet.errURL" = "这个网址填得不对";
+"sheet.errName" = "给它起个名字";
+
+/* Markdown 笔记词典 */
+"notes.searchPlaceholder" = "输入韩语单词或语法形式，例如 먹었거든요";
+"notes.count" = "条 · 输入韩语单词或语法形式";
+"notes.ready" = "把变形后的词直接丢进来，";
+"notes.example" = "比如 먹었거든요 会找到 -거든(요)";
+"notes.noMatch" = "没找到";
+"notes.noMatchTip" = "试试只输入词尾部分，或用中文搜释义";
+"notes.topOnly" = "条匹配（只显示前几条）";
+"notes.more" = "还有";
+"notes.errTitle" = "解析不出条目";
+"notes.errHint" = "条目标题要写成这两种格式之一：";
+"notes.manage" = "资料";
+"notes.addSource" = "添加资料";
+"notes.removeSource" = "移除这份资料";
+"notes.noSources" = "还没有资料";
+"notes.inText" = "正文命中";
+"help.win.zoom" = "调整字号";
+"help.win.zoomNote" = "双指也能缩放；比例会记住。⌘0 回到 100%";
+"alert.ok" = "好";
+"sheet.filesPicked" = "已选 %ld 项";
+"dict.sum.files" = "本地资料 · %ld 份";
+"notes.errSaw" = "它看到的标题是：";
+"notes.errNoHeadings" = "整个文件里一个 # 开头的标题都没有";
+
+/* 本地资料清单 */
+"dict.addNotes" = "＋ 本地资料";
+"dict.addNotes.tip" = "加一本由你自己的 Markdown 笔记组成的词典";
+"notes.sheetTitle" = "本地资料";
+"notes.sheetLead" = "把 .md 文件或文件夹拖进下面这块区域，也可以用按钮选。分好几份没关系，它们合成一本词典。";
+"notes.dropHere" = "把文件或文件夹拖到这里";
+"notes.pickFiles" = "选择文件…";
+"notes.pickFolder" = "选择文件夹…";
+"notes.pickFolderPrompt" = "选一个装着 .md 笔记的文件夹";
+"notes.kindFile" = "文件";
+"notes.kindFolder" = "文件夹";
+"notes.summary" = "%ld 项来源，共 %ld 个 .md 文件";
+"notes.summaryNone" = "这些路径里没有 .md 文件";
+"notes.errEmpty" = "还没有添加任何资料";
+"notes.defaultName" = "我的笔记";
+"notes.usingCopy" = "用副本";
+"window.speak" = "朗读当前查询词。再按一次停止";
+"help.win.speak" = "朗读";
+"help.win.speakNote" = "系统语音离线朗读当前词，按识别出的语种选嗓音";
+
+/* 全局朗读 */
+"keys.actionSpeak" = "朗读";
+"action.speak" = "朗读（%@）";
+"help.act.speak" = "朗读选中的文字";
+"help.act.speakNote" = "有选中读选中；没选中重读上一段；正在读就停。语速在配置里 speechRate 调";
+"hud.nothingToSpeak" = "没有可朗读的内容";

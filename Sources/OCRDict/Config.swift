@@ -12,12 +12,21 @@ struct DictSite: Codable {
     /// true = 交给系统默认浏览器打开，不在内嵌 WebView 里加载。
     /// 用于那些依赖登录态的站点（内嵌 WebView 是独立的未登录会话）。
     var external: Bool?
+    /// 笔记词典的资料清单（.md 文件或文件夹的路径）。
+    ///
+    /// 有值时以它为准，`url` 里的路径不再参与。这样一本词典可以由多份资料组成，
+    /// 而且**增删在结果页面里就能做** —— 不必为每份资料单独配一条词典、多占一个标签。
+    var notes: [String]?
+
+    /// 是不是笔记词典
+    var isNotes: Bool { !(notes ?? []).isEmpty || url.hasPrefix("file://") }
 }
 
 /// 取词的输入源
 enum CaptureSource: String, Codable {
     case screenshot   // 框选截图 + OCR
     case selection    // 读当前选中的文字
+    case manual       // 不取字，直接开窗口自己输入
 }
 
 /// 取到文字之后做什么
@@ -25,6 +34,7 @@ enum CaptureAction: String, Codable {
     case lookup       // 判语种 → 开词典
     case clipboard    // 智能拼行 → 只放剪贴板，不查词
     case qrcode       // 识别二维码/条码 → 打开链接
+    case speak        // 朗读（选中的文字，或 OCR 出来的文字）
 }
 
 /// 一条快捷键绑定。字段全是可选的，配置里漏写哪项都不会让整份配置失效。
@@ -117,20 +127,32 @@ struct AppConfig: Codable {
     /// 二维码里的链接打开前先弹窗确认。二维码是不可读的，扫到什么网址肉眼看不出来，
     /// 想稳一点就把这个打开。
     var qrConfirmBeforeOpen: Bool
+    /// 补充的韩语助词/词尾。断词还原判定「行首是不是悬空的黏着语素」时会用上。
+    /// 内置表是我按语法整理的，母语者发现漏了什么，往这里加就行 —— 不用改代码、不用重新编译。
+    var koreanExtraParticles: [String]
+    /// 补充的「能独立成词的单音节」。内置表误判把某个词粘到上一行时，往这里加。
+    var koreanExtraStandalone: [String]
+    /// 除韩语外还要查哪些外语。每加一种就多一个 X→母语 的词典。
+    /// 韩语固定在内（这是工具的主场），列表里写的是额外的。
+    var sourceLanguages: [String]
+    /// 查到哪种语言。首次启动时按系统语言自动判定，之后可在菜单里换。
+    /// 换这个值会整套替换 dictionaries，所以手改过词典的人不要动它。
+    var dictionaryLanguage: String
     var windowWidth: Double
     var windowHeight: Double
+    /// 结果窗口的字号比例。⌘+ / ⌘- 改，⌘0 回到 1.0
+    var windowZoom: Double
+    /// 朗读语速，1.0 = 正常，范围 0.5–2.0
+    var speechRate: Double
+    /// 朗读时跳过数字。读诗歌、课文时行号页码是噪音，开了它们就被静音
+    var speechSkipsNumbers: Bool
     var dictionaries: [DictSite]
 
     static let fallback = AppConfig(
-        hotkeys: [
-            .make(key: "9", control: true, option: true, source: .screenshot, dictionary: "auto"),
-            .make(key: "0", control: true, option: true, source: .screenshot, action: .clipboard),
-            .make(key: "8", control: true, option: true, source: .screenshot, action: .qrcode),
-            .make(key: "D", option: true, command: true, source: .selection, dictionary: "auto"),
-            .make(key: "N", option: true, command: true, source: .selection, dictionary: "naver"),
-            .make(key: "P", option: true, command: true, source: .selection, dictionary: "papago"),
-            .make(key: "G", option: true, command: true, source: .selection, dictionary: "gtrans"),
-        ],
+        // 快捷键也随词典集走：指向具体词典的那几个键，只为实际存在的词典生成
+        hotkeys: DictionaryPresets.defaultHotkeys(
+            for: DictionaryPresets.dictionaries(target: DictionaryPresets.suggestedTarget,
+                                                sources: ["ko"])),
         autoDetectLanguage: true,
         ocrLanguages: ["en-US", "ko-KR", "it-IT", "zh-Hans", "ja-JP"],
         defaultLatinLanguage: "en",
@@ -140,35 +162,18 @@ struct AppConfig: Codable {
         alwaysOnTop: false,
         clearDataOnQuit: true,
         qrConfirmBeforeOpen: false,
+        koreanExtraParticles: [],
+        koreanExtraStandalone: [],
+        sourceLanguages: ["ko"],
+        dictionaryLanguage: DictionaryPresets.suggestedTarget,
         windowWidth: 900,
         windowHeight: 680,
-        dictionaries: [
-            // 默认查到中文。换成别的母语只要改子域名和目标语言代码，见 README 的
-            // 「切换查词语言」一节 —— Naver 各语言对的路径完全一样。
-            DictSite(id: "naver", name: "Naver 韩中", languages: ["ko"],
-                     url: "https://zh.dict.naver.com/#/search?range=word&query={q}",
-                     suffix: nil, external: nil),
-            // 韩韩词典，给已经能读原文释义的学习者
-            DictSite(id: "naverko", name: "국어사전", languages: [],
-                     url: "https://ko.dict.naver.com/#/search?query={q}", suffix: nil, external: nil),
-            // 翻译器：languages 为空，不参与自动路由（整句翻译不该抢单词查询），
-            // 靠 ⌘⌥P / ⌘⌥G 直达，或在窗口里手动切
-            DictSite(id: "papago", name: "Papago", languages: [],
-                     url: "https://papago.naver.com/?sk=ko&tk=zh-CN&st={q}", suffix: nil, external: nil),
-            DictSite(id: "gtrans", name: "谷歌翻译", languages: [],
-                     url: "https://translate.google.com/?sl=auto&tl=zh-CN&text={q}&op=translate",
-                     suffix: nil, external: nil),
-            DictSite(id: "google", name: "Google", languages: ["*"],
-                     url: "https://www.google.com/search?q={q}", suffix: " 中文意思", external: nil),
-            // languages 为空 = 永不自动命中，只能手动切过去。
-            // external = 跳默认浏览器：udm=50 是 Google AI 模式，它依赖账号登录态，
-            // 内嵌 WebView 是独立的未登录会话给不了，浏览器里才有。
-            // suffix 就是给 AI 的提问模板，想改问法直接改这里。
-            DictSite(id: "googleai", name: "AI 释义", languages: [],
-                     url: "https://www.google.com/search?q={q}&udm=50",
-                     suffix: " 这个词是什么意思？请用中文说明词义、词性、常见搭配，并给两个例句。",
-                     external: true),
-        ]
+        windowZoom: 1.0,
+        speechRate: 1.0,
+        speechSkipsNumbers: false,
+        // 默认词典按系统语言自动定 —— 装上就能用，不需要先去改配置
+        dictionaries: DictionaryPresets.dictionaries(target: DictionaryPresets.suggestedTarget,
+                                                     sources: ["ko"])
     )
 }
 
@@ -181,7 +186,8 @@ extension AppConfig {
         case hotkeys
         case autoDetectLanguage, ocrLanguages, defaultLatinLanguage, latinConfidenceThreshold
         case collapseWhitespaceToSpace, openInBrowser, alwaysOnTop, clearDataOnQuit
-        case qrConfirmBeforeOpen, windowWidth, windowHeight, dictionaries
+        case qrConfirmBeforeOpen, koreanExtraParticles, koreanExtraStandalone
+        case sourceLanguages, dictionaryLanguage, windowWidth, windowHeight, windowZoom, speechRate, speechSkipsNumbers, dictionaries
     }
 
     init(from decoder: Decoder) throws {
@@ -208,8 +214,17 @@ extension AppConfig {
         alwaysOnTop = try c.decodeIfPresent(Bool.self, forKey: .alwaysOnTop) ?? d.alwaysOnTop
         clearDataOnQuit = try c.decodeIfPresent(Bool.self, forKey: .clearDataOnQuit) ?? d.clearDataOnQuit
         qrConfirmBeforeOpen = try c.decodeIfPresent(Bool.self, forKey: .qrConfirmBeforeOpen) ?? d.qrConfirmBeforeOpen
+        koreanExtraParticles = try c.decodeIfPresent([String].self, forKey: .koreanExtraParticles) ?? []
+        koreanExtraStandalone = try c.decodeIfPresent([String].self, forKey: .koreanExtraStandalone) ?? []
+        let sources = try c.decodeIfPresent([String].self, forKey: .sourceLanguages) ?? d.sourceLanguages
+        // 韩语是这个工具的主场，不允许被配没了
+        sourceLanguages = sources.contains("ko") ? sources : ["ko"] + sources
+        dictionaryLanguage = try c.decodeIfPresent(String.self, forKey: .dictionaryLanguage) ?? d.dictionaryLanguage
         windowWidth = try c.decodeIfPresent(Double.self, forKey: .windowWidth) ?? d.windowWidth
         windowHeight = try c.decodeIfPresent(Double.self, forKey: .windowHeight) ?? d.windowHeight
+        windowZoom = try c.decodeIfPresent(Double.self, forKey: .windowZoom) ?? d.windowZoom
+        speechRate = try c.decodeIfPresent(Double.self, forKey: .speechRate) ?? d.speechRate
+        speechSkipsNumbers = try c.decodeIfPresent(Bool.self, forKey: .speechSkipsNumbers) ?? d.speechSkipsNumbers
         let dicts = try c.decodeIfPresent([DictSite].self, forKey: .dictionaries) ?? d.dictionaries
         dictionaries = dicts.isEmpty ? d.dictionaries : dicts
     }
@@ -218,7 +233,9 @@ extension AppConfig {
 enum ConfigStore {
     static var directory: URL {
         let base = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
-        return base.appendingPathComponent("OCRDict", isDirectory: true)
+        // 按 bundle ID 分目录：冻结的 2.0 和开发中的 3.x 各用各的配置，互不干扰
+        let name = Bundle.main.bundleIdentifier ?? "OCRDict"
+        return base.appendingPathComponent(name, isDirectory: true)
     }
 
     static var fileURL: URL { directory.appendingPathComponent("config.json") }

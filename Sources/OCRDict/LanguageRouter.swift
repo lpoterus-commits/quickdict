@@ -90,7 +90,23 @@ enum DictRouter {
         var allowed = CharacterSet.alphanumerics
         allowed.insert(charactersIn: "-._~")
         guard let encoded = raw.addingPercentEncoding(withAllowedCharacters: allowed) else { return nil }
-        return URL(string: site.url.replacingOccurrences(of: "{q}", with: encoded))
+        let filled = site.url.replacingOccurrences(of: "{q}", with: encoded)
+        // 网址模板本身也可能有非 ASCII —— 指向本地资料时路径里常带中文。
+        return URL(string: filled) ?? URL(string: escapeNonASCII(filled))
+    }
+
+    /// 只转义非 ASCII 字符，`:` `/` `?` `#` 这些结构符号原样保留。
+    /// 整串做 addingPercentEncoding 会把已编码的查询词二次转义。
+    private static func escapeNonASCII(_ text: String) -> String {
+        var out = ""
+        for scalar in text.unicodeScalars {
+            if scalar.isASCII {
+                out.unicodeScalars.append(scalar)
+            } else {
+                for byte in String(scalar).utf8 { out += String(format: "%%%02X", byte) }
+            }
+        }
+        return out
     }
 }
 

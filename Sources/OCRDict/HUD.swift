@@ -1,6 +1,10 @@
 import AppKit
 
-/// 屏幕中央一闪而过的提示。
+/// 右上角一闪而过的提示。
+///
+/// 原先在屏幕正中 —— 那正是你刚截完图要看的位置，提示直接盖在要读的字上。
+/// 挪到右上角，和系统通知一个方位，不挡视线。
+///
 /// 没走 UserNotifications，是因为本地签名的 App 通知权限容易失效，而这个永远能显示。
 final class HUD {
     static let shared = HUD()
@@ -49,9 +53,11 @@ final class HUD {
         window.collectionBehavior = [.canJoinAllSpaces, .stationary, .ignoresCycle]
 
         let screen = currentScreen()
+        // visibleFrame 已经把菜单栏和程序坞让出来了，直接贴边即可
         let frame = screen.visibleFrame
-        window.setFrameOrigin(NSPoint(x: frame.midX - size.width / 2,
-                                      y: frame.midY - size.height / 2))
+        let margin: CGFloat = 16
+        window.setFrameOrigin(NSPoint(x: frame.maxX - size.width - margin,
+                                      y: frame.maxY - size.height - margin))
         window.alphaValue = 0
         window.orderFrontRegardless()
         NSAnimationContext.runAnimationGroup { ctx in

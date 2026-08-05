@@ -33,6 +33,8 @@ enum HelpDocument {
         }
         let head = "<tr><th>\(t("help.colKey"))</th><th>\(t("help.colWhat"))</th>"
             + "<th>\(t("help.colNote"))</th></tr>"
+        // 「自己输入」是可选绑定，没配就不显示这一节，免得表格空着
+        let manual = config.hotkeys.filter { $0.captureSource == .manual }
 
         return """
         <h2>\(t("help.h.shortcuts"))</h2>
@@ -40,6 +42,10 @@ enum HelpDocument {
         <table>\(head)\(rows(config.hotkeys.filter { $0.captureSource == .screenshot }))</table>
         <h3>\(t("help.h.selection"))</h3>
         <table>\(head)\(rows(config.hotkeys.filter { $0.captureSource == .selection }))</table>
+        \(manual.isEmpty ? "" : """
+        <h3>\(t("help.h.manual"))</h3>
+        <table>\(head)\(rows(manual))</table>
+        """)
         <p class="tip">\(t("help.tip.sources"))</p>
         """
     }
@@ -56,7 +62,9 @@ enum HelpDocument {
         <tr><td><kbd>⌘L</kbd></td><td>\(t("help.win.edit"))</td><td>\(t("help.win.editNote"))</td></tr>
         <tr><td><kbd>esc</kbd> / <kbd>⌘W</kbd></td><td>\(t("help.win.close"))</td><td>\(t("help.win.closeNote"))</td></tr>
         <tr><td>📌</td><td>\(t("help.win.pin"))</td><td>\(t("help.win.pinNote"))</td></tr>
+        <tr><td>🔊</td><td>\(t("help.win.speak"))</td><td>\(t("help.win.speakNote"))</td></tr>
         <tr><td>🧭</td><td>\(t("help.win.browser"))</td><td>\(t("help.win.browserNote"))</td></tr>
+        <tr><td><kbd>⌘+</kbd> <kbd>⌘-</kbd> <kbd>⌘0</kbd></td><td>\(t("help.win.zoom"))</td><td>\(t("help.win.zoomNote"))</td></tr>
         </table>
         <p class="tip">\(t("help.tip.level"))</p>
         """
@@ -131,9 +139,13 @@ enum HelpDocument {
     // MARK: - 工具
 
     private static func describe(_ binding: HotKeyBinding, config: AppConfig) -> (String, String) {
+        if binding.captureSource == .manual {
+            return (t("help.act.manual"), t("help.act.manualNote"))
+        }
         switch binding.captureAction {
         case .clipboard: return (t("help.act.clipboard"), t("help.act.clipboardNote"))
         case .qrcode: return (t("help.act.qr"), t("help.act.qrNote"))
+        case .speak: return (t("help.act.speak"), t("help.act.speakNote"))
         case .lookup:
             guard let id = binding.targetDictionary else {
                 return (t("help.act.lookupAuto"), t("help.act.lookupAutoNote"))

@@ -143,10 +143,6 @@
 "lang.th" = "Thai";        "lang.ar" = "Arabic";     "lang.uk" = "Ukrainian";
 
 /* ---- Key names ---- */
-"key.space"  = "Space";
-"key.return" = "Return";
-"key.tab"    = "Tab";
-"key.esc"    = "esc";
 
 /* ---- User guide ---- */
 "help.lead"        = "Capture or select → detect the language → open the right dictionary. All recognition runs on your Mac, offline.";
@@ -234,3 +230,137 @@
 "help.tr.badJoinWhy"     = "Rejoining consults the system Korean dictionary — make sure it is enabled in the Dictionary app. A few cases are genuinely ambiguous; glance at the text before pasting.";
 "help.tr.langMissing"    = "A language is not recognized";
 "help.tr.langMissingWhy" = "“Permissions & Languages” lists every recognition language this Mac supports";
+
+/* ---- First-run wizard ---- */
+"onboard.windowTitle"     = "Welcome";
+"onboard.title"           = "QuickDict";
+"onboard.subtitle"        = "Grab any Korean text on screen and get a dictionary entry. Two things to set up, then you are done.";
+"onboard.langTitle"       = "Look words up in";
+"onboard.langNote"        = "Picked from your system language. Changes the whole dictionary set — you can switch any time from the menu bar.";
+"onboard.permTitle"       = "Permissions";
+"onboard.permNote"        = "Both are needed for the app to see anything. Neither sends data anywhere — all recognition runs on this Mac.";
+"onboard.permScreenUse"   = "So it can capture the area you drag";
+"onboard.permAXUse"       = "So it can read text you select in other apps";
+"onboard.grant"           = "Grant…";
+"onboard.notGranted"      = "not granted";
+"onboard.restartHint"     = "macOS applies new permissions only to a freshly started app — restart to activate them.";
+"onboard.restart"         = "Restart Now";
+"onboard.quarantine"      = "macOS has flagged this app as downloaded from the internet, which blocks some features. Run the command below in Terminal once.";
+"onboard.quarantineFix"   = "Copy Fix";
+"onboard.quarantineCopied" = "Command copied — paste it into Terminal and press Return";
+"onboard.start"           = "Start Using";
+"menu.dictLanguage"       = "My Language";
+"menu.onboarding"         = "Setup Assistant…";
+
+/* ---- Source languages ---- */
+"menu.sourceLanguages" = "Languages I Look Up";
+"hud.sourceAdded"      = "Now also looking up %@";
+"hud.sourceRemoved"    = "No longer looking up %@";
+"menu.localDictionaries" = "Local Dictionary Apps";
+"hud.localAdded"   = "%@ added — give it a \"languages\" list in the config file to make it automatic";
+"hud.localRemoved" = "%@ removed";
+"menu.dictionaries"      = "Dictionaries…";
+"menu.dictionaries.tip"  = "Choose which site opens for which language, or add your own";
+"dict.title"             = "Dictionaries";
+"dict.colName"           = "Name";
+"dict.colLanguages"      = "Opens for";
+"dict.add"               = "＋ Add";
+"dict.reset"             = "Restore Defaults";
+"dict.hint" = "Click “+ Add” for a new dictionary — pick a known one, a file on this Mac, or an installed dictionary app. “Languages” decides when it opens automatically.";
+"dict.needName"          = "One row has no name yet";
+"hud.dictionariesSaved"  = "Saved — %d dictionaries";
+
+/* 打开查词窗口 */
+"menu.openWindow" = "Open Lookup Window…";
+"menu.openWindow.tip" = "Skip capture and type the word yourself. Every configured dictionary works here, local files included.";
+"keys.sourceManual" = "Type it";
+"help.h.manual" = "Typing it yourself";
+"help.act.manual" = "Open the lookup window";
+"help.act.manualNote" = "Opens empty with the cursor in the field. Return to search, ⌘1…⌘9 to switch dictionaries.";
+"action.manual" = "Open the lookup window and type";
+"window.queryPlaceholderManual" = "Type a word and press Return";
+"window.blank.title" = "Type a word, then Return";
+"window.blank.switch" = "⌘1…⌘9 switches dictionaries · compass sends it to your browser";
+"window.blank.local" = "Local dictionaries and your own notes work here too";
+
+/* 词典设置：添加/更改表单 */
+"dict.colTarget" = "Where it goes";
+"dict.change" = "Change…";
+"dict.sum.web" = "Web · %@";
+"dict.sum.file" = "Local file · %@";
+"dict.sum.app" = "Local app · %@";
+"dict.langManual" = "Manual only";
+"dict.langFallback" = "Fallback (everything else)";
+"dict.addedHint" = "Added “%@”. Click Save to apply.";
+"sheet.addTitle" = "Add a dictionary";
+"sheet.editTitle" = "Change dictionary";
+"sheet.kind" = "Where this dictionary lives";
+"sheet.kindPreset" = "Known dictionary";
+"sheet.kindFile" = "Local file";
+"sheet.kindApp" = "Local dictionary app";
+"sheet.kindCustom" = "Type a URL";
+"sheet.chooseFile" = "Choose File…";
+"sheet.noFile" = "None chosen";
+"sheet.noApps" = "No dictionary app installed";
+"sheet.filePrompt" = "Pick your Markdown notes (.md) — several at once, or a whole folder";
+"sheet.customHint" = "Write {q} where the search word goes. Example: https://example.com/search?q={q}";
+"sheet.name" = "Display name";
+"sheet.namePlaceholder" = "The name shown on the button";
+"sheet.add" = "Add";
+"sheet.errPreset" = "Pick a dictionary first";
+"sheet.errFile" = "Click “Choose File…” and pick a file";
+"sheet.errApp" = "Pick a dictionary app first";
+"sheet.errQ" = "The URL needs {q} to mark where the word goes";
+"sheet.errURL" = "That URL isn’t valid";
+"sheet.errName" = "Give it a name";
+
+/* Markdown 笔记词典 */
+"notes.searchPlaceholder" = "Type a word or a grammar form, e.g. 먹었거든요";
+"notes.count" = "entries · type a word or grammar form";
+"notes.ready" = "Paste the conjugated word straight in —";
+"notes.example" = "먹었거든요 finds -거든(요)";
+"notes.noMatch" = "No match for";
+"notes.noMatchTip" = "Try just the ending, or search the gloss in your own language";
+"notes.topOnly" = "matches (showing the top few)";
+"notes.more" = "Plus";
+"notes.errTitle" = "No entries found";
+"notes.errHint" = "Entry headings must use one of these two forms:";
+"notes.manage" = "Sources";
+"notes.addSource" = "Add source";
+"notes.removeSource" = "Remove this source";
+"notes.noSources" = "No sources yet";
+"notes.inText" = "in text";
+"help.win.zoom" = "Text size";
+"help.win.zoomNote" = "Pinch works too; the level is remembered. ⌘0 returns to 100%";
+"alert.ok" = "OK";
+"sheet.filesPicked" = "%ld items selected";
+"dict.sum.files" = "Local notes · %ld files";
+"notes.errSaw" = "Headings it found:";
+"notes.errNoHeadings" = "No line starting with # anywhere in the file";
+
+/* 本地资料清单 */
+"dict.addNotes" = "+ Local notes";
+"dict.addNotes.tip" = "Add a dictionary made of your own Markdown notes";
+"notes.sheetTitle" = "Local notes";
+"notes.sheetLead" = "Drag .md files or folders into the area below, or use the buttons. Several files are fine — they become one dictionary.";
+"notes.dropHere" = "Drop files or folders here";
+"notes.pickFiles" = "Choose Files…";
+"notes.pickFolder" = "Choose Folder…";
+"notes.pickFolderPrompt" = "Pick a folder containing .md notes";
+"notes.kindFile" = "File";
+"notes.kindFolder" = "Folder";
+"notes.summary" = "%ld sources, %ld .md files";
+"notes.summaryNone" = "No .md files under these paths";
+"notes.errEmpty" = "No sources added yet";
+"notes.defaultName" = "My notes";
+"notes.usingCopy" = "copy";
+"window.speak" = "Speak the current query. Click again to stop";
+"help.win.speak" = "Speak";
+"help.win.speakNote" = "Reads the current word offline with the system voice for its language";
+
+/* 全局朗读 */
+"keys.actionSpeak" = "Speak";
+"action.speak" = "Speak (%@)";
+"help.act.speak" = "Speak the selection";
+"help.act.speakNote" = "Reads the selection; with none, repeats the last text or stops if speaking. Rate via speechRate in the config";
+"hud.nothingToSpeak" = "Nothing to speak";

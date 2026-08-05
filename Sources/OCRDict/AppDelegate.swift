@@ -8,22 +8,55 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private let resultWindow = ResultWindowController()
     private let helpWindow = HelpWindowController()
     private let hotKeyEditor = HotKeyEditorController()
+    private let dictEditor = DictionaryEditorController()
+    private let onboarding = OnboardingController()
     private var config = AppConfig.fallback
     private var isBusy = false
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        // 顺序要紧：load() 会把默认配置写出去，写完就不再算首次启动了
+        let firstRun = OnboardingController.isFirstRun
         config = ConfigStore.load()
+        applyKoreanTables()
         setupMainMenu()
         setupStatusItem()
         applyHotKeys()
+        // 结果页面上改了资料清单 —— 存回配置，菜单里的词典列表也跟着更新
+        resultWindow.onZoomChanged = { [weak self] value in
+            guard let self, self.config.windowZoom != value else { return }
+            self.config.windowZoom = value
+            ConfigStore.save(self.config)
+        }
+        resultWindow.onNotesChanged = { [weak self] site in
+            guard let self, let i = self.config.dictionaries.firstIndex(where: { $0.id == site.id })
+            else { return }
+            self.config.dictionaries[i] = site
+            ConfigStore.save(self.config)
+            self.statusItem.menu = self.buildMenu()
+        }
 
         // 调试用：--test <词> 跳过截图直接开结果窗口，方便改词典配置时试链接
         let args = CommandLine.arguments
         if let i = args.firstIndex(of: "--test"), i + 1 < args.count {
             handle(text: args[i + 1], config: config)
         }
+        if firstRun { showOnboarding() }
+        // 调试用：--set-lang <code> headless 触发一次查词语言切换
+        if let i = args.firstIndex(of: "--set-lang"), i + 1 < args.count {
+            applyDictionaryLanguage(args[i + 1])
+            NSApp.terminate(nil)
+        }
+        // 调试用：--add-source <code> headless 勾选一种要查的外语
+        if let i = args.firstIndex(of: "--add-source"), i + 1 < args.count {
+            let code = args[i + 1]
+            if !config.sourceLanguages.contains(code) { config.sourceLanguages.append(code) }
+            rebuildDictionaries()
+            NSApp.terminate(nil)
+        }
         if args.contains("--help-window") { showHelp() }
+        if args.contains("--onboarding") { showOnboarding() }
         if args.contains("--hotkey-window") { showHotKeyEditor() }
+        if args.contains("--dict-window") { showDictionaryEditor() }
     }
 
     func applicationWillTerminate(_ notification: Notification) {
@@ -55,10 +88,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         lookupBySelection(forced: nil)
     }
 
+    /// 菜单里的「打开查词窗口」—— 不取字，自己输入
+    @objc func openLookupWindow() {
+        resultWindow.openBlank(config: config)
+    }
+
     private func dispatch(_ binding: HotKeyBinding) {
         switch binding.captureSource {
         case .screenshot: captureScreen(binding)
-        case .selection: lookupBySelection(forced: binding.targetDictionary)
+        case .selection:
+            if binding.captureAction == .speak { speakSelection() } else {
+                lookupBySelection(forced: binding.targetDictionary)
+            }
+        case .manual: openLookupWindow()
         }
     }
 
@@ -106,6 +148,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                     DispatchQueue.main.async {
                         self?.isBusy = false
                         self?.copyToClipboard(joined)
+                    }
+
+                case .speak:
+                    // 拼行走完整管线：断词还原后的文本才读得顺。
+                    // 段落换行 LineJoiner 会保留，正好喂给分节停顿。
+                    let lines = OCR.recognizeLines(image: image, languages: cfg.ocrLanguages,
+                                                   autoDetect: cfg.autoDetectLanguage)
+                    let joined = LineJoiner.joined(lines)
+                    DispatchQueue.main.async {
+                        self?.isBusy = false
+                        guard !joined.text.isEmpty else {
+                            HUD.shared.show(t("hud.noText"))
+                            return
+                        }
+                        Speech.shared.speak(joined.text, config: cfg)
                     }
 
                 case .lookup:
@@ -179,6 +236,24 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         NSWorkspace.shared.open(url)
         // 二维码是不可读的，把实际打开的域名亮出来，扫到奇怪的东西能立刻发现
         HUD.shared.show(t("hud.barcodeOpened", url.host ?? url.absoluteString), duration: 2.5)
+    }
+
+    /// 朗读选中的文字。原脚本（左Alt+Q）的行为原样保留：
+    /// 有选中读选中，没选中重读上一段，正在读就停。
+    private func speakSelection() {
+        guard SelectionReader.isTrusted else {
+            SelectionReader.requestTrust()
+            HUD.shared.show(t("hud.needAccessibility"), duration: 4)
+            return
+        }
+        let cfg = config
+        DispatchQueue.global(qos: .userInitiated).async {
+            // 不走 TextClean：它会把换行压掉，而换行正是分节停顿的依据
+            let raw = SelectionReader.read()
+            DispatchQueue.main.async {
+                Speech.shared.handleHotkey(selection: raw, config: cfg)
+            }
+        }
     }
 
     private func lookupBySelection(forced: String?) {
@@ -284,7 +359,69 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                             action: #selector(triggerQRCapture), keyEquivalent: "")
         qr.target = self
         menu.addItem(qr)
+
+        let openWindow = NSMenuItem(title: "\(t("menu.openWindow"))　\(hotkeyLabel(for: .manual))",
+                                    action: #selector(openLookupWindow), keyEquivalent: "")
+        openWindow.target = self
+        openWindow.toolTip = t("menu.openWindow.tip")
+        menu.addItem(openWindow)
         menu.addItem(.separator())
+
+        let langItem = NSMenuItem(title: t("menu.dictLanguage"), action: nil, keyEquivalent: "")
+        let langMenu = NSMenu()
+        for target in DictionaryPresets.targets {
+            let item = NSMenuItem(title: target.endonym, action: #selector(switchDictionaryLanguage(_:)),
+                                  keyEquivalent: "")
+            item.target = self
+            item.representedObject = target.code
+            item.state = (target.code == config.dictionaryLanguage) ? .on : .off
+            langMenu.addItem(item)
+        }
+        langItem.submenu = langMenu
+        menu.addItem(langItem)
+
+        // 要查的外语可以多选 —— 母语只有一个，但生词可能来自好几种语言
+        let srcItem = NSMenuItem(title: t("menu.sourceLanguages"), action: nil, keyEquivalent: "")
+        let srcMenu = NSMenu()
+        for code in DictionaryPresets.selectableSources where code != config.dictionaryLanguage {
+            let item = NSMenuItem(title: LanguageNames.display(code),
+                                  action: #selector(toggleSourceLanguage(_:)), keyEquivalent: "")
+            item.target = self
+            item.representedObject = code
+            item.state = config.sourceLanguages.contains(code) ? .on : .off
+            // 韩语是这个工具的主场，不给取消
+            if code == "ko" { item.isEnabled = false }
+            srcMenu.addItem(item)
+        }
+        srcItem.submenu = srcMenu
+        menu.addItem(srcItem)
+
+        // 本地词典 App：查词跳到装好的软件而不是网页。只列本机真的有的。
+        let localApps = LocalDictionaries.installed
+        if !localApps.isEmpty {
+            let localItem = NSMenuItem(title: t("menu.localDictionaries"), action: nil, keyEquivalent: "")
+            let localMenu = NSMenu()
+            for entry in localApps {
+                let item = NSMenuItem(title: entry.name, action: #selector(toggleLocalDictionary(_:)),
+                                      keyEquivalent: "")
+                item.target = self
+                item.representedObject = entry.id
+                item.state = config.dictionaries.contains { $0.id == entry.id } ? .on : .off
+                localMenu.addItem(item)
+            }
+            localItem.submenu = localMenu
+            menu.addItem(localItem)
+        }
+
+        let setup = NSMenuItem(title: t("menu.onboarding"), action: #selector(showOnboarding), keyEquivalent: "")
+        setup.target = self
+        menu.addItem(setup)
+
+        let editDicts = NSMenuItem(title: t("menu.dictionaries"), action: #selector(showDictionaryEditor),
+                                   keyEquivalent: "")
+        editDicts.target = self
+        editDicts.toolTip = t("menu.dictionaries.tip")
+        menu.addItem(editDicts)
 
         let editKeys = NSMenuItem(title: t("menu.hotkeys"), action: #selector(showHotKeyEditor), keyEquivalent: "")
         editKeys.target = self
@@ -346,10 +483,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     /// 「截图 → 有道」这样的一行说明，自检和关于面板共用
     private func describe(_ binding: HotKeyBinding) -> String {
+        if binding.captureSource == .manual { return t("action.manual") }
         let source = binding.captureSource == .selection ? t("action.selection") : t("action.screenshot")
         switch binding.captureAction {
         case .clipboard: return t("action.clipboard", source)
         case .qrcode: return t("action.qrcode", source)
+        case .speak: return t("action.speak", source)
         case .lookup:
             let target = binding.targetDictionary
                 .flatMap { id in config.dictionaries.first { $0.id == id }?.name }
@@ -358,8 +497,107 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
+    private func applyKoreanTables() {
+        LineJoiner.configure(extraParticles: config.koreanExtraParticles,
+                             extraStandalone: config.koreanExtraStandalone)
+    }
+
+    @objc private func showOnboarding() {
+        onboarding.onFinish = { [weak self] code in self?.applyDictionaryLanguage(code) }
+        onboarding.show(selected: config.dictionaryLanguage)
+    }
+
+    @objc private func switchDictionaryLanguage(_ sender: NSMenuItem) {
+        guard let code = sender.representedObject as? String else { return }
+        applyDictionaryLanguage(code)
+        HUD.shared.show(DictionaryPresets.target(for: code).endonym)
+    }
+
+    @objc private func toggleSourceLanguage(_ sender: NSMenuItem) {
+        guard let code = sender.representedObject as? String, code != "ko" else { return }
+        if config.sourceLanguages.contains(code) {
+            config.sourceLanguages.removeAll { $0 == code }
+        } else {
+            config.sourceLanguages.append(code)
+        }
+        rebuildDictionaries()
+        HUD.shared.show(t(sender.state == .on ? "hud.sourceRemoved" : "hud.sourceAdded",
+                          LanguageNames.display(code)))
+    }
+
+    @objc private func toggleLocalDictionary(_ sender: NSMenuItem) {
+        guard let id = sender.representedObject as? String,
+              let entry = LocalDictionaries.known.first(where: { $0.id == id }) else { return }
+        if let index = config.dictionaries.firstIndex(where: { $0.id == id }) {
+            config.dictionaries.remove(at: index)
+            HUD.shared.show(t("hud.localRemoved", entry.name))
+        } else {
+            config.dictionaries.append(LocalDictionaries.site(for: entry))
+            HUD.shared.show(t("hud.localAdded", entry.name), duration: 4)
+        }
+        ConfigStore.save(config)
+        statusItem.menu = buildMenu()
+    }
+
+    /// 整套替换词典。手改过词典的人会丢改动，所以只在向导和菜单里显式触发。
+    private func applyDictionaryLanguage(_ code: String) {
+        guard code != config.dictionaryLanguage || config.dictionaries.isEmpty else { return }
+        config.dictionaryLanguage = code
+        rebuildDictionaries()
+    }
+
+    /// 按当前的「母语 + 要查的外语」重建词典集。
+    private func rebuildDictionaries() {
+        // 预设只负责它自己那几项。用户手加的词典（id 不属于任何预设）原样保留 ——
+        // 换设置不该把别人辛苦配的词典冲掉。
+        // 本地词典 App 和手加的词典一样，都不属于预设，换设置时原样保留
+        let presetIDs = DictionaryPresets.allPresetDictionaryIDs
+        let userAdded = config.dictionaries.filter { !presetIDs.contains($0.id) }
+        config.dictionaries = DictionaryPresets.dictionaries(target: config.dictionaryLanguage,
+                                                            sources: config.sourceLanguages,
+                                                            userDictionaries: userAdded) + userAdded
+
+        // 换语言后词典集变了。指向已不存在词典的快捷键要摘掉，否则按下去没反应还查不出原因。
+        let available = Set(config.dictionaries.map(\.id))
+        let before = config.hotkeys.count
+        config.hotkeys = config.hotkeys.filter { binding in
+            guard let target = binding.targetDictionary else { return true }
+            return available.contains(target)
+        }
+        // 新预设里多出来的词典，补上对应的默认键（只在键位没被占用时）
+        for candidate in DictionaryPresets.defaultHotkeys(for: config.dictionaries) {
+            guard let target = candidate.targetDictionary else { continue }
+            let hasTarget = config.hotkeys.contains { $0.targetDictionary == target }
+            let keyTaken = config.hotkeys.contains {
+                $0.resolvedKeyCode == candidate.resolvedKeyCode
+                    && $0.carbonModifiers == candidate.carbonModifiers
+            }
+            if !hasTarget, !keyTaken { config.hotkeys.append(candidate) }
+        }
+        if config.hotkeys.count != before { applyHotKeys() }
+        ConfigStore.save(config)
+        statusItem.menu = buildMenu()
+    }
+
     @objc private func showHelp() {
         helpWindow.show(config: config)
+    }
+
+    @objc private func showDictionaryEditor() {
+        dictEditor.show(sites: config.dictionaries,
+                        config: config,
+                        onReset: { [weak self] in
+                            guard let self else { return [] }
+                            return DictionaryPresets.dictionaries(target: self.config.dictionaryLanguage,
+                                                                  sources: self.config.sourceLanguages)
+                        },
+                        onSave: { [weak self] sites in
+                            guard let self else { return }
+                            self.config.dictionaries = sites
+                            ConfigStore.save(self.config)
+                            self.statusItem.menu = self.buildMenu()
+                            HUD.shared.show(t("hud.dictionariesSaved", sites.count))
+                        })
     }
 
     @objc private func showHotKeyEditor() {
@@ -392,6 +630,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     @objc private func reloadConfig() {
         config = ConfigStore.load()
+        applyKoreanTables()
         applyHotKeys()
         statusItem.menu = buildMenu()
         HUD.shared.show(t("hud.configReloaded"))
@@ -400,6 +639,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     @objc private func clearWebData() {
         let before = WebData.diskUsage()
         resultWindow.blankOut()
+        NotesCache.clearAll()
         WebData.clear { [weak self] in
             let freed = max(0, before - WebData.diskUsage())
             HUD.shared.show(t("hud.dataCleared", WebData.formatted(freed)))

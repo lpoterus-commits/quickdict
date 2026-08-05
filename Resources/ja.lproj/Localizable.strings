@@ -1,0 +1,368 @@
+/* QuickDict — 日本語
+   訳はプロジェクト作者によるもので、母語話者による校正は受けていません。
+   修正は歓迎です。このファイルを直して pull request を送ってください。 */
+
+/* ---- メニューバー ---- */
+"menu.lookup"              = "スクリーンショットから調べる";
+"menu.selection"           = "選択中の語を調べる";
+"menu.clipboard"           = "スクリーンショットをテキストに";
+"menu.clipboard.tip"       = "認識して、改行で切れた語をつなぎ、クリップボードへ。辞書は引きません。";
+"menu.qrcode"              = "QR コードを読み取る";
+"menu.hotkeys"             = "ショートカット…";
+"menu.help"                = "使い方…";
+"menu.help.tip"            = "ショートカット・辞書・権限・設定のすべて。現在の設定から生成されます。";
+"menu.editConfig"          = "設定ファイルを編集…";
+"menu.reloadConfig"        = "設定を読み込み直す";
+"menu.clearData"           = "閲覧データを消去（%@）";
+"menu.clearData.tip"       = "内蔵ウインドウの Cookie・localStorage・キャッシュを消します。辞書サイトはそこに検索履歴を残します。";
+"menu.clearOnQuit"         = "終了時に消去";
+"menu.launchAtLogin"       = "ログイン時に起動";
+"menu.diagnostics"         = "権限と認識言語…";
+"menu.about"               = "QuickDict について";
+"menu.quit"                = "終了";
+"menu.hideWindow"          = "ウインドウを閉じる";
+"menu.edit"                = "編集";
+"menu.undo"                = "取り消す";
+"menu.redo"                = "やり直す";
+"menu.cut"                 = "カット";
+"menu.copy"                = "コピー";
+"menu.paste"               = "ペースト";
+"menu.selectAll"           = "すべてを選択";
+"menu.helpMenu"            = "ヘルプ";
+"menu.dictLanguage"        = "母語";
+"menu.onboarding"          = "設定アシスタント…";
+
+/* ---- 通知 ---- */
+"hud.needScreenRecording"  = "「画面収録」の権限が必要です。\nシステム設定で有効にしてから、このアプリを再起動してください。";
+"hud.needAccessibility"    = "選択中の語を調べるには「アクセシビリティ」の権限が必要です。\nシステム設定で有効にしてから、このアプリを再起動してください。";
+"hud.captureFailed"        = "画面の取り込みを開始できませんでした：%@";
+"hud.decodeFailed"         = "スクリーンショットをデコードできませんでした";
+"hud.noText"               = "文字を認識できませんでした";
+"hud.noSelection"          = "何も選択されていません";
+"hud.noDictionary"         = "使える辞書が設定されていません";
+"hud.badURL"               = "辞書の URL が不正です";
+"hud.copied"               = "%d 文字をコピーしました\n%@";
+"hud.copiedAmbiguous"      = "%1$d 文字をコピーしました\n%2$@\n\n⚠️ ここはつなげましたが、分けて書いても意味が通ります：\n%3$@";
+"hud.andMore"              = " ほか %d か所";
+"hud.noBarcode"            = "QR コードやバーコードが見つかりません";
+"hud.barcodeNotURL"        = "[%1$@] URL ではないので、内容をコピーしました：\n%2$@";
+"hud.barcodeOpened"        = "%@ を開きました";
+"hud.linkCopied"           = "リンクをコピーしました";
+"hud.configReloaded"       = "設定を読み込み直しました";
+"hud.dataCleared"          = "閲覧データを消去しました\n%@ を解放";
+"hud.clearOnQuitOn"        = "終了時に閲覧データを消去します";
+"hud.clearOnQuitOff"       = "終了時も閲覧データを残します";
+"hud.loginItemOn"          = "ログイン時の起動を有効にしました";
+"hud.loginItemOff"         = "ログイン時の起動を無効にしました";
+"hud.loginItemFailed"      = "設定を変更できませんでした：%@";
+"hud.hotkeysUpdated"       = "ショートカットを更新しました";
+"hud.hotkeysFailed"        = "次のショートカットを登録できませんでした：\n%@\n他のアプリが使っている可能性があります。";
+
+/* ---- QR ---- */
+"qr.confirmTitle"          = "このリンクを開きますか？";
+"qr.open"                  = "開く";
+"qr.copyOnly"              = "コピーのみ";
+"qr.cancel"                = "キャンセル";
+
+/* ---- 自己診断 ---- */
+"diag.title"               = "QuickDict — 自己診断";
+"diag.screenRecording"     = "画面収録：%@";
+"diag.accessibility"       = "アクセシビリティ：%@";
+"diag.granted"             = "許可済み";
+"diag.deniedScreen"        = "未許可（スクリーンショット系の操作は動きません）";
+"diag.deniedAX"            = "未許可（選択中の語を使う操作は動きません）";
+"diag.autoDetect"          = "言語の自動判定：%@";
+"diag.on"                  = "オン";
+"diag.off"                 = "オフ";
+"diag.shortcuts"           = "ショートカット：";
+"diag.hintLanguages"       = "言語のヒント：%@";
+"diag.unsupported"         = "⚠️ この Mac では非対応：%@";
+"diag.supportedAll"        = "この Mac が対応している認識言語すべて：";
+"diag.configPath"          = "設定ファイル：%@";
+"diag.ok"                  = "OK";
+"diag.openScreenSettings"  = "画面収録の設定を開く";
+"diag.openAXSettings"      = "アクセシビリティの設定を開く";
+
+/* ---- 動作 ---- */
+"action.screenshot"        = "スクリーンショット";
+"action.selection"         = "選択";
+"action.clipboard"         = "%@ → 行をつないでクリップボードへ";
+"action.qrcode"            = "%@ → QR コードを読み取ってリンクを開く";
+"action.lookupAuto"        = "%@ → 言語を自動で判定";
+"action.lookupFixed"       = "%1$@ → %2$@";
+"action.notSet"            = "未設定";
+
+/* ---- このアプリについて ---- */
+"about.title"              = "QuickDict";
+"about.body"               = "取り込み → 言語を判定 → ふさわしい辞書を開く。\nスクリーンショットは画像や PDF 用、選択は選べるテキスト用です。\n\n%@\n\n⌘1…⌘9\t辞書を切り替え\n⌘L\t語を修正（Enter で再検索）\nesc\tウインドウを閉じる\n\n詳しい説明：メニューバー →「使い方」、または ⌘? を押してください";
+
+/* ---- 結果ウインドウ ---- */
+"window.title"             = "QuickDict";
+"window.queryPlaceholder"  = "認識した文字（修正可、Enter で検索）";
+"window.openInBrowser"     = "デフォルトのブラウザで開く";
+"window.pin"               = "最前面に固定";
+"window.pinned"            = "固定中 — クリックで解除";
+"window.langUncertain"     = "言語の判定が不確かです（確度 %@）。⌘1…⌘9 で手動で切り替えてください。";
+"window.langCertain"       = "判定した言語：%@";
+"window.external"          = "（デフォルトのブラウザで開きます）";
+
+/* ---- ショートカット設定 ---- */
+"keys.title"               = "ショートカット";
+"keys.colShortcut"         = "ショートカット";
+"keys.colSource"           = "文字の取得元";
+"keys.colAction"           = "動作";
+"keys.colDictionary"       = "辞書";
+"keys.setKey"              = "クリックして設定";
+"keys.recording"           = "キーを押してください…";
+"keys.sourceScreenshot"    = "スクリーンショット";
+"keys.sourceSelection"     = "選択中の文字";
+"keys.actionLookup"        = "辞書を引く";
+"keys.actionClipboard"     = "クリップボードへ";
+"keys.actionQR"            = "QR コードを読み取る";
+"keys.dictAuto"            = "自動で判定";
+"keys.add"                 = "＋ 追加";
+"keys.reset"               = "デフォルトに戻す";
+"keys.cancel"              = "キャンセル";
+"keys.save"                = "保存";
+"keys.delete"              = "この行を削除";
+"keys.hint"                = "ショートカットの欄をクリックしてから、使いたいキーの組み合わせを押してください。修飾キーが最低ひとつ必要です。";
+"keys.saved"               = "保存して有効になりました";
+"keys.savedWithFailures"   = "保存しましたが、次のものは登録できませんでした（他のアプリが使っている可能性）：%@";
+"keys.registerFailedTip"   = "この組み合わせは登録できませんでした — 他のアプリが使っている可能性があります";
+"keys.needKey"             = "キーが未設定の行があります。設定するか、その行を削除してください。";
+"keys.duplicate"           = "%@ が 2 回使われています。ひとつの組み合わせにはひとつの動作しか割り当てられません。";
+"keys.newRowHint"          = "追加した行にはまだキーがありません — 欄をクリックして設定してください";
+"keys.resetHint"           = "デフォルトに戻しました。「保存」を押すと反映されます。";
+"keys.pressSave"           = "「保存」を押すと反映されます";
+
+/* ---- 設定アシスタント ---- */
+"onboard.windowTitle"      = "ようこそ";
+"onboard.title"            = "QuickDict";
+"onboard.subtitle"         = "画面上のどんな韓国語でも取り込んで、その場で辞書を引けます。設定するのは 2 つだけです。";
+"onboard.langTitle"        = "調べる言語";
+"onboard.langNote"         = "システムの言語から選ばれています。辞書のセット全体が変わります。メニューバーからいつでも切り替えられます。";
+"onboard.permTitle"        = "権限";
+"onboard.permNote"         = "どちらもないとアプリは何も見られません。データはどこにも送られません — 認識はすべてこの Mac の中で行われます。";
+"onboard.permScreenUse"    = "ドラッグして囲んだ範囲を取り込むため";
+"onboard.permAXUse"        = "他のアプリで選択した文字を読むため";
+"onboard.grant"            = "許可する…";
+"onboard.notGranted"       = "未許可";
+"onboard.restartHint"      = "macOS は新しい権限を起動し直したプロセスにしか適用しません — 再起動してください。";
+"onboard.restart"          = "今すぐ再起動";
+"onboard.quarantine"       = "macOS がこのアプリを「インターネットからダウンロードした」と印を付けており、一部の機能が使えません。下のコマンドをターミナルで一度実行してください。";
+"onboard.quarantineFix"    = "コマンドをコピー";
+"onboard.quarantineCopied" = "コマンドをコピーしました — ターミナルに貼り付けて Return を押してください";
+"onboard.start"            = "使い始める";
+
+/* ---- 言語名 ---- */
+"lang.ko" = "韓国語";   "lang.ja" = "日本語";   "lang.zh" = "中国語";
+"lang.en" = "英語";     "lang.it" = "イタリア語"; "lang.fr" = "フランス語";
+"lang.de" = "ドイツ語"; "lang.es" = "スペイン語"; "lang.pt" = "ポルトガル語";
+"lang.ru" = "ロシア語"; "lang.nl" = "オランダ語"; "lang.sv" = "スウェーデン語";
+"lang.da" = "デンマーク語"; "lang.nb" = "ノルウェー語"; "lang.fi" = "フィンランド語";
+"lang.pl" = "ポーランド語"; "lang.cs" = "チェコ語"; "lang.tr" = "トルコ語";
+"lang.vi" = "ベトナム語"; "lang.id" = "インドネシア語"; "lang.ms" = "マレー語";
+"lang.ro" = "ルーマニア語"; "lang.hu" = "ハンガリー語"; "lang.ca" = "カタルーニャ語";
+"lang.th" = "タイ語";   "lang.ar" = "アラビア語"; "lang.uk" = "ウクライナ語";
+
+/* ---- キー名 ---- */
+
+/* ---- 使い方 ---- */
+"help.lead"        = "取り込むか選択する → 言語を判定 → ふさわしい辞書を開く。認識はすべてこの Mac の中で、ネットにつながずに行われます。";
+"help.foot"        = "このページは現在の設定から生成されています — 設定を変えて「設定を読み込み直す」を押すと、ここも変わります。";
+"help.colKey"      = "キー";
+"help.colWhat"     = "動作";
+"help.colNote"     = "説明";
+"help.colName"     = "名前";
+"help.colWhen"     = "自動で開く条件";
+"help.colPermission" = "権限";
+"help.colUsedFor"  = "用途";
+"help.colIfDenied" = "許可しないと";
+"help.colWant"     = "変えたいこと";
+"help.colWhere"    = "変える場所";
+"help.colSymptom"  = "症状";
+"help.colCause"    = "原因";
+
+"help.h.shortcuts"    = "ショートカット";
+"help.h.screenshot"   = "スクリーンショット — ドラッグして範囲を囲みます（esc で取り消し）";
+"help.h.selection"    = "選択 — 選択中の文字を読みます。ドラッグは不要です";
+"help.h.window"       = "結果ウインドウでできること";
+"help.h.dictionaries" = "辞書";
+"help.h.permissions"  = "2 つの権限";
+"help.h.settings"     = "設定";
+"help.h.trouble"      = "うまくいかないとき";
+
+"help.tip.sources"    = "スクリーンショットは<b>選択できない</b>文字向けです — 画像、スキャンした PDF、動画の字幕。選択は選べる文字向けで、認識ミスがなくドラッグも要りません。<br>組み合わせの変更：メニューバー → <b>ショートカット</b>、欄をクリックして新しいキーを押してください。";
+"help.tip.level"      = "固定していないときは、ウインドウが最前面に来るのは現れた瞬間だけです — 他のウインドウをクリックすると後ろに下がり、邪魔になりません。";
+"help.tip.detection"  = "言語の判定：ハングル → 韓国語、かな → 日本語、漢字 → 中国語。1 文字で決まります。ラテン文字だけは統計的な推定が必要で、確度が低いと左上の言語ラベルが<b class=warn>オレンジ色に「?」付き</b>になります。<kbd>⌘1</kbd>…<kbd>⌘9</kbd> で手動で切り替えられます。";
+"help.tip.diagnostics" = "メニューバー →「権限と認識言語」でいつでも現在の状態を確認できます。";
+"help.tip.privacy"    = "内蔵ウインドウの閲覧データは終了時に消去されます（現在：<b>%@</b>）。このアプリ自身は検索履歴を一切残しませんが、辞書サイトがブラウザの保存領域に「最近の検索」を書き込むため、こうしています。";
+
+"help.win.switch"     = "辞書を切り替え";
+"help.win.edit"       = "語を修正";
+"help.win.editNote"   = "誤認識した文字を直して Enter で再検索";
+"help.win.close"      = "ウインドウを閉じる";
+"help.win.closeNote"  = "隠れるだけなので、次に引くときは速く開きます";
+"help.win.pin"        = "最前面に固定";
+"help.win.pinNote"    = "辞書を表示したまま書き写すとき用";
+"help.win.browser"    = "ブラウザで開く";
+"help.win.browserNote" = "いまの検索語をデフォルトのブラウザに渡します";
+
+"help.dict.manual"    = "自動では開かない — 手動で切り替え";
+"help.dict.fallback"  = "その他すべての言語（フォールバック）";
+"help.dict.external"  = "ブラウザで開く ↗";
+
+"help.perm.intro"       = "どちらも<b>システム設定 → プライバシーとセキュリティ</b>にあります。<b class=warn>許可したらアプリを再起動してください</b> — macOS は新しいプロセスにしか権限を適用しません。";
+"help.perm.screen"      = "画面収録";
+"help.perm.screenUse"   = "取り込む範囲のドラッグ";
+"help.perm.screenDenied" = "スクリーンショット系のショートカットがすべて動きません";
+"help.perm.ax"          = "アクセシビリティ";
+"help.perm.axUse"       = "他のアプリで選択した文字の読み取り";
+"help.perm.axDenied"    = "選択を使うショートカットがすべて動きません";
+
+"help.cfg.hotkeys"    = "<b>ショートカットには専用の設定画面があります</b>：メニューバー →「ショートカット」。欄をクリックすると記録が始まるので、使いたい組み合わせを押してください（修飾キーが最低ひとつ、esc で取り消し）。取得元・動作・辞書も変えられ、行の追加と削除もできます。保存するとその場で登録し直され、他のアプリに取られている組み合わせは赤で示されます。";
+"help.cfg.file"       = "それ以外は設定ファイルにあります。編集したら「設定を読み込み直す」を押してください。再起動は不要です。";
+"help.cfg.targetLang" = "別の言語で調べる";
+"help.cfg.targetLangHow" = "Naver のサブドメイン（<code>en</code> / <code>ja</code> / <code>zh</code>）と翻訳先の言語コードを差し替えます。Naver の言語ペアはすべて同じパス構成です。";
+"help.cfg.addDict"    = "辞書を追加する";
+"help.cfg.addDictHow" = "<code>dictionaries</code> に 1 項目足します。<code>{q}</code> が検索語の位置です";
+"help.cfg.aiPrompt"   = "AI への聞き方を変える";
+"help.cfg.aiPromptHow" = "AI の項目の <code>suffix</code>。「敬語のレベル」「活用」など好きに足せます";
+"help.cfg.needLogin"  = "ログインが必要なサイトを使う";
+"help.cfg.needLoginHow" = "<code>\"external\": true</code> を足すと、デフォルトのブラウザで開くようになります";
+"help.cfg.alwaysTop"  = "ウインドウを常に最前面に";
+"help.cfg.qrConfirm"  = "QR のリンクを開く前に確認する";
+
+"help.act.clipboard"        = "テキストにしてクリップボードへ";
+"help.act.clipboardNote"    = "改行で切れた語をつなぎ直します。分けて書いても通る箇所は知らせます";
+"help.act.qr"               = "QR コードを読み取る";
+"help.act.qrNote"           = "URL ならブラウザで開き、それ以外はコピーします";
+"help.act.lookupAuto"       = "辞書を引く（言語を自動判定）";
+"help.act.lookupAutoNote"   = "判定した言語から辞書を選びます";
+"help.act.lookupFixedNote"  = "判定を飛ばして、この辞書を直接使います";
+
+"help.tr.noResponse"    = "ショートカットを押しても何も起きない";
+"help.tr.noResponseWhy" = "その組み合わせを他のアプリが使っています（Hammerspoon、Raycast など）。別の組み合わせにするか、そのアプリを終了してください。";
+"help.tr.nothingAfterCapture"    = "範囲を囲んだあと何も起きない";
+"help.tr.nothingAfterCaptureWhy" = "画面収録が未許可、または許可後にアプリを再起動していません";
+"help.tr.noSelection"    = "選択して調べると「何も選択されていません」と出る";
+"help.tr.noSelectionWhy" = "アクセシビリティが未許可、またはそのアプリが選択範囲を公開していません（一部の Electron アプリ）";
+"help.tr.permsLost"      = "ビルドし直したら権限が効かなくなった";
+"help.tr.permsLostWhy"   = "そういう仕様です。ビルドし直すとコード署名が変わります。システム設定で許可し直してください。";
+"help.tr.badJoin"        = "韓国語の語が間違ってつながった";
+"help.tr.badJoinWhy"     = "つなぎ直しはシステムの韓国語辞書を参照します。「辞書」アプリで有効になっているか確認してください。どうしても判定できない例もあるので、貼り付ける前に目を通してください。";
+"help.tr.langMissing"    = "ある言語が認識されない";
+"help.tr.langMissingWhy" = "「権限と認識言語」に、この Mac が対応している認識言語がすべて出ます";
+
+/* ---- 調べる言語 ---- */
+"menu.sourceLanguages" = "調べる外国語";
+"hud.sourceAdded"      = "%@ を追加しました";
+"hud.sourceRemoved"    = "%@ を外しました";
+"menu.localDictionaries" = "ローカルの辞書アプリ";
+"hud.localAdded"   = "%@ を追加しました — 設定ファイルで languages を書けば自動で開きます";
+"hud.localRemoved" = "%@ を外しました";
+"menu.dictionaries"      = "辞書の設定…";
+"menu.dictionaries.tip"  = "どの言語でどのサイトを開くかを決める。自分のサイトも足せます";
+"dict.title"             = "辞書の設定";
+"dict.colName"           = "名前";
+"dict.colLanguages"      = "対象の言語";
+"dict.add"               = "＋ 追加";
+"dict.reset"             = "デフォルトに戻す";
+"dict.hint" = "「＋ 追加」で辞書を追加します。よく使う辞書から選ぶほか、ローカルのファイルや辞書Appも指定できます。「対象言語」で自動的に開く条件を決めます。";
+"dict.needName"          = "名前が空の行があります";
+"hud.dictionariesSaved"  = "保存しました — 辞書 %d 件";
+
+/* 打开查词窗口 */
+"menu.openWindow" = "検索ウインドウを開く…";
+"menu.openWindow.tip" = "取り込まずに直接入力します。設定済みの辞書（ローカルファイルを含む）がすべて使えます。";
+"keys.sourceManual" = "自分で入力";
+"help.h.manual" = "自分で入力";
+"help.act.manual" = "検索ウインドウを開く";
+"help.act.manualNote" = "空の状態で開き、カーソルは入力欄に入ります。Return で検索、⌘1…⌘9 で辞書切替。";
+"action.manual" = "検索ウインドウを開いて入力";
+"window.queryPlaceholderManual" = "調べたい語を入力して Return";
+"window.blank.title" = "調べたい語を入力して Return";
+"window.blank.switch" = "⌘1…⌘9 で辞書切替 · コンパスでブラウザへ";
+"window.blank.local" = "ローカル辞書や自分でまとめた資料もここで引けます";
+
+/* 词典设置：添加/更改表单 */
+"dict.colTarget" = "参照先";
+"dict.change" = "変更…";
+"dict.sum.web" = "ウェブ · %@";
+"dict.sum.file" = "ローカルファイル · %@";
+"dict.sum.app" = "ローカルApp · %@";
+"dict.langManual" = "手動切替のみ";
+"dict.langFallback" = "既定（その他すべて）";
+"dict.addedHint" = "「%@」を追加しました。「保存」で反映します。";
+"sheet.addTitle" = "辞書を追加";
+"sheet.editTitle" = "辞書を変更";
+"sheet.kind" = "この辞書の場所";
+"sheet.kindPreset" = "よく使う辞書";
+"sheet.kindFile" = "ローカルファイル";
+"sheet.kindApp" = "ローカル辞書App";
+"sheet.kindCustom" = "URLを入力";
+"sheet.chooseFile" = "ファイルを選択…";
+"sheet.noFile" = "未選択";
+"sheet.noApps" = "辞書Appが未インストール";
+"sheet.filePrompt" = "Markdown ノート（.md）を選んでください。複数選択・フォルダ指定も可";
+"sheet.customHint" = "検索語の位置を {q} と書きます。例：https://example.com/search?q={q}";
+"sheet.name" = "表示名";
+"sheet.namePlaceholder" = "ボタンに表示する名前";
+"sheet.add" = "追加";
+"sheet.errPreset" = "辞書を選んでください";
+"sheet.errFile" = "「ファイルを選択…」から選んでください";
+"sheet.errApp" = "辞書Appを選んでください";
+"sheet.errQ" = "URLに {q} が必要です（検索語の位置）";
+"sheet.errURL" = "このURLは正しくありません";
+"sheet.errName" = "名前を付けてください";
+
+/* Markdown 笔记词典 */
+"notes.searchPlaceholder" = "韓国語の単語か文法形式を入力（例：먹었거든요）";
+"notes.count" = "件 · 単語か文法形式を入力";
+"notes.ready" = "活用した形をそのまま入れてください —";
+"notes.example" = "먹었거든요 で -거든(요) が見つかります";
+"notes.noMatch" = "見つかりません";
+"notes.noMatchTip" = "語尾だけ、または母語で語義を検索してみてください";
+"notes.topOnly" = "件一致（上位のみ表示）";
+"notes.more" = "ほか";
+"notes.errTitle" = "項目を抽出できません";
+"notes.errHint" = "項目見出しは次のいずれかの形式にしてください：";
+"notes.manage" = "資料";
+"notes.addSource" = "資料を追加";
+"notes.removeSource" = "この資料を外す";
+"notes.noSources" = "資料がありません";
+"notes.inText" = "本文に一致";
+"help.win.zoom" = "文字サイズ";
+"help.win.zoomNote" = "ピンチ操作も可。倍率は記憶されます。⌘0 で 100% に戻る";
+"alert.ok" = "OK";
+"sheet.filesPicked" = "%ld 項目を選択";
+"dict.sum.files" = "ローカル資料 · %ld 件";
+"notes.errSaw" = "見つかった見出し：";
+"notes.errNoHeadings" = "# で始まる行がファイル内に一つもありません";
+
+/* 本地资料清单 */
+"dict.addNotes" = "＋ ローカル資料";
+"dict.addNotes.tip" = "自分の Markdown ノートで辞書を作ります";
+"notes.sheetTitle" = "ローカル資料";
+"notes.sheetLead" = "下の枠に .md ファイルやフォルダをドラッグしてください。ボタンでも選べます。複数でも一つの辞書になります。";
+"notes.dropHere" = "ここにファイルやフォルダをドロップ";
+"notes.pickFiles" = "ファイルを選択…";
+"notes.pickFolder" = "フォルダを選択…";
+"notes.pickFolderPrompt" = "\.md ノートの入ったフォルダを選んでください";
+"notes.kindFile" = "ファイル";
+"notes.kindFolder" = "フォルダ";
+"notes.summary" = "%ld 件の指定・.md ファイル %ld 個";
+"notes.summaryNone" = "指定した場所に .md がありません";
+"notes.errEmpty" = "まだ何も追加されていません";
+"notes.defaultName" = "マイノート";
+"notes.usingCopy" = "複製";
+"window.speak" = "現在の語を読み上げます。もう一度押すと停止";
+"help.win.speak" = "読み上げ";
+"help.win.speakNote" = "認識された言語の音声で、オフラインで読み上げます";
+
+/* 全局朗读 */
+"keys.actionSpeak" = "読み上げ";
+"action.speak" = "読み上げ（%@）";
+"help.act.speak" = "選択テキストを読み上げ";
+"help.act.speakNote" = "選択があれば読み上げ。なければ前回分を再読、読み上げ中なら停止。速度は設定の speechRate";
+"hud.nothingToSpeak" = "読み上げる内容がありません";

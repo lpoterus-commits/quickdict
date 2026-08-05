@@ -58,11 +58,6 @@ final class KeyRecorderButton: NSButton {
     deinit { if let monitor { NSEvent.removeMonitor(monitor) } }
 }
 
-/// NSView 默认原点在左下，放进 NSScrollView 后内容会贴着底部。翻转坐标系让它从顶部开始排。
-private final class FlippedView: NSView {
-    override var isFlipped: Bool { true }
-}
-
 final class HotKeyEditorController: NSObject, NSWindowDelegate {
     private var window: NSWindow?
     private var rowsStack: NSStackView!
@@ -113,7 +108,7 @@ final class HotKeyEditorController: NSObject, NSWindowDelegate {
         scroll.hasVerticalScroller = true
         scroll.drawsBackground = false
         scroll.translatesAutoresizingMaskIntoConstraints = false
-        let clip = FlippedView()
+        let clip = FlippedContainer()
         clip.translatesAutoresizingMaskIntoConstraints = false
         clip.addSubview(rowsStack)
         NSLayoutConstraint.activate([
@@ -232,20 +227,25 @@ final class HotKeyEditorController: NSObject, NSWindowDelegate {
         }
 
         let source = NSPopUpButton()
-        source.addItems(withTitles: [t("keys.sourceScreenshot"), t("keys.sourceSelection")])
-        source.selectItem(at: binding.captureSource == .selection ? 1 : 0)
-        source.widthAnchor.constraint(equalToConstant: 100).isActive = true
+        source.addItems(withTitles: [t("keys.sourceScreenshot"), t("keys.sourceSelection"),
+                                     t("keys.sourceManual")])
+        source.selectItem(at: HotKeyEditorController.sources.firstIndex(of: binding.captureSource) ?? 0)
+        source.widthAnchor.constraint(equalToConstant: 110).isActive = true
         source.target = self
         source.action = #selector(sourceChanged(_:))
         source.tag = index
 
         let action = NSPopUpButton()
-        action.addItems(withTitles: [t("keys.actionLookup"), t("keys.actionClipboard"), t("keys.actionQR")])
+        action.addItems(withTitles: [t("keys.actionLookup"), t("keys.actionClipboard"),
+                                     t("keys.actionQR"), t("keys.actionSpeak")])
         switch binding.captureAction {
         case .lookup: action.selectItem(at: 0)
         case .clipboard: action.selectItem(at: 1)
         case .qrcode: action.selectItem(at: 2)
+        case .speak: action.selectItem(at: 3)
         }
+        // 自己输入时没有取到的文字，「只放剪贴板」「扫码」无从谈起
+        action.isEnabled = binding.captureSource != .manual
         action.widthAnchor.constraint(equalToConstant: 130).isActive = true
         action.target = self
         action.action = #selector(actionChanged(_:))
@@ -279,14 +279,19 @@ final class HotKeyEditorController: NSObject, NSWindowDelegate {
 
     // MARK: - 编辑动作
 
+    /// 弹出菜单的顺序，和 keys.source* 三个文案一一对应
+    static let sources: [CaptureSource] = [.screenshot, .selection, .manual]
+
     @objc private func sourceChanged(_ sender: NSPopUpButton) {
-        bindings[sender.tag].source = sender.indexOfSelectedItem == 1
-            ? CaptureSource.selection.rawValue : CaptureSource.screenshot.rawValue
+        let picked = Self.sources[sender.indexOfSelectedItem]
+        bindings[sender.tag].source = picked.rawValue
+        // 自己输入时窗口是空的，没有词可以拿去做「只放剪贴板」或「扫码」
+        if picked == .manual { bindings[sender.tag].action = CaptureAction.lookup.rawValue }
         validateAndRefresh()
     }
 
     @objc private func actionChanged(_ sender: NSPopUpButton) {
-        let actions: [CaptureAction] = [.lookup, .clipboard, .qrcode]
+        let actions: [CaptureAction] = [.lookup, .clipboard, .qrcode, .speak]
         bindings[sender.tag].action = actions[sender.indexOfSelectedItem].rawValue
         validateAndRefresh()
     }
@@ -371,7 +376,8 @@ final class HotKeyEditorController: NSObject, NSWindowDelegate {
         window?.level = .normal
     }
 
-    func close() { window?.orderOut(nil) }
+    func close() { window?.orderOut(nil)
+        }
 }
 
 extension HotKeyBinding {

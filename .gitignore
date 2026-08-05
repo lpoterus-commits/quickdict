@@ -15,3 +15,4 @@ releases/
 # 分架构编译的临时目录
 .build-arm64/
 .build-x86/
+dist/

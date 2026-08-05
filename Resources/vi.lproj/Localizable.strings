@@ -1,0 +1,368 @@
+/* QuickDict — Tiếng Việt
+   Bản dịch do tác giả dự án thực hiện, không phải người bản ngữ.
+   Rất hoan nghênh sửa lỗi: chỉnh sửa tệp này và gửi pull request. */
+
+/* ---- Thanh menu ---- */
+"menu.lookup"              = "Tra bằng ảnh chụp màn hình";
+"menu.selection"           = "Tra phần đang chọn";
+"menu.clipboard"           = "Ảnh chụp thành văn bản";
+"menu.clipboard.tip"       = "Nhận dạng, nối lại từ bị ngắt dòng, chép vào bảng nháp. Không tra từ điển.";
+"menu.qrcode"              = "Quét mã QR";
+"menu.hotkeys"             = "Phím tắt…";
+"menu.help"                = "Hướng dẫn sử dụng…";
+"menu.help.tip"            = "Toàn bộ phím tắt, từ điển, quyền và thiết lập — tạo ra từ cấu hình hiện tại của bạn.";
+"menu.editConfig"          = "Sửa tệp cấu hình…";
+"menu.reloadConfig"        = "Nạp lại cấu hình";
+"menu.clearData"           = "Xoá dữ liệu duyệt web (%@)";
+"menu.clearData.tip"       = "Xoá cookie, localStorage và bộ nhớ đệm của cửa sổ tích hợp. Các trang từ điển lưu lịch sử tra cứu ở đó.";
+"menu.clearOnQuit"         = "Xoá khi thoát";
+"menu.launchAtLogin"       = "Mở khi đăng nhập";
+"menu.diagnostics"         = "Quyền và ngôn ngữ…";
+"menu.about"               = "Giới thiệu QuickDict";
+"menu.quit"                = "Thoát";
+"menu.hideWindow"          = "Đóng cửa sổ";
+"menu.edit"                = "Sửa";
+"menu.undo"                = "Hoàn tác";
+"menu.redo"                = "Làm lại";
+"menu.cut"                 = "Cắt";
+"menu.copy"                = "Sao chép";
+"menu.paste"               = "Dán";
+"menu.selectAll"           = "Chọn tất cả";
+"menu.helpMenu"            = "Trợ giúp";
+"menu.dictLanguage"        = "Tiếng mẹ đẻ";
+"menu.onboarding"          = "Trợ lý thiết lập…";
+
+/* ---- Thông báo ---- */
+"hud.needScreenRecording"  = "Cần quyền «Ghi màn hình».\nBật trong Cài đặt hệ thống rồi khởi động lại ứng dụng.";
+"hud.needAccessibility"    = "Tra phần đang chọn cần quyền «Trợ năng».\nBật trong Cài đặt hệ thống rồi khởi động lại ứng dụng.";
+"hud.captureFailed"        = "Không khởi động được việc chụp màn hình: %@";
+"hud.decodeFailed"         = "Không giải mã được ảnh chụp";
+"hud.noText"               = "Không nhận dạng được chữ";
+"hud.noSelection"          = "Chưa chọn gì";
+"hud.noDictionary"         = "Chưa cấu hình từ điển nào dùng được";
+"hud.badURL"               = "Liên kết từ điển không hợp lệ";
+"hud.copied"               = "Đã chép %d ký tự\n%@";
+"hud.copiedAmbiguous"      = "Đã chép %1$d ký tự\n%2$@\n\n⚠️ Chỗ này đã nối lại, nhưng viết tách ra cũng hợp lý:\n%3$@";
+"hud.andMore"              = " và %d chỗ nữa";
+"hud.noBarcode"            = "Không tìm thấy mã QR hay mã vạch";
+"hud.barcodeNotURL"        = "[%1$@] Không phải liên kết, đã chép nội dung:\n%2$@";
+"hud.barcodeOpened"        = "Đã mở %@";
+"hud.linkCopied"           = "Đã chép liên kết";
+"hud.configReloaded"       = "Đã nạp lại cấu hình";
+"hud.dataCleared"          = "Đã xoá dữ liệu duyệt web\nGiải phóng %@";
+"hud.clearOnQuitOn"        = "Dữ liệu duyệt web sẽ được xoá khi thoát";
+"hud.clearOnQuitOff"       = "Dữ liệu duyệt web sẽ được giữ lại khi thoát";
+"hud.loginItemOn"          = "Đã bật mở khi đăng nhập";
+"hud.loginItemOff"         = "Đã tắt mở khi đăng nhập";
+"hud.loginItemFailed"      = "Không đổi được thiết lập: %@";
+"hud.hotkeysUpdated"       = "Đã cập nhật phím tắt";
+"hud.hotkeysFailed"        = "Không đăng ký được các phím tắt sau:\n%@\nCó thể chúng đã bị ứng dụng khác chiếm.";
+
+/* ---- QR ---- */
+"qr.confirmTitle"          = "Mở liên kết này?";
+"qr.open"                  = "Mở";
+"qr.copyOnly"              = "Chỉ sao chép";
+"qr.cancel"                = "Huỷ";
+
+/* ---- Chẩn đoán ---- */
+"diag.title"               = "QuickDict — chẩn đoán";
+"diag.screenRecording"     = "Ghi màn hình: %@";
+"diag.accessibility"       = "Trợ năng: %@";
+"diag.granted"             = "đã cấp";
+"diag.deniedScreen"        = "chưa cấp (các thao tác chụp màn hình sẽ không chạy)";
+"diag.deniedAX"            = "chưa cấp (các thao tác với phần đang chọn sẽ không chạy)";
+"diag.autoDetect"          = "Tự động nhận dạng ngôn ngữ: %@";
+"diag.on"                  = "bật";
+"diag.off"                 = "tắt";
+"diag.shortcuts"           = "Phím tắt:";
+"diag.hintLanguages"       = "Gợi ý ngôn ngữ: %@";
+"diag.unsupported"         = "⚠️ Máy Mac này không hỗ trợ: %@";
+"diag.supportedAll"        = "Tất cả ngôn ngữ nhận dạng mà máy Mac này hỗ trợ:";
+"diag.configPath"          = "Tệp cấu hình: %@";
+"diag.ok"                  = "OK";
+"diag.openScreenSettings"  = "Mở cài đặt Ghi màn hình";
+"diag.openAXSettings"      = "Mở cài đặt Trợ năng";
+
+/* ---- Hành động ---- */
+"action.screenshot"        = "Ảnh chụp màn hình";
+"action.selection"         = "Phần đang chọn";
+"action.clipboard"         = "%@ → nối dòng, chép vào bảng nháp";
+"action.qrcode"            = "%@ → quét mã QR và mở liên kết";
+"action.lookupAuto"        = "%@ → tự động nhận dạng ngôn ngữ";
+"action.lookupFixed"       = "%1$@ → %2$@";
+"action.notSet"            = "chưa đặt";
+
+/* ---- Giới thiệu ---- */
+"about.title"              = "QuickDict";
+"about.body"               = "Lấy chữ → nhận dạng ngôn ngữ → mở đúng từ điển.\nChế độ ảnh chụp xử lý hình ảnh và PDF; chế độ chọn xử lý văn bản chọn được.\n\n%@\n\n⌘1…⌘9\tĐổi từ điển\n⌘L\tSửa từ (Enter để tra lại)\nesc\tĐóng cửa sổ\n\nHướng dẫn đầy đủ: thanh menu → Hướng dẫn sử dụng, hoặc nhấn ⌘?";
+
+/* ---- Cửa sổ kết quả ---- */
+"window.title"             = "QuickDict";
+"window.queryPlaceholder"  = "Chữ nhận dạng được (sửa được, Enter để tra)";
+"window.openInBrowser"     = "Mở bằng trình duyệt mặc định";
+"window.pin"               = "Ghim lên trên";
+"window.pinned"            = "Đã ghim — nhấn để bỏ ghim";
+"window.langUncertain"     = "Nhận dạng ngôn ngữ không chắc chắn (độ tin cậy %@). Dùng ⌘1…⌘9 để đổi thủ công.";
+"window.langCertain"       = "Ngôn ngữ nhận dạng được: %@";
+"window.external"          = " (mở bằng trình duyệt mặc định)";
+
+/* ---- Trình sửa phím tắt ---- */
+"keys.title"               = "Phím tắt";
+"keys.colShortcut"         = "Phím tắt";
+"keys.colSource"           = "Lấy chữ từ";
+"keys.colAction"           = "Hành động";
+"keys.colDictionary"       = "Từ điển";
+"keys.setKey"              = "Nhấn để đặt";
+"keys.recording"           = "Hãy nhấn tổ hợp phím…";
+"keys.sourceScreenshot"    = "Ảnh chụp màn hình";
+"keys.sourceSelection"     = "Phần đang chọn";
+"keys.actionLookup"        = "Tra từ";
+"keys.actionClipboard"     = "Vào bảng nháp";
+"keys.actionQR"            = "Quét mã QR";
+"keys.dictAuto"            = "Tự động nhận dạng";
+"keys.add"                 = "＋ Thêm";
+"keys.reset"               = "Khôi phục mặc định";
+"keys.cancel"              = "Huỷ";
+"keys.save"                = "Lưu";
+"keys.delete"              = "Xoá dòng này";
+"keys.hint"                = "Nhấn vào ô phím tắt, rồi nhấn tổ hợp phím bạn muốn. Cần ít nhất một phím bổ trợ.";
+"keys.saved"               = "Đã lưu và có hiệu lực";
+"keys.savedWithFailures"   = "Đã lưu, nhưng không đăng ký được các phím sau (có thể đã bị ứng dụng khác chiếm): %@";
+"keys.registerFailedTip"   = "Không đăng ký được tổ hợp này — có thể đã bị ứng dụng khác chiếm";
+"keys.needKey"             = "Có một dòng chưa đặt phím tắt. Hãy đặt hoặc xoá dòng đó.";
+"keys.duplicate"           = "%@ được dùng hai lần. Một tổ hợp chỉ ứng với một hành động.";
+"keys.newRowHint"          = "Dòng mới chưa có phím tắt — nhấn vào ô của nó để đặt";
+"keys.resetHint"           = "Đã khôi phục mặc định. Nhấn Lưu để áp dụng.";
+"keys.pressSave"           = "Nhấn Lưu để áp dụng";
+
+/* ---- Trợ lý thiết lập ---- */
+"onboard.windowTitle"      = "Chào mừng";
+"onboard.title"            = "QuickDict";
+"onboard.subtitle"         = "Lấy bất kỳ chữ tiếng Hàn nào trên màn hình và xem nghĩa ngay. Chỉ cần thiết lập hai việc.";
+"onboard.langTitle"        = "Tra nghĩa sang";
+"onboard.langNote"         = "Chọn theo ngôn ngữ hệ thống của bạn. Thay đổi cả bộ từ điển — đổi lại bất cứ lúc nào từ thanh menu.";
+"onboard.permTitle"        = "Quyền";
+"onboard.permNote"         = "Thiếu chúng thì ứng dụng không thấy được gì. Không có dữ liệu nào được gửi đi — mọi nhận dạng đều chạy trên máy Mac này.";
+"onboard.permScreenUse"    = "Để chụp vùng bạn khoanh";
+"onboard.permAXUse"        = "Để đọc chữ bạn chọn trong ứng dụng khác";
+"onboard.grant"            = "Cấp quyền…";
+"onboard.notGranted"       = "chưa cấp";
+"onboard.restartHint"      = "macOS chỉ áp dụng quyền mới cho tiến trình vừa khởi động — hãy khởi động lại.";
+"onboard.restart"          = "Khởi động lại";
+"onboard.quarantine"       = "macOS đánh dấu ứng dụng này là tải từ internet, điều đó chặn một số tính năng. Chạy lệnh dưới đây trong Terminal một lần.";
+"onboard.quarantineFix"    = "Chép lệnh";
+"onboard.quarantineCopied" = "Đã chép lệnh — dán vào Terminal rồi nhấn Return";
+"onboard.start"            = "Bắt đầu dùng";
+
+/* ---- Tên ngôn ngữ ---- */
+"lang.ko" = "tiếng Hàn";  "lang.ja" = "tiếng Nhật";  "lang.zh" = "tiếng Trung";
+"lang.en" = "tiếng Anh";  "lang.it" = "tiếng Ý";     "lang.fr" = "tiếng Pháp";
+"lang.de" = "tiếng Đức";  "lang.es" = "tiếng Tây Ban Nha"; "lang.pt" = "tiếng Bồ Đào Nha";
+"lang.ru" = "tiếng Nga";  "lang.nl" = "tiếng Hà Lan"; "lang.sv" = "tiếng Thuỵ Điển";
+"lang.da" = "tiếng Đan Mạch"; "lang.nb" = "tiếng Na Uy"; "lang.fi" = "tiếng Phần Lan";
+"lang.pl" = "tiếng Ba Lan"; "lang.cs" = "tiếng Séc"; "lang.tr" = "tiếng Thổ Nhĩ Kỳ";
+"lang.vi" = "tiếng Việt"; "lang.id" = "tiếng Indonesia"; "lang.ms" = "tiếng Mã Lai";
+"lang.ro" = "tiếng Romania"; "lang.hu" = "tiếng Hungary"; "lang.ca" = "tiếng Catalan";
+"lang.th" = "tiếng Thái"; "lang.ar" = "tiếng Ả Rập"; "lang.uk" = "tiếng Ukraina";
+
+/* ---- Phím ---- */
+
+/* ---- Hướng dẫn sử dụng ---- */
+"help.lead"        = "Chụp hoặc chọn → nhận dạng ngôn ngữ → mở đúng từ điển. Mọi nhận dạng đều chạy trên máy Mac của bạn, không cần mạng.";
+"help.foot"        = "Trang này được tạo từ cấu hình hiện tại — sửa cấu hình, nhấn «Nạp lại cấu hình», trang sẽ đổi theo.";
+"help.colKey"      = "Phím";
+"help.colWhat"     = "Làm gì";
+"help.colNote"     = "Ghi chú";
+"help.colName"     = "Tên";
+"help.colWhen"     = "Tự mở khi gặp";
+"help.colPermission" = "Quyền";
+"help.colUsedFor"  = "Dùng để";
+"help.colIfDenied" = "Nếu không cấp";
+"help.colWant"     = "Muốn đổi gì";
+"help.colWhere"    = "Đổi ở đâu";
+"help.colSymptom"  = "Hiện tượng";
+"help.colCause"    = "Nguyên nhân";
+
+"help.h.shortcuts"    = "Phím tắt";
+"help.h.screenshot"   = "Ảnh chụp màn hình — kéo để khoanh vùng (esc để huỷ)";
+"help.h.selection"    = "Phần đang chọn — đọc chữ bạn đang chọn, không cần kéo";
+"help.h.window"       = "Trong cửa sổ kết quả";
+"help.h.dictionaries" = "Từ điển";
+"help.h.permissions"  = "Hai quyền";
+"help.h.settings"     = "Thiết lập";
+"help.h.trouble"      = "Khắc phục sự cố";
+
+"help.tip.sources"    = "Chế độ ảnh chụp xử lý chữ <b>không chọn được</b> — hình ảnh, PDF quét, phụ đề video. Chế độ chọn xử lý chữ chọn được: không có lỗi nhận dạng và không phải kéo chuột.<br>Đổi phím tắt: thanh menu → <b>Phím tắt</b>, nhấn vào ô rồi nhấn tổ hợp mới.";
+"help.tip.level"      = "Nếu không ghim, cửa sổ chỉ nổi lên trên đúng lúc hiện ra — nhấn vào cửa sổ khác là nó lùi xuống, không che tầm nhìn.";
+"help.tip.detection"  = "Nhận dạng ngôn ngữ: hangul → tiếng Hàn, kana → tiếng Nhật, chữ Hán → tiếng Trung — một ký tự là đủ. Chỉ chữ Latinh mới cần đoán bằng thống kê; khi không chắc, nhãn ngôn ngữ ở góc trên bên trái chuyển sang <b class=warn>màu cam kèm dấu hỏi</b>, và bạn đổi từ điển bằng <kbd>⌘1</kbd>…<kbd>⌘9</kbd>.";
+"help.tip.diagnostics" = "Thanh menu → «Quyền và ngôn ngữ» cho biết trạng thái hiện tại bất cứ lúc nào.";
+"help.tip.privacy"    = "Dữ liệu duyệt web của cửa sổ tích hợp được xoá khi thoát (hiện tại: <b>%@</b>). Ứng dụng không bao giờ lưu lịch sử tra cứu, nhưng các trang từ điển có lưu «tra cứu gần đây» trong bộ nhớ trình duyệt — vì vậy mới có thiết lập này.";
+
+"help.win.switch"     = "Đổi từ điển";
+"help.win.edit"       = "Sửa từ";
+"help.win.editNote"   = "Sửa ký tự nhận dạng sai rồi nhấn Enter để tra lại";
+"help.win.close"      = "Đóng cửa sổ";
+"help.win.closeNote"  = "Chỉ ẩn đi, nên lần tra sau mở nhanh hơn";
+"help.win.pin"        = "Ghim lên trên";
+"help.win.pinNote"    = "Để chép lại chữ trong khi từ điển vẫn hiện";
+"help.win.browser"    = "Mở bằng trình duyệt";
+"help.win.browserNote" = "Gửi truy vấn hiện tại sang trình duyệt mặc định";
+
+"help.dict.manual"    = "không bao giờ tự mở — đổi thủ công";
+"help.dict.fallback"  = "tất cả ngôn ngữ còn lại (dự phòng)";
+"help.dict.external"  = "mở bằng trình duyệt ↗";
+
+"help.perm.intro"       = "Cả hai đều nằm trong <b>Cài đặt hệ thống → Quyền riêng tư và bảo mật</b>. <b class=warn>Sau khi cấp quyền phải khởi động lại ứng dụng</b> — macOS chỉ áp dụng quyền cho tiến trình mới.";
+"help.perm.screen"      = "Ghi màn hình";
+"help.perm.screenUse"   = "Kéo khoanh vùng để chụp";
+"help.perm.screenDenied" = "Mọi phím tắt chụp màn hình đều không chạy";
+"help.perm.ax"          = "Trợ năng";
+"help.perm.axUse"       = "Đọc chữ đang chọn trong ứng dụng khác";
+"help.perm.axDenied"    = "Mọi phím tắt với phần đang chọn đều không chạy";
+
+"help.cfg.hotkeys"    = "<b>Phím tắt có trình sửa riêng</b>: thanh menu → «Phím tắt». Nhấn vào ô để bắt đầu ghi, rồi nhấn tổ hợp bạn muốn (ít nhất một phím bổ trợ; esc để huỷ). Bạn cũng đổi được nguồn lấy chữ, hành động và từ điển đích, thêm hoặc xoá dòng. Khi lưu, phím tắt được đăng ký lại ngay, và tổ hợp đã bị ứng dụng khác chiếm sẽ hiện màu đỏ.";
+"help.cfg.file"       = "Mọi thứ còn lại nằm trong tệp cấu hình. Sửa xong nhấn «Nạp lại cấu hình», không cần khởi động lại.";
+"help.cfg.targetLang" = "Tra nghĩa sang ngôn ngữ khác";
+"help.cfg.targetLangHow" = "Đổi tên miền phụ của Naver (<code>en</code> / <code>vi</code> / <code>ru</code>) và mã ngôn ngữ đích của trình dịch. Mọi cặp ngôn ngữ của Naver đều dùng chung đường dẫn.";
+"help.cfg.addDict"    = "Thêm một từ điển";
+"help.cfg.addDictHow" = "Thêm một mục vào <code>dictionaries</code>; <code>{q}</code> là chỗ đặt từ cần tra";
+"help.cfg.aiPrompt"   = "Đổi cách hỏi AI";
+"help.cfg.aiPromptHow" = "Trường <code>suffix</code> của mục AI — thêm «mức độ kính ngữ», «chia động từ», tuỳ bạn";
+"help.cfg.needLogin"  = "Trang web cần tài khoản của bạn";
+"help.cfg.needLoginHow" = "Thêm <code>\"external\": true</code> — trang sẽ mở bằng trình duyệt mặc định";
+"help.cfg.alwaysTop"  = "Luôn ghim cửa sổ lên trên";
+"help.cfg.qrConfirm"  = "Xác nhận trước khi mở liên kết QR";
+
+"help.act.clipboard"        = "Thành văn bản, vào bảng nháp";
+"help.act.clipboardNote"    = "Nối lại từ bị ngắt dòng; đánh dấu những chỗ viết tách ra cũng hợp lý";
+"help.act.qr"               = "Quét mã QR";
+"help.act.qrNote"           = "Liên kết thì mở bằng trình duyệt mặc định, còn lại thì sao chép";
+"help.act.lookupAuto"       = "Tra từ (tự nhận dạng ngôn ngữ)";
+"help.act.lookupAutoNote"   = "Chọn từ điển theo ngôn ngữ nhận dạng được";
+"help.act.lookupFixedNote"  = "Bỏ qua bước nhận dạng, dùng thẳng từ điển này";
+
+"help.tr.noResponse"    = "Nhấn phím tắt hoàn toàn không có phản ứng";
+"help.tr.noResponseWhy" = "Tổ hợp đó đã bị ứng dụng khác chiếm (Hammerspoon, Raycast…). Chọn tổ hợp khác, hoặc thoát ứng dụng đó.";
+"help.tr.nothingAfterCapture"    = "Khoanh vùng xong nhưng không có gì xảy ra";
+"help.tr.nothingAfterCaptureWhy" = "Chưa cấp quyền Ghi màn hình, hoặc đã cấp nhưng chưa khởi động lại ứng dụng";
+"help.tr.noSelection"    = "Tra phần đang chọn báo «Chưa chọn gì»";
+"help.tr.noSelectionWhy" = "Chưa cấp quyền Trợ năng; hoặc ứng dụng đó không công bố vùng chọn (một số ứng dụng Electron)";
+"help.tr.permsLost"      = "Quyền đột nhiên mất tác dụng sau khi biên dịch lại";
+"help.tr.permsLostWhy"   = "Bình thường. Biên dịch lại làm đổi chữ ký mã — hãy cấp lại trong Cài đặt hệ thống.";
+"help.tr.badJoin"        = "Một từ tiếng Hàn bị nối sai";
+"help.tr.badJoinWhy"     = "Việc nối từ có tra từ điển tiếng Hàn của hệ thống — hãy chắc rằng nó được bật trong ứng dụng Từ điển. Một số trường hợp vốn dĩ nhập nhằng; hãy xem lại trước khi dán.";
+"help.tr.langMissing"    = "Một ngôn ngữ nào đó không nhận dạng được";
+"help.tr.langMissingWhy" = "«Quyền và ngôn ngữ» liệt kê mọi ngôn ngữ nhận dạng mà máy Mac này hỗ trợ";
+
+/* ---- Ngôn ngữ cần tra ---- */
+"menu.sourceLanguages" = "Ngoại ngữ cần tra";
+"hud.sourceAdded"      = "Đã thêm %@";
+"hud.sourceRemoved"    = "Đã bỏ %@";
+"menu.localDictionaries" = "Từ điển cài trên máy";
+"hud.localAdded"   = "Đã thêm %@ — ghi \"languages\" cho nó trong tệp cấu hình để tự mở";
+"hud.localRemoved" = "Đã bỏ %@";
+"menu.dictionaries"      = "Từ điển…";
+"menu.dictionaries.tip"  = "Chọn ngôn ngữ nào mở trang nào, hoặc thêm trang của bạn";
+"dict.title"             = "Từ điển";
+"dict.colName"           = "Tên";
+"dict.colLanguages"      = "Mở cho";
+"dict.add"               = "＋ Thêm";
+"dict.reset"             = "Khôi phục mặc định";
+"dict.hint" = "Nhấn “+ Thêm” để thêm từ điển — chọn từ điển thông dụng, một tệp trên máy, hoặc ứng dụng từ điển đã cài. “Ngôn ngữ” quyết định khi nào nó tự mở.";
+"dict.needName"          = "Có một dòng chưa có tên";
+"hud.dictionariesSaved"  = "Đã lưu — %d từ điển";
+
+/* 打开查词窗口 */
+"menu.openWindow" = "Mở cửa sổ tra cứu…";
+"menu.openWindow.tip" = "Không cần chụp, tự gõ từ. Mọi từ điển đã cấu hình đều dùng được, kể cả tệp cục bộ.";
+"keys.sourceManual" = "Tự gõ";
+"help.h.manual" = "Tự gõ";
+"help.act.manual" = "Mở cửa sổ tra cứu";
+"help.act.manualNote" = "Mở trống với con trỏ ở ô nhập. Return để tra, ⌘1…⌘9 để đổi từ điển.";
+"action.manual" = "Mở cửa sổ tra cứu và tự gõ";
+"window.queryPlaceholderManual" = "Nhập từ cần tra rồi nhấn Return";
+"window.blank.title" = "Nhập từ cần tra, rồi Return";
+"window.blank.switch" = "⌘1…⌘9 đổi từ điển · la bàn mở trong trình duyệt";
+"window.blank.local" = "Từ điển cục bộ và ghi chú của bạn cũng tra được ở đây";
+
+/* 词典设置：添加/更改表单 */
+"dict.colTarget" = "Dẫn tới đâu";
+"dict.change" = "Đổi…";
+"dict.sum.web" = "Web · %@";
+"dict.sum.file" = "Tệp cục bộ · %@";
+"dict.sum.app" = "Ứng dụng cục bộ · %@";
+"dict.langManual" = "Chỉ chuyển thủ công";
+"dict.langFallback" = "Mặc định (mọi thứ còn lại)";
+"dict.addedHint" = "Đã thêm “%@”. Nhấn Lưu để áp dụng.";
+"sheet.addTitle" = "Thêm từ điển";
+"sheet.editTitle" = "Đổi từ điển";
+"sheet.kind" = "Từ điển này nằm ở đâu";
+"sheet.kindPreset" = "Từ điển thông dụng";
+"sheet.kindFile" = "Tệp cục bộ";
+"sheet.kindApp" = "Ứng dụng từ điển";
+"sheet.kindCustom" = "Tự nhập địa chỉ";
+"sheet.chooseFile" = "Chọn tệp…";
+"sheet.noFile" = "Chưa chọn";
+"sheet.noApps" = "Chưa cài ứng dụng từ điển";
+"sheet.filePrompt" = "Chọn ghi chú Markdown (.md) — nhiều tệp hoặc cả thư mục đều được";
+"sheet.customHint" = "Viết {q} vào chỗ đặt từ cần tra. Ví dụ: https://example.com/search?q={q}";
+"sheet.name" = "Tên hiển thị";
+"sheet.namePlaceholder" = "Tên hiện trên nút";
+"sheet.add" = "Thêm";
+"sheet.errPreset" = "Hãy chọn một từ điển";
+"sheet.errFile" = "Nhấn “Chọn tệp…” và chọn một tệp";
+"sheet.errApp" = "Hãy chọn ứng dụng từ điển";
+"sheet.errQ" = "Địa chỉ cần có {q} để đánh dấu chỗ đặt từ";
+"sheet.errURL" = "Địa chỉ này không hợp lệ";
+"sheet.errName" = "Hãy đặt tên";
+
+/* Markdown 笔记词典 */
+"notes.searchPlaceholder" = "Nhập từ hoặc dạng ngữ pháp, ví dụ 먹었거든요";
+"notes.count" = "mục · nhập từ hoặc dạng ngữ pháp";
+"notes.ready" = "Dán thẳng từ đã chia vào —";
+"notes.example" = "먹었거든요 sẽ tìm ra -거든(요)";
+"notes.noMatch" = "Không tìm thấy";
+"notes.noMatchTip" = "Thử chỉ nhập phần đuôi, hoặc tìm theo nghĩa tiếng mẹ đẻ";
+"notes.topOnly" = "kết quả (chỉ hiện vài mục đầu)";
+"notes.more" = "Còn";
+"notes.errTitle" = "Không tìm thấy mục nào";
+"notes.errHint" = "Tiêu đề mục phải theo một trong hai dạng sau:";
+"notes.manage" = "Tài liệu";
+"notes.addSource" = "Thêm tài liệu";
+"notes.removeSource" = "Bỏ tài liệu này";
+"notes.noSources" = "Chưa có tài liệu";
+"notes.inText" = "trong nội dung";
+"help.win.zoom" = "Cỡ chữ";
+"help.win.zoomNote" = "Chụm hai ngón cũng được; mức phóng được ghi nhớ. ⌘0 về 100%";
+"alert.ok" = "OK";
+"sheet.filesPicked" = "Đã chọn %ld mục";
+"dict.sum.files" = "Tài liệu cục bộ · %ld tệp";
+"notes.errSaw" = "Tiêu đề tìm thấy:";
+"notes.errNoHeadings" = "Không có dòng nào bắt đầu bằng # trong tệp";
+
+/* 本地资料清单 */
+"dict.addNotes" = "+ Tài liệu cục bộ";
+"dict.addNotes.tip" = "Tạo từ điển từ ghi chú Markdown của bạn";
+"notes.sheetTitle" = "Tài liệu cục bộ";
+"notes.sheetLead" = "Kéo tệp .md hoặc thư mục vào vùng bên dưới, hoặc dùng nút chọn. Nhiều tệp cũng thành một từ điển.";
+"notes.dropHere" = "Thả tệp hoặc thư mục vào đây";
+"notes.pickFiles" = "Chọn tệp…";
+"notes.pickFolder" = "Chọn thư mục…";
+"notes.pickFolderPrompt" = "Chọn thư mục chứa ghi chú .md";
+"notes.kindFile" = "Tệp";
+"notes.kindFolder" = "Thư mục";
+"notes.summary" = "%ld nguồn, %ld tệp .md";
+"notes.summaryNone" = "Không có tệp .md trong các đường dẫn này";
+"notes.errEmpty" = "Chưa thêm tài liệu nào";
+"notes.defaultName" = "Ghi chú của tôi";
+"notes.usingCopy" = "bản sao";
+"window.speak" = "Đọc từ hiện tại. Nhấn lần nữa để dừng";
+"help.win.speak" = "Đọc to";
+"help.win.speakNote" = "Đọc từ ngoại tuyến bằng giọng của ngôn ngữ đó";
+
+/* 全局朗读 */
+"keys.actionSpeak" = "Đọc to";
+"action.speak" = "Đọc to (%@)";
+"help.act.speak" = "Đọc phần đang chọn";
+"help.act.speakNote" = "Đọc phần chọn; không có thì đọc lại đoạn trước, đang đọc thì dừng. Tốc độ chỉnh bằng speechRate";
+"hud.nothingToSpeak" = "Không có gì để đọc";
