@@ -30,6 +30,19 @@ lipo -create \
 echo "    $(lipo -archs "$APP/Contents/MacOS/OCRDict")"
 cp Resources/Info.plist "$APP/Contents/Info.plist"
 
+# 离线词库。仓库里存压缩包（18MB），解开是 49MB —— 压着进 git，摊开进 App。
+# 解压一次要几秒，所以已经解开且比压缩包新就跳过。
+if [ -f Resources/krdict-kozh.sqlite.gz ]; then
+    DICT="$APP/Contents/Resources/krdict-kozh.sqlite"
+    CACHE="build/krdict-kozh.sqlite"
+    if [ ! -f "$CACHE" ] || [ Resources/krdict-kozh.sqlite.gz -nt "$CACHE" ]; then
+        gunzip -c Resources/krdict-kozh.sqlite.gz > "$CACHE"
+    fi
+    cp "$CACHE" "$DICT"
+    cp Resources/KRDICT-NOTICE.md "$APP/Contents/Resources/"
+    echo "    离线词库 $(du -h "$DICT" | cut -f1)"
+fi
+
 echo "==> 拷入本地化资源"
 for lproj in Resources/*.lproj; do
     [ -d "$lproj" ] && cp -R "$lproj" "$APP/Contents/Resources/"

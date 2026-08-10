@@ -98,6 +98,19 @@ nên nó không thể lạc hậu.
 
 ---
 
+## Kèm từ điển ngoại tuyến
+
+Ứng dụng mang theo từ điển Hàn–Trung của Viện Quốc ngữ Hàn Quốc (56.555 mục, CC BY-SA 2.0 KR).
+Đây là **bản dự phòng**: khi có mạng vẫn dùng Naver, cơ sở dữ liệu cục bộ **chỉ thay thế khi mất mạng**.
+
+Từ điển chỉ chứa dạng nguyên thể, còn thứ OCR nhận được luôn là dạng chia (갔어요, 몰랐어), nên trước
+khi tra, dạng gốc được khôi phục từ cấu trúc âm tiết Hangul (bất quy tắc ㅂ/ㄷ/ㅅ/ㄹ/르/ㅎ và rút gọn
+nguyên âm, 30 bài kiểm thử hồi quy).
+
+> Giấy phép và các thay đổi: [KRDICT-NOTICE.md](Resources/KRDICT-NOTICE.md).
+
+---
+
 ## Cài đặt
 
 Cần **macOS 13 trở lên**. Bản nhị phân đa kiến trúc — chạy trên cả Apple Silicon và Intel.

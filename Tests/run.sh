@@ -34,6 +34,26 @@ while IFS=$'\t' read -r image expected; do
     fi
 done < Tests/expected.tsv
 
+echo "── korean lemmatisation"
+# 本地词库查的是词典形，而 OCR 到的永远是变形后的词。这一段固化「还原」的结果 ——
+# 库里 5.6 万词条一个变形都不收，没有这一步整个词库查不动。
+# 用的是打包进 App 的那份（build.sh 会从 Resources/*.gz 解出来）。
+KRDICT="${KRDICT:-$(dirname "$BIN")/../Resources/krdict-kozh.sqlite}"
+if [ -f "$KRDICT" ]; then
+    while IFS=$'\t' read -r word want; do
+        [ -z "$word" ] && continue
+        got=$("$BIN" --lemma "$KRDICT" "$word" 2>/dev/null | tr -d '*')
+        if [[ " $got " == *" $want "* ]]; then
+            pass=$((pass + 1))
+        else
+            fail=$((fail + 1))
+            echo "  FAIL $word → $got (want $want)"
+        fi
+    done < Tests/lemma.tsv
+else
+    echo "  skipped — no database at $KRDICT"
+fi
+
 echo "── notes conversion"
 # 笔记转换管线：标题识别（编号/无编号两种风格）、目录跳过、章节剔除、
 # 搜索键生成、谚文活用推导。当初和 Python 版逐条比对过，这里把那次比对固化下来。

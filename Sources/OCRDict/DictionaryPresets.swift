@@ -80,6 +80,18 @@ enum DictionaryPresets {
     static let selectableSources: [String] =
         ["ko", "en", "it", "ja", "zh", "ru", "vi", "fr", "de", "es"]
 
+    /// 词典生成函数里 `t` 是局部变量（目标语言），会遮住取文案的全局 `t()`，
+    /// 所以名字在这一层取好再传进去。
+    static var offlineName: String { t("dict.offlineName") }
+
+    /// App 里带的那份离线词库。没带就返回 nil —— 自己编译时可以不放，功能会安静地少一条。
+    static var bundledDatabase: URL? {
+        guard let url = Bundle.main.resourceURL?
+            .appendingPathComponent("krdict-kozh.sqlite"),
+              FileManager.default.fileExists(atPath: url.path) else { return nil }
+        return url
+    }
+
     static func target(for code: String) -> Target {
         targets.first { $0.code == code } ?? targets[0]
     }
@@ -115,6 +127,15 @@ enum DictionaryPresets {
                                   suffix: nil, external: nil))
             sites.append(DictSite(id: "papago", name: "Papago", languages: [],
                                   url: "https://papago.naver.com/?sk=ko&tk=\(t.translate)&st={q}",
+                                  suffix: nil, external: nil))
+        }
+
+        // ── 打包在 App 里的离线词库。languages 留空 = 不抢自动路由，
+        //    只在**断网**时顶上（见 DictRouter.index(for:in:online:)），或手动切。
+        //    联网时 Naver 更全（叠了商业授权词典），没理由抢它的位置。
+        if sources.contains("ko"), bundledDatabase != nil {
+            sites.append(DictSite(id: "krdict", name: offlineName, languages: [],
+                                  url: "file://BUNDLE/krdict-kozh.sqlite?q={q}",
                                   suffix: nil, external: nil))
         }
 
@@ -156,7 +177,8 @@ enum DictionaryPresets {
 
     /// 预设占用的词典 id。换设置时只有这些被替换，其余视为用户自己加的，原样保留。
     static var allPresetDictionaryIDs: Set<String> {
-        var ids: Set<String> = ["naver", "naverko", "papago", "gtrans", "google", "googleai"]
+        var ids: Set<String> = ["naver", "naverko", "papago", "gtrans", "google", "googleai",
+                                "krdict"]
         for s in selectableSources { ids.insert("glosbe-\(s)") }
         return ids
     }

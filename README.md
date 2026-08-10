@@ -123,6 +123,48 @@ no lookup history, and the embedded browser's cookies and localStorage are wiped
 
 ---
 
+## Works with no network
+
+The app ships with an **offline Korean–Chinese dictionary**. It is there after install,
+with nothing to configure: 56,555 entries, 76,833 senses (97.8% with Chinese glosses),
+291,039 examples — the National Institute of Korean Language's Basic Korean Dictionary,
+CC BY-SA 2.0 KR.
+
+**It is the fallback, not the default.** Online you still get Naver, which layers licensed
+dictionaries on top and covers far more specialist vocabulary. The local database takes over
+only when the network is gone — automatically, with nothing to switch. `⌘2` picks it by hand.
+
+Reverse lookup works too: search a Chinese word and get the Korean ones.
+
+### The part that isn't just "ship a database"
+
+The database stores **dictionary forms** — `가다`, `먹다`, `모르다`. What you OCR or select is
+always inflected, and `갔어요`, `했습니다`, `몰랐어` return *nothing*. The official inflection
+index gives only three or four representative forms per word.
+
+So lookups restore the stem first. Not from a table of endings — those are never complete, and
+a new ending means a silent miss. Instead every prefix of the query is run through Hangul
+syllable arithmetic to derive the dictionary forms it could have come from, and the database
+decides which of them is real:
+
+```
+갔어요  drop the past-tense ㅆ    → 가다
+추워요  워 is the ending; add ㅂ  → 춥다
+몰랐어  ㄹ becomes 르             → 모르다
+예뻐요  ㅓ restores to ㅡ         → 예쁘다
+```
+
+ㅂ / ㄷ / ㅅ / ㄹ / 르 / ㅎ irregulars and vowel contraction are covered, with **30 regression
+tests over real inflected forms**. Ambiguity is not resolved by guessing: `보고` is both the noun
+"report" and a connective form of `보다`, so both are shown.
+
+Click a synonym on the page to look it up; click 🔊 to hear it. Nothing leaves the machine.
+
+> See [KRDICT-NOTICE.md](Resources/KRDICT-NOTICE.md) for the data's licence and the changes made
+> to it. That data is CC BY-SA and **not** covered by this project's MIT licence.
+
+---
+
 ## Install
 
 Requires **macOS 13+**. Universal binary — Apple Silicon and Intel.

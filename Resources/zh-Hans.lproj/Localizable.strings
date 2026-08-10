@@ -368,3 +368,11 @@
 "keys.actionSlower" = "朗读减速";
 "hud.speechRate" = "语速 %ld%%";
 "help.act.rateNote" = "一档 10%%，范围 50–200%%。正在读时下一段起生效";
+"krdict.offline" = "离线本地词库";
+"krdict.noHit" = "「%@」查不到";
+"krdict.tryThese" = "以它开头的词：";
+"krdict.restored" = "由「%@」还原为「%@」";
+"krdict.credit" = "数据：国立国语院《韩国语基础词典》 CC BY-SA 2.0 KR";
+"krdict.cantOpen" = "词库文件打不开";
+"dict.sum.db" = "本地词库 · %@";
+"dict.offlineName" = "离线词库";

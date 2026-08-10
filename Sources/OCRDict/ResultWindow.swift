@@ -369,6 +369,14 @@ final class ResultWindowController: NSObject, NSWindowDelegate, NSTextFieldDeleg
         siteSelector.selectedSegment = index
         webView.pageZoom = config.windowZoom
         if url.isFileURL {
+            // 本地 SQLite 词库：每次查询现场出页面（几万词条不可能整个塞进 HTML）
+            if site.isDatabase {
+                let source = URL(fileURLWithPath: site.localPath ?? url.path)
+                if let page = KrDict.page(database: source, query: query, name: site.name) {
+                    webView.loadFileURL(page, allowingReadAccessTo: page.deletingLastPathComponent())
+                }
+                return
+            }
             // 本地资料（自己整理的语法表之类）。指向 .md 的话先转成可查的 HTML。
             let resolved = NotesCache.resolve(url, site: site)
             // file:// 走 load(URLRequest:) 会被 WebKit 拒掉，必须用 loadFileURL 并显式授权可读目录。
@@ -471,6 +479,14 @@ extension ResultWindowController: WKScriptMessageHandler {
         switch action {
         case "add":
             addNoteSource(to: site)
+        case "search":
+            // 词库页面上点了一个词（近义词、反义词、提示里的词）：换成它再查一次
+            guard let text = body["text"] as? String, !text.isEmpty else { return }
+            queryField.stringValue = text
+            load(index: currentIndex)
+        case "speak":
+            guard let text = body["text"] as? String, !text.isEmpty else { return }
+            Speech.shared.speak(text, config: config)
         case "remove":
             guard let path = body["path"] as? String, !path.isEmpty else { return }
             // 清单为空时 url 里那个路径还在起作用，移除前先把它落实成显式清单

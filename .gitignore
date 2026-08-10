@@ -16,3 +16,6 @@ releases/
 .build-arm64/
 .build-x86/
 dist/
+
+# 离线词库的解压产物（仓库里只存 .gz）
+Resources/krdict-kozh.sqlite

@@ -370,3 +370,11 @@
 "keys.actionSlower" = "読み上げ減速";
 "hud.speechRate" = "速度 %ld%%";
 "help.act.rateNote" = "1 段階 10%%、範囲 50–200%%。読み上げ中は次のセグメントから反映";
+"krdict.offline" = "オフライン辞書データベース";
+"krdict.noHit" = "「%@」は見つかりません";
+"krdict.tryThese" = "これで始まる語：";
+"krdict.restored" = "「%@」→「%@」に復元";
+"krdict.credit" = "データ：国立国語院『韓国語基礎辞典』CC BY-SA 2.0 KR";
+"krdict.cantOpen" = "データベースを開けません";
+"dict.sum.db" = "ローカル辞書 · %@";
+"dict.offlineName" = "オフライン辞書";

@@ -85,6 +85,20 @@ enum DictRouter {
         return 0
     }
 
+    /// 断网时的落点。
+    ///
+    /// 在线词典这时候一定是白屏，本地词库反而是唯一能出结果的 —— 所以自动顶上，
+    /// 不用用户自己反应过来去切。联网状态下这个函数什么都不改。
+    static func index(for language: String, in sites: [DictSite], online: Bool) -> Int {
+        let normal = index(for: language, in: sites)
+        guard !online, sites.indices.contains(normal) else { return normal }
+        // 本来就是本地的，不用换
+        if sites[normal].isDatabase || sites[normal].isNotes { return normal }
+        if let local = sites.firstIndex(where: { $0.isDatabase }) { return local }
+        if let local = sites.firstIndex(where: { $0.isNotes }) { return local }
+        return normal
+    }
+
     static func url(site: DictSite, query: String) -> URL? {
         let raw = query + (site.suffix ?? "")
         var allowed = CharacterSet.alphanumerics

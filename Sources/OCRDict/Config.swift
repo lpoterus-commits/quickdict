@@ -18,8 +18,26 @@ struct DictSite: Codable {
     /// 而且**增删在结果页面里就能做** —— 不必为每份资料单独配一条词典、多占一个标签。
     var notes: [String]?
 
+    /// 指向的本地文件（清单优先，否则取 url 里的路径）。
+    ///
+    /// 打包在 App 里的词库写成 `file://BUNDLE/…`，读的时候才展开成真实路径 ——
+    /// 配置是持久化的，直接存绝对路径的话，App 一挪窝（build/ → /Applications）就断。
+    var localPath: String? {
+        if let first = notes?.first { return first }
+        guard let parsed = URL(string: url), parsed.isFileURL else { return nil }
+        guard parsed.host == "BUNDLE" else { return parsed.path }
+        let name = parsed.path.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+        return Bundle.main.resourceURL?.appendingPathComponent(name).path
+    }
+
+    /// 是不是 SQLite 词库。走的是逐次查询 + 现场渲染，和笔记那条静态转换的路不同
+    var isDatabase: Bool {
+        guard let path = localPath else { return false }
+        return KrDict.isDatabase(URL(fileURLWithPath: path))
+    }
+
     /// 是不是笔记词典
-    var isNotes: Bool { !(notes ?? []).isEmpty || url.hasPrefix("file://") }
+    var isNotes: Bool { (!(notes ?? []).isEmpty || url.hasPrefix("file://")) && !isDatabase }
 }
 
 /// 取词的输入源

@@ -89,6 +89,36 @@ if CommandLine.arguments.count >= 3, CommandLine.arguments[1] == "--notes" {
     exit(0)
 }
 
+// 调试入口：--route <语言> <on|off> 打印这个语言在联网/断网下会落到哪本词典
+if CommandLine.arguments.count >= 4, CommandLine.arguments[1] == "--route" {
+    let config = ConfigStore.load()
+    let index = DictRouter.index(for: CommandLine.arguments[2], in: config.dictionaries,
+                                 online: CommandLine.arguments[3] == "on")
+    print(config.dictionaries[index].name)
+    exit(0)
+}
+
+// 调试入口：--lemma <词库> <词> 只跑变形还原，输出查到的词典形
+if CommandLine.arguments.count >= 4, CommandLine.arguments[1] == "--lemma" {
+    guard let db = KrDict.debugOpen(CommandLine.arguments[2]) else {
+        print("打不开词库"); exit(1)
+    }
+    let found = KrDict.lemmatize(db, CommandLine.arguments[3])
+    print(found.map { $0.word + ($0.restored ? "*" : "") }.joined(separator: " "))
+    exit(0)
+}
+
+// 调试入口：--krdict <词库> <词> 出整页 HTML，验证渲染
+if CommandLine.arguments.count >= 4, CommandLine.arguments[1] == "--krdict" {
+    guard let page = KrDict.page(database: URL(fileURLWithPath: CommandLine.arguments[2]),
+                                 query: CommandLine.arguments[3], name: "词库"),
+          let html = try? String(contentsOf: page, encoding: .utf8) else {
+        print("渲染失败"); exit(1)
+    }
+    print(html)
+    exit(0)
+}
+
 // 调试入口：--speak <文本> 直接跑朗读引擎，验证清洗、分节、语种、发声
 if CommandLine.arguments.count >= 3,
    CommandLine.arguments[1] == "--speak" || CommandLine.arguments[1] == "--speak-dry" {

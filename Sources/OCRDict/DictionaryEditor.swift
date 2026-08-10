@@ -187,6 +187,9 @@ final class DictionaryEditorController: NSObject, NSWindowDelegate {
 
     /// 「网页 · zh.dict.naver.com」这样的一句话，代替裸网址
     static func summary(_ site: DictSite) -> String {
+        if site.isDatabase, let path = site.localPath {
+            return t("dict.sum.db", URL(fileURLWithPath: path).lastPathComponent)
+        }
         if let notes = site.notes, notes.count > 1 {
             return t("dict.sum.files", notes.count)
         }

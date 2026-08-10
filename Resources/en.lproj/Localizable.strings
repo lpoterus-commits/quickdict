@@ -368,3 +368,11 @@
 "keys.actionSlower" = "Speak slower";
 "hud.speechRate" = "Rate %ld%%";
 "help.act.rateNote" = "10%% per step, 50–200%%. Takes effect from the next segment while speaking";
+"krdict.offline" = "offline local database";
+"krdict.noHit" = "No entry for “%@”";
+"krdict.tryThese" = "Words starting with it:";
+"krdict.restored" = "“%@” restored to “%@”";
+"krdict.credit" = "Data: National Institute of Korean Language, Basic Korean Dictionary (CC BY-SA 2.0 KR)";
+"krdict.cantOpen" = "Cannot open the database file";
+"dict.sum.db" = "Local database · %@";
+"dict.offlineName" = "Offline dictionary";

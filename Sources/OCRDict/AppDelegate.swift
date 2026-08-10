@@ -17,6 +17,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // 顺序要紧：load() 会把默认配置写出去，写完就不再算首次启动了
         let firstRun = OnboardingController.isFirstRun
         config = ConfigStore.load()
+        Reachability.start()
         applyKoreanTables()
         setupMainMenu()
         setupStatusItem()
@@ -310,7 +311,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
         let route = LanguageRouter.route(text, config: cfg)
         let index = forced.flatMap { id in cfg.dictionaries.firstIndex { $0.id == id } }
-            ?? DictRouter.index(for: route.language, in: cfg.dictionaries)
+            ?? DictRouter.index(for: route.language, in: cfg.dictionaries, online: Reachability.isOnline)
 
         guard cfg.dictionaries.indices.contains(index) else {
             HUD.shared.show(t("hud.noDictionary"))
@@ -652,6 +653,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     @objc private func reloadConfig() {
         config = ConfigStore.load()
+        Reachability.start()
         applyKoreanTables()
         applyHotKeys()
         statusItem.menu = buildMenu()
