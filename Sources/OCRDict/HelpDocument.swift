@@ -34,7 +34,7 @@ enum HelpDocument {
         let head = "<tr><th>\(t("help.colKey"))</th><th>\(t("help.colWhat"))</th>"
             + "<th>\(t("help.colNote"))</th></tr>"
         // 「自己输入」是可选绑定，没配就不显示这一节，免得表格空着
-        let manual = config.hotkeys.filter { $0.captureSource == .manual }
+        let manual = config.hotkeys.filter { $0.captureSource == .manual || $0.captureSource == .home }
 
         return """
         <h2>\(t("help.h.shortcuts"))</h2>
@@ -141,6 +141,9 @@ enum HelpDocument {
     private static func describe(_ binding: HotKeyBinding, config: AppConfig) -> (String, String) {
         if binding.captureSource == .manual {
             return (t("help.act.manual"), t("help.act.manualNote"))
+        }
+        if binding.captureSource == .home {
+            return (t("menu.home"), t("home.tagline"))
         }
         switch binding.captureAction {
         case .clipboard: return (t("help.act.clipboard"), t("help.act.clipboardNote"))

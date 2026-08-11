@@ -69,6 +69,20 @@ for md in Tests/notes/*.md; do
     fi
 done
 
+echo "── home page"
+# 主页内容是按当前配置生成的。这里盯两件事：四段都在，
+# 以及**没有把文案键漏成原文**（`menu.capture` 这种键名直接显示在界面上过一次）。
+home=$("$BIN" --home-html 2>/dev/null)
+missing=$(printf '%s' "$home" | grep -oE '>(menu|home|help|dict|about)\.[a-zA-Z.]+<' | sort -u)
+sections=$(printf '%s' "$home" | grep -c "<h2>")
+if [ "$sections" = "4" ] && [ -z "$missing" ] && printf '%s' "$home" | grep -q 'id="q"'; then
+    pass=$((pass + 1))
+else
+    fail=$((fail + 1))
+    echo "  FAIL home page — 段落 $sections/4，搜索框 $(printf '%s' "$home" | grep -c 'id=\"q\"')"
+    [ -n "$missing" ] && echo "    漏译: $missing"
+fi
+
 echo "── speech segmentation"
 # 朗读的语言分段：行内混排按文字系统切开、汉字在有假名时判日语、
 # 中性字符（标点空格）跟前一段走。改坏任何一条，混排朗读就会用错嗓音。

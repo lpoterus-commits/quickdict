@@ -98,6 +98,13 @@ if CommandLine.arguments.count >= 4, CommandLine.arguments[1] == "--route" {
     exit(0)
 }
 
+// 调试入口：--home-html 打印主页内容，验证它确实跟着配置走
+if CommandLine.arguments.contains("--home-html") {
+    let config = ConfigStore.load()
+    print(HomePage.html(config: config, status: .current(config: config)))
+    exit(0)
+}
+
 // 调试入口：--lemma <词库> <词> 只跑变形还原，输出查到的词典形
 if CommandLine.arguments.count >= 4, CommandLine.arguments[1] == "--lemma" {
     guard let db = KrDict.debugOpen(CommandLine.arguments[2]) else {
@@ -155,6 +162,7 @@ if CommandLine.arguments.contains("--diag") {
         case .selection: source = "划词"
         case .screenshot: source = "截图"
         case .manual: source = "自输"
+        case .home: source = "主页"
         }
         let detail: String
         switch binding.captureAction {

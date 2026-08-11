@@ -195,6 +195,7 @@ enum DictionaryPresets {
             .make(key: "7", control: true, option: true, source: .screenshot, action: .speak),
             .make(key: "D", option: true, command: true, source: .selection, dictionary: "auto"),
             .make(key: "F", option: true, command: true, source: .manual),
+            .make(key: "H", option: true, command: true, source: .home),
             // 原浏览器脚本用左Alt+Q，全局热键抢 ⌥Q 会挡住打特殊字符，加上 ⌘
             .make(key: "Q", option: true, command: true, source: .selection, action: .speak),
             // 原脚本用裸 ] [ 调速，全局热键得带修饰键

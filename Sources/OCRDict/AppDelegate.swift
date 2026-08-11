@@ -10,6 +10,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private let hotKeyEditor = HotKeyEditorController()
     private let dictEditor = DictionaryEditorController()
     private let onboarding = OnboardingController()
+    private let homeWindow = HomeWindowController()
     private var config = AppConfig.fallback
     private var isBusy = false
 
@@ -23,6 +24,26 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         setupStatusItem()
         applyHotKeys()
         // 结果页面上改了资料清单 —— 存回配置，菜单里的词典列表也跟着更新
+        // 主页上的输入框和按钮
+        homeWindow.onLookup = { [weak self] text, dictionary in
+            guard let self else { return }
+            self.handle(text: text, config: self.config, forced: dictionary)
+        }
+        homeWindow.onRun = { [weak self] what in
+            guard let self else { return }
+            switch what {
+            case "screenshot": self.triggerLookup()
+            case "selection": self.triggerSelectionLookup()
+            case "clipboard": self.triggerClipboardCapture()
+            case "speak": self.speakSelection()
+            case "onboarding": self.showOnboarding()
+            case "dictionaries": self.showDictionaryEditor()
+            case "hotkeys": self.showHotKeyEditor()
+            case "help": self.showHelp()
+            case "config": self.openConfigFile()
+            default: break
+            }
+        }
         resultWindow.onZoomChanged = { [weak self] value in
             guard let self, self.config.windowZoom != value else { return }
             self.config.windowZoom = value
@@ -54,6 +75,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             rebuildDictionaries()
             NSApp.terminate(nil)
         }
+        if args.contains("--home") { showHome() }
         if args.contains("--help-window") { showHelp() }
         if args.contains("--onboarding") { showOnboarding() }
         if args.contains("--hotkey-window") { showHotKeyEditor() }
@@ -89,6 +111,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         lookupBySelection(forced: nil)
     }
 
+    /// 菜单里的「主页」
+    @objc func showHome() {
+        homeWindow.show(config: config)
+    }
+
     /// 菜单里的「打开查词窗口」—— 不取字，自己输入
     @objc func openLookupWindow() {
         resultWindow.openBlank(config: config)
@@ -108,6 +135,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 lookupBySelection(forced: binding.targetDictionary)
             }
         case .manual: openLookupWindow()
+        case .home: showHome()
         }
     }
 
@@ -386,6 +414,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         openWindow.target = self
         openWindow.toolTip = t("menu.openWindow.tip")
         menu.addItem(openWindow)
+        let home = NSMenuItem(title: t("menu.home"), action: #selector(showHome), keyEquivalent: "")
+        home.target = self
+        menu.addItem(home)
         menu.addItem(.separator())
 
         let langItem = NSMenuItem(title: t("menu.dictLanguage"), action: nil, keyEquivalent: "")

@@ -248,7 +248,7 @@ final class HotKeyEditorController: NSObject, NSWindowDelegate {
         case .speakSlower: action.selectItem(at: 5)
         }
         // 自己输入时没有取到的文字，「只放剪贴板」「扫码」无从谈起
-        action.isEnabled = binding.captureSource != .manual
+        action.isEnabled = binding.captureSource != .manual && binding.captureSource != .home
         action.widthAnchor.constraint(equalToConstant: 130).isActive = true
         action.target = self
         action.action = #selector(actionChanged(_:))
@@ -283,13 +283,15 @@ final class HotKeyEditorController: NSObject, NSWindowDelegate {
     // MARK: - 编辑动作
 
     /// 弹出菜单的顺序，和 keys.source* 三个文案一一对应
-    static let sources: [CaptureSource] = [.screenshot, .selection, .manual]
+    static let sources: [CaptureSource] = [.screenshot, .selection, .manual, .home]
 
     @objc private func sourceChanged(_ sender: NSPopUpButton) {
         let picked = Self.sources[sender.indexOfSelectedItem]
         bindings[sender.tag].source = picked.rawValue
         // 自己输入时窗口是空的，没有词可以拿去做「只放剪贴板」或「扫码」
-        if picked == .manual { bindings[sender.tag].action = CaptureAction.lookup.rawValue }
+        if picked == .manual || picked == .home {
+            bindings[sender.tag].action = CaptureAction.lookup.rawValue
+        }
         validateAndRefresh()
     }
 

@@ -45,6 +45,7 @@ enum CaptureSource: String, Codable {
     case screenshot   // 框选截图 + OCR
     case selection    // 读当前选中的文字
     case manual       // 不取字，直接开窗口自己输入
+    case home         // 不取字，开主页
 }
 
 /// 取到文字之后做什么
