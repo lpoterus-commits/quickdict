@@ -139,8 +139,8 @@
 "onboard.windowTitle"      = "Chào mừng";
 "onboard.title"            = "QuickDict";
 "onboard.subtitle"         = "Lấy bất kỳ chữ tiếng Hàn nào trên màn hình và xem nghĩa ngay. Chỉ cần thiết lập hai việc.";
-"onboard.langTitle"        = "Tra nghĩa sang";
-"onboard.langNote"         = "Chọn theo ngôn ngữ hệ thống của bạn. Thay đổi cả bộ từ điển — đổi lại bất cứ lúc nào từ thanh menu.";
+"onboard.langTitle"        = "Nghĩa hiển thị bằng ngôn ngữ nào";
+"onboard.langNote"         = "Nghĩa tra được sẽ hiện bằng ngôn ngữ này. Đã chọn theo ngôn ngữ hệ thống; đổi bất cứ lúc nào ở mục “Tiếng mẹ đẻ” trên thanh menu — đổi thì cả bộ từ điển cũng thay theo.";
 "onboard.permTitle"        = "Quyền";
 "onboard.permNote"         = "Thiếu chúng thì ứng dụng không thấy được gì. Không có dữ liệu nào được gửi đi — mọi nhận dạng đều chạy trên máy Mac này.";
 "onboard.permScreenUse"    = "Để chụp vùng bạn khoanh";

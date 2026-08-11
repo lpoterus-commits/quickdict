@@ -235,8 +235,8 @@
 "onboard.windowTitle"     = "Welcome";
 "onboard.title"           = "QuickDict";
 "onboard.subtitle"        = "Grab any Korean text on screen and get a dictionary entry. Two things to set up, then you are done.";
-"onboard.langTitle"       = "Look words up in";
-"onboard.langNote"        = "Picked from your system language. Changes the whole dictionary set — you can switch any time from the menu bar.";
+"onboard.langTitle"       = "What language explanations are in";
+"onboard.langNote"        = "Definitions come back in this language. Picked from your system language; change it any time under My Language in the menu bar — it swaps the whole dictionary set.";
 "onboard.permTitle"       = "Permissions";
 "onboard.permNote"        = "Both are needed for the app to see anything. Neither sends data anywhere — all recognition runs on this Mac.";
 "onboard.permScreenUse"   = "So it can capture the area you drag";

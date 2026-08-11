@@ -139,8 +139,8 @@
 "onboard.windowTitle"      = "ようこそ";
 "onboard.title"            = "QuickDict";
 "onboard.subtitle"         = "画面上のどんな韓国語でも取り込んで、その場で辞書を引けます。設定するのは 2 つだけです。";
-"onboard.langTitle"        = "調べる言語";
-"onboard.langNote"         = "システムの言語から選ばれています。辞書のセット全体が変わります。メニューバーからいつでも切り替えられます。";
+"onboard.langTitle"        = "語釈をどの言語で出すか";
+"onboard.langNote"         = "調べた意味はこの言語で表示されます。システムの言語から選んであります。メニューバーの「私の母語」でいつでも変更でき、辞書一式が入れ替わります。";
 "onboard.permTitle"        = "権限";
 "onboard.permNote"         = "どちらもないとアプリは何も見られません。データはどこにも送られません — 認識はすべてこの Mac の中で行われます。";
 "onboard.permScreenUse"    = "ドラッグして囲んだ範囲を取り込むため";

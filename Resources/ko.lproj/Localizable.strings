@@ -139,8 +139,8 @@
 "onboard.windowTitle"      = "환영합니다";
 "onboard.title"            = "QuickDict";
 "onboard.subtitle"         = "화면에 있는 어떤 한국어든 가져와 바로 사전을 찾습니다. 두 가지만 설정하면 됩니다.";
-"onboard.langTitle"        = "찾을 언어";
-"onboard.langNote"         = "시스템 언어를 보고 골랐습니다. 사전 묶음 전체가 바뀌며, 메뉴 막대에서 언제든 바꿀 수 있습니다.";
+"onboard.langTitle"        = "뜻풀이를 어느 언어로 볼지";
+"onboard.langNote"         = "찾은 뜻이 이 언어로 나옵니다. 시스템 언어에 맞춰 골라 두었고, 메뉴 막대의 '내 모국어'에서 언제든 바꿀 수 있습니다 — 바꾸면 사전 묶음이 통째로 교체됩니다.";
 "onboard.permTitle"        = "권한";
 "onboard.permNote"         = "둘 다 없으면 앱이 아무것도 볼 수 없습니다. 데이터는 어디로도 보내지 않습니다 — 인식은 전부 이 Mac 안에서 이뤄집니다.";
 "onboard.permScreenUse"    = "끌어서 고른 영역을 가져오기 위해";
