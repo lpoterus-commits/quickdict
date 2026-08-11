@@ -14,6 +14,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var config = AppConfig.fallback
     private var isBusy = false
 
+    /// 是不是开机自启的那一次。登录项由 launchd 拉起，会带上 XPC_SERVICE_NAME；
+    /// 从访达或程序坞点开则没有。
+    private var isLoginLaunch: Bool {
+        let name = ProcessInfo.processInfo.environment["XPC_SERVICE_NAME"] ?? ""
+        return !name.isEmpty && name != "0"
+    }
+
     func applicationDidFinishLaunching(_ notification: Notification) {
         // 顺序要紧：load() 会把默认配置写出去，写完就不再算首次启动了
         let firstRun = OnboardingController.isFirstRun
@@ -62,7 +69,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if let i = args.firstIndex(of: "--test"), i + 1 < args.count {
             handle(text: args[i + 1], config: config)
         }
-        if firstRun { showOnboarding() }
+        if firstRun {
+            showOnboarding()
+        } else if !isLoginLaunch && !args.contains("--") {
+            // 常规应用启动却不出窗口，看着像没启动成功。
+            // 但**开机自启那次不弹** —— 每次登录都糊一个窗口上来才是真烦人。
+            showHome()
+        }
         // 调试用：--set-lang <code> headless 触发一次查词语言切换
         if let i = args.firstIndex(of: "--set-lang"), i + 1 < args.count {
             applyDictionaryLanguage(args[i + 1])
@@ -81,6 +94,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if args.contains("--hotkey-window") { showHotKeyEditor() }
         if args.contains("--dict-window") { showDictionaryEditor() }
     }
+
+    /// 点程序坞图标（此时可能一个窗口都没开）→ 回到主页。
+    /// 常规应用点图标却什么都不发生，会让人以为程序挂了。
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows: Bool) -> Bool {
+        if !hasVisibleWindows { showHome() }
+        return true
+    }
+
+    /// 关掉最后一个窗口不退出 —— 快捷键是全局的，窗口关了它还得随叫随到
+    func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { false }
 
     func applicationWillTerminate(_ notification: Notification) {
         hotKey.unregister()
@@ -788,6 +811,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         appMenu.addItem(about)
         appMenu.addItem(.separator())
         appMenu.addItem(withTitle: t("menu.hideWindow"), action: Selector(("performClose:")), keyEquivalent: "w")
+        appMenu.addItem(withTitle: t("menu.minimize"), action: Selector(("performMiniaturize:")), keyEquivalent: "m")
         appMenu.addItem(withTitle: t("menu.quit"), action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
         appItem.submenu = appMenu
         main.addItem(appItem)

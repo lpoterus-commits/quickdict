@@ -189,5 +189,7 @@ if CommandLine.arguments.contains("--diag") {
 let app = NSApplication.shared
 let delegate = AppDelegate()
 app.delegate = delegate
-app.setActivationPolicy(.accessory) // 菜单栏常驻，不占 Dock、不进 ⌘Tab
+// 常规应用：进程序坞、进 ⌘Tab、有自己的菜单栏。
+// 菜单栏那个图标照旧留着 —— 两种入口并不冲突，很多常驻工具都是这样。
+app.setActivationPolicy(.regular)
 app.run()

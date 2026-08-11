@@ -2,7 +2,9 @@
 
 **Công cụ tra từ trên macOS dành cho người học tiếng Hàn.** Lấy bất kỳ đoạn tiếng Hàn nào trên màn hình
 — giáo trình scan, PDF, phụ đề video, trang web, ảnh chụp ai đó gửi — và có ngay mục từ điển.
-Mọi việc nhận dạng đều chạy trên máy Mac của bạn: không cần mạng, không gửi số liệu, không lưu lịch sử.
+Mọi việc nhận dạng đều chạy trên máy Mac của bạn — không gửi số liệu, không lưu lịch sử. Việc tra có cần
+mạng hay không tuỳ vào từ điển bạn chọn: cơ sở dữ liệu ngoại tuyến kèm sẵn và ghi chú của bạn thì không,
+từ điển web thì tất nhiên có.
 
 Ngôn ngữ: [English](README.md) · [中文](README.zh-CN.md) · [Русский](README.ru.md) · **Tiếng Việt** ·
 [日本語](README.ja.md) · [한국어](README.ko.md)

@@ -26,8 +26,6 @@
 	<string>public.app-category.reference</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>13.0</string>
-	<key>LSUIElement</key>
-	<true/>
 	<key>NSHumanReadableCopyright</key>
 	<string>MIT License</string>
 	<key>NSPrincipalClass</key>

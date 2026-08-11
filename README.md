@@ -2,7 +2,9 @@
 
 **A macOS lookup tool for learners of Korean.** Grab any Korean text on screen — scanned textbooks,
 PDFs, video subtitles, web pages, a screenshot someone sent you — and get a dictionary entry instantly.
-All recognition runs on your Mac. No network, no telemetry, no history.
+All recognition runs on your Mac — no telemetry, no history. Whether a lookup goes online is up
+to which dictionary you pick: the bundled offline database and your own notes never do, web
+dictionaries of course do.
 
 Works out of the box in **English, 中文, 日本語, 한국어, Русский and Tiếng Việt and Italiano** — the dictionary set is
 chosen from your system language on first launch.

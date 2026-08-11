@@ -377,7 +377,7 @@
 "dict.sum.db" = "本地词库 · %@";
 "dict.offlineName" = "离线词库";
 "menu.home" = "主页";
-"home.tagline" = "本机取词、查词、朗读。识别全部在本地完成，不联网。";
+"home.tagline" = "取词、断词、朗读和离线词库都在本机完成；下面标 🌐 的词典会联网。";
 "home.placeholder" = "输入要查的词，回车";
 "home.lookup" = "查";
 "home.h.capture" = "取词";
@@ -391,3 +391,4 @@
 "home.notes" = "本地资料";
 "home.notesCount" = "%ld 本";
 "home.notesNone" = "还没添加";
+"menu.minimize" = "最小化";

@@ -379,7 +379,7 @@
 "dict.sum.db" = "Từ điển cục bộ · %@";
 "dict.offlineName" = "Từ điển ngoại tuyến";
 "menu.home" = "Trang chính";
-"home.tagline" = "Chụp, tra và đọc to — tất cả ngay trên máy này.";
+"home.tagline" = "Lấy chữ, nối dòng, đọc to và từ điển ngoại tuyến chạy ngay trên máy; các mục 🌐 cần mạng.";
 "home.placeholder" = "Nhập từ cần tra rồi nhấn return";
 "home.lookup" = "Tra";
 "home.h.capture" = "Lấy chữ";
@@ -393,3 +393,4 @@
 "home.notes" = "Tài liệu cục bộ";
 "home.notesCount" = "%ld mục";
 "home.notesNone" = "Chưa có";
+"menu.minimize" = "Thu nhỏ";

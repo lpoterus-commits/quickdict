@@ -379,7 +379,7 @@
 "dict.sum.db" = "로컬 사전 · %@";
 "dict.offlineName" = "오프라인 사전";
 "menu.home" = "홈";
-"home.tagline" = "화면에서 따오고, 찾아보고, 읽어 줍니다. 전부 이 기기 안에서.";
+"home.tagline" = "가져오기·줄 잇기·읽어 주기·오프라인 사전은 이 기기에서 처리합니다. 🌐 표시된 사전은 인터넷을 씁니다.";
 "home.placeholder" = "찾을 말을 입력하고 return";
 "home.lookup" = "찾기";
 "home.h.capture" = "가져오기";
@@ -393,3 +393,4 @@
 "home.notes" = "로컬 자료";
 "home.notesCount" = "%ld개";
 "home.notesNone" = "아직 없음";
+"menu.minimize" = "최소화";

@@ -379,7 +379,7 @@
 "dict.sum.db" = "ローカル辞書 · %@";
 "dict.offlineName" = "オフライン辞書";
 "menu.home" = "ホーム";
-"home.tagline" = "取り込み・辞書引き・読み上げ、すべてこの Mac の中で完結します。";
+"home.tagline" = "取り込み・行つなぎ・読み上げ・オフライン辞書はこの Mac の中で完結。🌐 の辞書は通信します。";
 "home.placeholder" = "調べたい語を入力して return";
 "home.lookup" = "調べる";
 "home.h.capture" = "取り込み";
@@ -393,3 +393,4 @@
 "home.notes" = "ローカル資料";
 "home.notesCount" = "%ld 件";
 "home.notesNone" = "未追加";
+"menu.minimize" = "しまう";

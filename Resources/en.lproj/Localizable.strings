@@ -377,7 +377,7 @@
 "dict.sum.db" = "Local database · %@";
 "dict.offlineName" = "Offline dictionary";
 "menu.home" = "Home";
-"home.tagline" = "Capture, look up and read aloud, entirely on this machine.";
+"home.tagline" = "Capture, rejoining, speech and the offline dictionary run here; the ones marked 🌐 go online.";
 "home.placeholder" = "Type a word, press return";
 "home.lookup" = "Look up";
 "home.h.capture" = "Capture";
@@ -391,3 +391,4 @@
 "home.notes" = "Local notes";
 "home.notesCount" = "%ld added";
 "home.notesNone" = "None yet";
+"menu.minimize" = "Minimise";

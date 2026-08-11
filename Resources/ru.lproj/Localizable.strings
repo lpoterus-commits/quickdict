@@ -379,7 +379,7 @@
 "dict.sum.db" = "Локальная база · %@";
 "dict.offlineName" = "Офлайн-словарь";
 "menu.home" = "Главная";
-"home.tagline" = "Захват, поиск и чтение вслух — всё на этом компьютере.";
+"home.tagline" = "Захват, склейка строк, речь и офлайн-словарь работают здесь; словари с 🌐 выходят в сеть.";
 "home.placeholder" = "Введите слово и нажмите return";
 "home.lookup" = "Найти";
 "home.h.capture" = "Захват";
@@ -393,3 +393,4 @@
 "home.notes" = "Локальные материалы";
 "home.notesCount" = "%ld шт.";
 "home.notesNone" = "Пока нет";
+"menu.minimize" = "Убрать в Dock";
