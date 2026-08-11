@@ -90,7 +90,8 @@ enum KrDict {
     /// 써→쓰、파→프（后两个是 ㅡ 脱落）
     private static let unmerge: [Int: Int] = [9: 8, 14: 13, 10: 11, 6: 20, 1: 0, 4: 18, 0: 18]
 
-    private static let jongL = 8, jongD = 7, jongS = 19, jongB = 17, jongH = 27, jongSS = 20
+    private static let jongL = 8, jongD = 7, jongS = 19, jongB = 17
+    private static let jongH = 27, jongSS = 20, jongN = 4
 
     /// 给一个词干前缀，生成它可能对应的词典形。
     /// 除了前缀本身（名词就是这样），其余候选一律带 `다` —— 这一条让误命中很难发生：
@@ -122,6 +123,12 @@ enum KrDict {
         if jong == jongL {
             out.insert(head + syllable(cho, jung, jongD) + "다")   // ㄷ 不规则：걸→걷다
             out.insert(head + syllable(cho, jung) + "르다")         // 르 不规则：몰→모르다
+        }
+
+        // 冠形词尾 -(으)ㄴ / -(으)ㄹ 和过去时的 ㅆ 一样，并进了词干最后一个音节。
+        // 「-에 대한」是最常见的句式之一，不拆的话 `대한` 只剩名词「大寒」那个义项。
+        if jong == jongN || jong == jongL {
+            out.insert(head + syllable(cho, jung) + "다")           // 대한→대하다、큰→크다
         }
         return out
     }
@@ -188,6 +195,14 @@ enum KrDict {
         var words: [Match]      // 它对应的词典形
     }
 
+    struct Reading {
+        var segments: [Segment] = []
+        /// 一个词都对不上的片段。**说出来比装作没有强** —— 人名、外来语、
+        /// 专业词本来就不在这本基础词典里，看见「클라라 词库里没有」
+        /// 才知道是词库的边界，而不是自己查错了。
+        var unknown: [String] = []
+    }
+
     /// 一次查一句话或一串词：切成词，每个词各自还原。
     ///
     /// 用最长匹配 —— 从每个位置往后取尽量长的一段，能查到就收下并跳过去，
@@ -198,14 +213,26 @@ enum KrDict {
     /// - **单音节只认「词条本身就长这样」的**。靠活用形索引或合成拐过来的一个字
     ///   （`까`→까다、`스`→슬다）几乎全是切碎产生的假象。
     /// - **助词和词尾整个丢掉**，否则一句话里一半的结果是 은/는/이/가。
-    static func segment(_ db: OpaquePointer, _ query: String) -> [Segment] {
-        var out: [Segment] = []
+    static func segment(_ db: OpaquePointer, _ query: String) -> Reading {
+        var reading = Reading()
         var seen = Set<String>()
         let stop = stopWords
 
         for token in query.split(whereSeparator: { !("\u{AC00}"..."\u{D7A3}").contains($0) }) {
             let characters = Array(token)
             var index = 0
+            // 攒着还没解释掉的字。助词、被压掉的残片本身是「已知」的，
+            // **但前面已经有对不上的字时，它们多半也是那个词的一部分** ——
+            // 「클라라」里的 `라` 会命中音名 la，不这样处理就把人名拆没了。
+            var pending: [Character] = []
+            var abuts = false                  // 上一段就贴在这儿结束（中间没跳过字）
+
+            func flushPending() {
+                // 一个字的残片没有信息量，两个字起才值得报
+                if pending.count >= 2 { reading.unknown.append(String(pending)) }
+                pending = []
+            }
+
             while index < characters.count {
                 var taken: (Int, String, [Match])?
                 // 8 个音节足够覆盖最长的复合词，再长就是没切开的句子了
@@ -214,26 +241,63 @@ enum KrDict {
                     let hits = resolve(db, piece)
                     if !hits.isEmpty { taken = (length, piece, hits); break }
                 }
-                guard let (length, piece, hits) = taken else { index += 1; continue }
+                guard let (length, piece, hits) = taken else {
+                    pending.append(characters[index])
+                    index += 1
+                    abuts = false
+                    continue
+                }
+                let range = characters[index..<(index + length)]
                 index += length
-                if stop.contains(piece) { continue }
+                let touching = abuts
+                abuts = true
+                if stop.contains(piece) {
+                    if !pending.isEmpty { pending += range }
+                    continue
+                }
+                // 紧贴在上一段后面的单音节，多半是复合词被切开的尾巴，不是词。
+                // 「수도회」库里没有 → 切成 수도 + 회，那个「회」是生鱼片，纯属误导。
+                // 中间跳过字的不算（「후리가케밥」的 밥 前面隔着没认出来的 가케，是真的词）。
+                if length == 1 && touching {
+                    if !pending.isEmpty { pending += range }
+                    continue
+                }
                 let words = hits.filter { match in
                     if length == 1 && (match.restored || match.word != piece) { return false }
                     return !stop.contains(match.word) && seen.insert(match.word).inserted
                 }
-                out.append(Segment(piece: piece, words: words))
+                if words.isEmpty {
+                    if !pending.isEmpty { pending += range }
+                    continue
+                }
+                flushPending()
+                reading.segments.append(Segment(piece: piece, words: words))
             }
+            flushPending()
         }
-        return out
+        return reading
     }
 
-    /// 一段文字对应的词典形：真实数据优先，落空了才用合成候选
+    /// 一段文字对应的词典形。
+    ///
+    /// **直接查到了也照样再还原一次** —— 同形太常见：`대한` 既是名词「大寒」，
+    /// 也是「-에 대한」里 `대하다` 的冠形词形，后者才是句子里几乎必然的那个。
+    /// 只给前者等于答错。和单词查询里对 `보고` 的处理是同一条原则：两个都给。
+    ///
+    /// 单音节不做还原 —— 噪音全是从那儿来的（`까`→까다、`스`→슬다）。
     private static func resolve(_ db: OpaquePointer, _ piece: String) -> [Match] {
-        let hit = direct(db, piece)
-        if !hit.isEmpty { return hit.map { Match(word: $0, restored: false) } }
         var out: [Match] = []
         var seen = Set<String>()
+        for word in direct(db, piece) where seen.insert(word).inserted {
+            out.append(Match(word: word, restored: false))
+        }
+        guard piece.count >= 2 else { return out }
+        // 「词干 + 다」是唯一一个**不带任何变形迹象**的候选 —— 它假设这一段本身就是词干。
+        // 这一段已经查到词了的话，这种猜测就不作数：`새우`（虾）会凭空多出 `새우다`（熬夜）。
+        // 靠拆 ㅆ / ㄴ / ㄹ 或不规则还原出来的照收，那些都有迹象：`대한` → `대하다`。
+        let bare = piece + "다"
         for candidate in lemmaCandidates(piece).sorted() {
+            if !out.isEmpty && candidate == bare { continue }
             for word in direct(db, candidate) where seen.insert(word).inserted {
                 out.append(Match(word: word, restored: true))
             }
@@ -358,9 +422,9 @@ enum KrDict {
         // `걸어서` 一段就能查到 걷다/걸다 两个词，那是同形不是两个词，
         // 按词数判会把它误当成句子。
         if hangul {
-            let segments = segment(db, query)
-            if segments.count >= 2 {
-                return wordList(db: db, query: query, name: name, segments: segments)
+            let reading = segment(db, query)
+            if reading.segments.count >= 2 {
+                return wordList(db: db, query: query, name: name, reading: reading)
             }
         }
 
@@ -396,10 +460,10 @@ enum KrDict {
     /// 整句/多词的结果：一行一个词，点开才看详细。
     /// 一句话里十几个词，每个都摊开释义和例句的话，翻不到底。
     private static func wordList(db: OpaquePointer, query: String, name: String,
-                                 segments: [Segment]) -> String {
+                                 reading: Reading) -> String {
         var rows = ""
         var count = 0
-        for segment in segments {
+        for segment in reading.segments {
             for match in segment.words {
                 count += 1
                 let (pos, gloss) = brief(db, match.word)
@@ -422,6 +486,9 @@ enum KrDict {
         <span class="src">\(esc(name)) · \(t("krdict.offline"))</span></header>
         <p class="lead">\(t("krdict.segmented", count))</p>
         <div class="list">\(rows)</div>
+        \(reading.unknown.isEmpty ? "" : "<p class=\"hint\">\(t("krdict.unknown"))"
+            + reading.unknown.map { "<span class=\"miss\">\(esc($0))</span>" }.joined(separator: " ")
+            + "</p>")
         <footer>\(t("krdict.credit"))</footer>
         <script>\(script)</script></body></html>
         """
@@ -553,6 +620,8 @@ enum KrDict {
     .row b { font-size:15.5px; min-width:5.2em; }
     .row .from { font-size:11.5px; color:var(--warm); min-width:4.5em; text-align:right; }
     .row .gloss { color:var(--dim); font-size:13.5px; }
+    .miss { color:var(--warm); padding:1px 6px; border-radius:6px;
+            background:rgba(127,127,127,.12); }
     .none { margin:24px 0 8px; font-size:15px; }
     .hint { color:var(--dim); font-size:13px; line-height:2.1; }
     footer { margin-top:28px; padding-top:12px; border-top:1px solid var(--line);

@@ -379,3 +379,4 @@
 "dict.sum.db" = "Локальная база · %@";
 "dict.offlineName" = "Офлайн-словарь";
 "krdict.segmented" = "Слов: %ld · нажмите для подробностей";
+"krdict.unknown" = "Нет в словаре: ";

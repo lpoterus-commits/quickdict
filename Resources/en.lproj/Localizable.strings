@@ -377,3 +377,4 @@
 "dict.sum.db" = "Local database · %@";
 "dict.offlineName" = "Offline dictionary";
 "krdict.segmented" = "%ld words · click any of them for the full entry";
+"krdict.unknown" = "Not in the dictionary: ";

@@ -379,3 +379,4 @@
 "dict.sum.db" = "Từ điển cục bộ · %@";
 "dict.offlineName" = "Từ điển ngoại tuyến";
 "krdict.segmented" = "%ld từ · bấm để xem chi tiết";
+"krdict.unknown" = "Không có trong từ điển: ";

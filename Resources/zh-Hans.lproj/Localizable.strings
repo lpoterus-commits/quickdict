@@ -377,3 +377,4 @@
 "dict.sum.db" = "本地词库 · %@";
 "dict.offlineName" = "离线词库";
 "krdict.segmented" = "拆出 %ld 个词 · 点任意一个看详细";
+"krdict.unknown" = "词库里没有：";

@@ -111,8 +111,9 @@ if CommandLine.arguments.count >= 4, CommandLine.arguments[1] == "--lemma" {
 // 调试入口：--segment <词库> <句子> 只跑分词，输出切出来的词典形
 if CommandLine.arguments.count >= 4, CommandLine.arguments[1] == "--segment" {
     guard let db = KrDict.debugOpen(CommandLine.arguments[2]) else { print("打不开词库"); exit(1) }
-    let words = KrDict.segment(db, CommandLine.arguments[3]).flatMap { $0.words }
-    print(words.map(\.word).joined(separator: " "))
+    let reading = KrDict.segment(db, CommandLine.arguments[3])
+    print(reading.segments.flatMap { $0.words }.map(\.word).joined(separator: " "))
+    if !reading.unknown.isEmpty { print("未收录: " + reading.unknown.joined(separator: " ")) }
     exit(0)
 }
 
