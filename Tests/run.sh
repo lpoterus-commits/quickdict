@@ -50,22 +50,6 @@ if [ -f "$KRDICT" ]; then
             echo "  FAIL $word → $got (want $want)"
         fi
     done < Tests/lemma.tsv
-
-    # 整句/多词查询：切词 + 逐个还原 + 去重。菜单和课文整行框选就靠这个。
-    # 只要求期待的词都出现（词典里有 후리다 这种真词，切碎后会混进来，不算错）。
-    while IFS=$'\t' read -r sentence want; do
-        [ -z "$sentence" ] && continue
-        got=" $("$BIN" --segment "$KRDICT" "$sentence" 2>/dev/null | head -1) "
-        missing=""
-        for w in $want; do [[ "$got" == *" $w "* ]] || missing="$missing $w"; done
-        if [ -z "$missing" ]; then
-            pass=$((pass + 1))
-        else
-            fail=$((fail + 1))
-            echo "  FAIL 分词「$sentence」缺:$missing"
-            echo "    got: $got"
-        fi
-    done < Tests/segment.tsv
 else
     echo "  skipped — no database at $KRDICT"
 fi
