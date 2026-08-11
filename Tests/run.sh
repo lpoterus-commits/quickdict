@@ -55,7 +55,7 @@ if [ -f "$KRDICT" ]; then
     # 只要求期待的词都出现（词典里有 후리다 这种真词，切碎后会混进来，不算错）。
     while IFS=$'\t' read -r sentence want; do
         [ -z "$sentence" ] && continue
-        got=" $("$BIN" --segment "$KRDICT" "$sentence" 2>/dev/null) "
+        got=" $("$BIN" --segment "$KRDICT" "$sentence" 2>/dev/null | head -1) "
         missing=""
         for w in $want; do [[ "$got" == *" $w "* ]] || missing="$missing $w"; done
         if [ -z "$missing" ]; then
