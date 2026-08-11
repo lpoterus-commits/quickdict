@@ -158,7 +158,7 @@ struct AppConfig: Codable {
     /// 除韩语外还要查哪些外语。每加一种就多一个 X→母语 的词典。
     /// 韩语固定在内（这是工具的主场），列表里写的是额外的。
     var sourceLanguages: [String]
-    /// 查到哪种语言。首次启动时按系统语言自动判定，之后可在菜单里换。
+    /// 我的母语 —— 释义落在哪种语言。首次启动时按系统语言自动判定，之后可在菜单里换。
     /// 换这个值会整套替换 dictionaries，所以手改过词典的人不要动它。
     var dictionaryLanguage: String
     var windowWidth: Double

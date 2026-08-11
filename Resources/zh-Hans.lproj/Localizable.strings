@@ -235,8 +235,7 @@
 "onboard.windowTitle"     = "欢迎";
 "onboard.title"           = "快捷查词助手";
 "onboard.subtitle"        = "框选或划中屏幕上的韩语，立刻出词典释义。设置两件事就能开始用。";
-"onboard.langTitle"       = "释义用哪种语言";
-"onboard.langNote"        = "查到的意思就用这种语言写。已按你的系统语言选好，之后在菜单栏的「我的母语」里随时能换 —— 换了会整套替换词典。";
+"onboard.langNote"        = "查到的意思就用这种语言写。已按你的系统语言选好，之后随时能在菜单栏里换 —— 换了会整套替换词典。";
 "onboard.permTitle"       = "权限";
 "onboard.permNote"        = "两个都要给，否则 App 什么都看不到。它们不向外发送任何数据 —— 识别全部在本机完成。";
 "onboard.permScreenUse"   = "用来截取你框选的区域";

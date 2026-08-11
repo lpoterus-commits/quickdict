@@ -76,7 +76,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             // 但**开机自启那次不弹** —— 每次登录都糊一个窗口上来才是真烦人。
             showHome()
         }
-        // 调试用：--set-lang <code> headless 触发一次查词语言切换
+        // 调试用：--set-lang <code> headless 触发一次母语切换
         if let i = args.firstIndex(of: "--set-lang"), i + 1 < args.count {
             applyDictionaryLanguage(args[i + 1])
             NSApp.terminate(nil)

@@ -5,7 +5,7 @@ import AppKit
 /// 2.0 的问题是：陌生人装上之后，第一次按快捷键只会看到一个「请去系统设置授权」的提示，
 /// 而且词典是作者的母语。前 30 秒决定了他会不会留下，而那 30 秒当时是浪费掉的。
 ///
-/// 这个窗口做三件事：确认查词语言（已按系统语言预选）、引导授权（状态实时刷新）、
+/// 这个窗口做三件事：确认我的母语（已按系统语言预选）、引导授权（状态实时刷新）、
 /// 提示 Gatekeeper 隔离标记。只在配置文件不存在时自动弹出，之后可从菜单调出。
 final class OnboardingController: NSObject, NSWindowDelegate {
     private var window: NSWindow?
@@ -47,8 +47,10 @@ final class OnboardingController: NSObject, NSWindowDelegate {
         subtitle.font = .systemFont(ofSize: 13)
         subtitle.textColor = .secondaryLabelColor
 
-        // ── 查词语言
-        let langTitle = sectionTitle(t("onboard.langTitle"))
+        // ── 我的母语
+        // 和菜单栏用同一个键：这两处指的是同一个设置，名字必须一样，
+        // 各写各的迟早会走散（之前就是「查到哪种语言」对「我的母语」）
+        let langTitle = sectionTitle(t("menu.dictLanguage"))
         let langNote = note(t("onboard.langNote"))
         languagePopup = NSPopUpButton()
         for target in DictionaryPresets.targets {
