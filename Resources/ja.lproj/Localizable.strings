@@ -378,3 +378,4 @@
 "krdict.cantOpen" = "データベースを開けません";
 "dict.sum.db" = "ローカル辞書 · %@";
 "dict.offlineName" = "オフライン辞書";
+"krdict.segmented" = "%ld 語に分割 · クリックで詳細";

@@ -172,6 +172,91 @@ enum KrDict {
         return out
     }
 
+    // MARK: - 整句分词
+
+    /// 切句子时要丢掉的成分。助词和词尾用断词还原那张表（同一套知识，一处维护），
+    /// 这里补的是**单音节的连接词尾** —— 它们同时也是合法词条
+    /// （`어` 是叹词、`자` 是尺），切碎后会以「词」的身份冒出来。
+    private static let extraStop: Set<String> = [
+        "어", "아", "여", "워", "게", "기", "자", "라", "냐", "니", "랑", "들",
+    ]
+
+    private static var stopWords: Set<String> { LineJoiner.koreanParticles.union(extraStop) }
+
+    struct Segment {
+        var piece: String       // 原文里的那一段
+        var words: [Match]      // 它对应的词典形
+    }
+
+    /// 一次查一句话或一串词：切成词，每个词各自还原。
+    ///
+    /// 用最长匹配 —— 从每个位置往后取尽量长的一段，能查到就收下并跳过去，
+    /// 查不到就退一个字。词典本身就是词表，所以切分的依据是「库里有没有这个词」，
+    /// 不需要另外训练分词器。
+    ///
+    /// 两条降噪规则，都是实测出来的：
+    /// - **单音节只认「词条本身就长这样」的**。靠活用形索引或合成拐过来的一个字
+    ///   （`까`→까다、`스`→슬다）几乎全是切碎产生的假象。
+    /// - **助词和词尾整个丢掉**，否则一句话里一半的结果是 은/는/이/가。
+    static func segment(_ db: OpaquePointer, _ query: String) -> [Segment] {
+        var out: [Segment] = []
+        var seen = Set<String>()
+        let stop = stopWords
+
+        for token in query.split(whereSeparator: { !("\u{AC00}"..."\u{D7A3}").contains($0) }) {
+            let characters = Array(token)
+            var index = 0
+            while index < characters.count {
+                var taken: (Int, String, [Match])?
+                // 8 个音节足够覆盖最长的复合词，再长就是没切开的句子了
+                for length in stride(from: min(8, characters.count - index), through: 1, by: -1) {
+                    let piece = String(characters[index..<(index + length)])
+                    let hits = resolve(db, piece)
+                    if !hits.isEmpty { taken = (length, piece, hits); break }
+                }
+                guard let (length, piece, hits) = taken else { index += 1; continue }
+                index += length
+                if stop.contains(piece) { continue }
+                let words = hits.filter { match in
+                    if length == 1 && (match.restored || match.word != piece) { return false }
+                    return !stop.contains(match.word) && seen.insert(match.word).inserted
+                }
+                out.append(Segment(piece: piece, words: words))
+            }
+        }
+        return out
+    }
+
+    /// 一段文字对应的词典形：真实数据优先，落空了才用合成候选
+    private static func resolve(_ db: OpaquePointer, _ piece: String) -> [Match] {
+        let hit = direct(db, piece)
+        if !hit.isEmpty { return hit.map { Match(word: $0, restored: false) } }
+        var out: [Match] = []
+        var seen = Set<String>()
+        for candidate in lemmaCandidates(piece).sorted() {
+            for word in direct(db, candidate) where seen.insert(word).inserted {
+                out.append(Match(word: word, restored: true))
+            }
+        }
+        return out
+    }
+
+    /// 词表里每行显示的一句话：词性 + 中文对译。
+    ///
+    /// 取**前两条**义项，不是第一条 —— 词典自己的义项顺序不一定把常用的排在前面
+    /// （`만나다` 的第一条是「交汇」，「见面」在第二条）。给两条，一眼就能认出是哪个词。
+    private static func brief(_ db: OpaquePointer, _ word: String) -> (String, String) {
+        let found = rows(db, """
+            SELECT IFNULL(e.pos,''), IFNULL(s.zh_word,''), IFNULL(s.zh_def,'')
+            FROM entry e LEFT JOIN sense s ON s.entry_id = e.id WHERE e.word = ?
+            ORDER BY CASE e.level WHEN '초급' THEN 0 WHEN '중급' THEN 1
+                                  WHEN '고급' THEN 2 ELSE 3 END, s.ord LIMIT 2
+            """, [word], columns: 3)
+        guard let first = found.first else { return ("", "") }
+        let glosses = found.map { $0[1].isEmpty ? $0[2] : $0[1] }.filter { !$0.isEmpty }
+        return (first[0], glosses.joined(separator: " / "))
+    }
+
     /// 中文/英文反查。
     ///
     /// 库里的 `fts_zh` 是 trigram 索引，**查询词不足 3 个字符时一条都匹配不到**
@@ -268,6 +353,17 @@ enum KrDict {
 
     private static func render(db: OpaquePointer, query: String, name: String, source: URL) -> String {
         let hangul = query.unicodeScalars.contains { (0xAC00...0xD7AF).contains($0.value) }
+
+        // 查的是一串词还是一个词？**看切出来几段，不看查到几个词** ——
+        // `걸어서` 一段就能查到 걷다/걸다 两个词，那是同形不是两个词，
+        // 按词数判会把它误当成句子。
+        if hangul {
+            let segments = segment(db, query)
+            if segments.count >= 2 {
+                return wordList(db: db, query: query, name: name, segments: segments)
+            }
+        }
+
         let matches = hangul ? lemmatize(db, query)
                              : reverse(db, query).map { Match(word: $0, restored: false) }
 
@@ -292,6 +388,40 @@ enum KrDict {
         <header><h1>\(esc(query))</h1>
         <span class="src">\(esc(name)) · \(t("krdict.offline"))</span></header>
         \(body)
+        <footer>\(t("krdict.credit"))</footer>
+        <script>\(script)</script></body></html>
+        """
+    }
+
+    /// 整句/多词的结果：一行一个词，点开才看详细。
+    /// 一句话里十几个词，每个都摊开释义和例句的话，翻不到底。
+    private static func wordList(db: OpaquePointer, query: String, name: String,
+                                 segments: [Segment]) -> String {
+        var rows = ""
+        var count = 0
+        for segment in segments {
+            for match in segment.words {
+                count += 1
+                let (pos, gloss) = brief(db, match.word)
+                // 还原过的把原文那一段也显示出来，好对上句子里的哪个位置
+                let from = match.restored || segment.piece != match.word
+                    ? "<span class=\"from\">\(esc(segment.piece))</span>" : ""
+                rows += """
+                <a class="row w" href="#" data-w="\(esc(match.word))">\(from)
+                <b>\(esc(match.word))</b>
+                \(pos.isEmpty ? "" : "<span class=\"chip\">\(esc(pos))</span>")
+                <span class="gloss">\(esc(gloss))</span></a>
+                """
+            }
+        }
+        return """
+        <!doctype html><html lang="ko"><head><meta charset="utf-8">
+        <meta name="viewport" content="width=device-width,initial-scale=1">
+        <style>\(css)</style></head><body>
+        <header><h1>\(esc(query))</h1>
+        <span class="src">\(esc(name)) · \(t("krdict.offline"))</span></header>
+        <p class="lead">\(t("krdict.segmented", count))</p>
+        <div class="list">\(rows)</div>
         <footer>\(t("krdict.credit"))</footer>
         <script>\(script)</script></body></html>
         """
@@ -415,6 +545,14 @@ enum KrDict {
     .rel span { color:var(--dim); font-size:11.5px; }
     .w { color:var(--accent); text-decoration:none; cursor:pointer;
          padding:1px 6px; border-radius:6px; background:rgba(127,127,127,.12); }
+    .lead { color:var(--dim); font-size:12.5px; margin:14px 0 10px; }
+    .list { display:flex; flex-direction:column; gap:2px; }
+    .row { display:flex; align-items:baseline; gap:8px; padding:8px 12px;
+           border-radius:9px; text-decoration:none; color:var(--fg); background:none; }
+    .row:hover { background:var(--card); }
+    .row b { font-size:15.5px; min-width:5.2em; }
+    .row .from { font-size:11.5px; color:var(--warm); min-width:4.5em; text-align:right; }
+    .row .gloss { color:var(--dim); font-size:13.5px; }
     .none { margin:24px 0 8px; font-size:15px; }
     .hint { color:var(--dim); font-size:13px; line-height:2.1; }
     footer { margin-top:28px; padding-top:12px; border-top:1px solid var(--line);

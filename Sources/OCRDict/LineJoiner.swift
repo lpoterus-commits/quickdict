@@ -56,6 +56,10 @@ enum LineJoiner {
     }
 
     private static var particles: Set<String> { danglingParticles.union(extraParticles) }
+
+    /// 给词库分词用：切句子时这些不算「词」，是黏在词后面的成分。
+    /// 和断词还原共用一张表，用户在配置里补充的条目这边也一起生效。
+    static var koreanParticles: Set<String> { particles }
     private static var standalone: Set<String> { standaloneSyllables.union(extraStandalone) }
 
     static func joined(_ lines: [OCRLine]) -> Result {
