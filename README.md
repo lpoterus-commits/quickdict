@@ -154,9 +154,16 @@ decides which of them is real:
 예뻐요  ㅓ restores to ㅡ         → 예쁘다
 ```
 
-ㅂ / ㄷ / ㅅ / ㄹ / 르 / ㅎ irregulars and vowel contraction are covered, with **30 regression
-tests over real inflected forms**. Ambiguity is not resolved by guessing: `보고` is both the noun
-"report" and a connective form of `보다`, so both are shown.
+Irregular alternations are conditional, and the conditions are modelled too: ㄷ only alternates
+before a vowel or 으 ending, 르 only before 라/러, ㄹ only elides before 는/ㄴ/ㅂ니다. Without that,
+`걸으면` also yields 거르다 for an alternation that cannot occur there. The ending inventory does
+not try to be complete — it only places the cut, and an unlisted ending falls back to prefix
+scanning — and a stem cut at a verbal ending can only be a verb, so `먹었어요` no longer offers the
+noun 먹, ink.
+
+ㅂ / ㄷ / ㅅ / ㄹ / 르 / ㅎ irregulars, vowel contraction and ㅡ/ㄹ elision are covered by **53
+regression tests over real inflected forms**. Ambiguity is not resolved by guessing: `대한` is both
+the noun 大寒 and the adnominal of `대하다`, so both are shown.
 
 Click a synonym on the page to look it up; click 🔊 to hear it. Nothing leaves the machine.
 

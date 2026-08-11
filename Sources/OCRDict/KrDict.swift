@@ -90,40 +90,144 @@ enum KrDict {
     /// 써→쓰、파→프（后两个是 ㅡ 脱落）
     private static let unmerge: [Int: Int] = [9: 8, 14: 13, 10: 11, 6: 20, 1: 0, 4: 18, 0: 18]
 
-    private static let jongL = 8, jongD = 7, jongS = 19, jongB = 17, jongH = 27, jongSS = 20
+    private static let jongL = 8, jongD = 7, jongS = 19, jongB = 17
+    private static let jongH = 27, jongSS = 20, jongN = 4
 
-    /// 给一个词干前缀，生成它可能对应的词典形。
-    /// 除了前缀本身（名词就是这样），其余候选一律带 `다` —— 这一条让误命中很难发生：
-    /// `나무` 只会生成 `나물다`、`나뭇다` 这类不存在的词，不会撞上真实词条 `나물`。
-    static func lemmaCandidates(_ stem: String) -> Set<String> {
-        var out: Set<String> = [stem]
-        guard let last = stem.last, let (cho, jung, jong) = split(last) else { return out }
+    /// 词干后面接的是哪一类词尾。**不规则变化是有条件的** —— 条件就是这个：
+    ///
+    /// - `.vowel` 어/아 类 —— ㅡ 脱落、ㅂ、ㄷ、ㅅ、르 不规则都在这儿发生
+    /// - `.eu` 으 类 —— ㄷ、ㅅ、ㅂ 会变，但**ㅡ 脱落和 르 不规则不会**
+    /// - `.consonant` 直接贴上去的（는/고/습니다/冠形 ㄴ）—— 只有 ㄹ 脱落
+    ///
+    /// 不分类的话就会出现 `걸으면` 顺出 `거르다`（르 不规则在 으 前根本不发生）、
+    /// `써도` 顺出 `썰다`（ㄹ 脱落在 도 前也不发生）这种错。
+    enum After { case vowel, eu, consonant, any }
+
+    /// 给一个词干和它后面词尾的类别，推出可能的词典形。
+    static func lemmaCandidates(_ stem: String, after: After = .any) -> Set<String> {
+        var out: Set<String> = []
+        guard let last = stem.last, let (cho, jung, jong) = split(last) else { return [stem] }
         let head = String(stem.dropLast())
-        out.insert(stem + "다")
+        let any = after == .any
+        // 不切词尾时，这一段本身就可能是个词（名词、副词）
+        if any { out.insert(stem) }
+        out.insert(stem + "다")                    // 规则变化：词干原样
 
-        // 过去时的 ㅆ 并进了词干音节：갔→가、했→해→하、왔→와→오
+        // 过去时的 ㅆ 并进了词干音节，后面接什么都可能：갔→가、했→해→하
         if jong == jongSS {
-            out.insert(head + syllable(cho, jung) + "다")
+            let bare = head + syllable(cho, jung)
+            out.insert(bare + "다")
             if let merged = unmerge[jung] { out.insert(head + syllable(cho, merged) + "다") }
         }
 
         if jong == 0 {
+            // 元音缩合与 ㅡ 脱落。**不看后面接什么** —— 缩合是词干表面已经发生的事，
+            // `써도` 的 `써` 里已经含着一个 어，和后面那个 `도` 无关。
             if let merged = unmerge[jung] { out.insert(head + syllable(cho, merged) + "다") }
-            out.insert(head + syllable(cho, jung, jongL) + "다")   // ㄹ 脱落还原：사→살다
-            out.insert(head + syllable(cho, jung, jongS) + "다")   // ㅅ 不规则：나→낫다
-            out.insert(head + syllable(cho, jung, jongH) + "다")   // ㅎ 不规则：하야→하얗다
-            // ㅂ 不规则：도와→돕다、추워→춥다。와/워 整个是词尾变来的，连音节一起去掉
-            if jung == 9 || jung == 14, let previous = head.last,
-               let (pcho, pjung, pjong) = split(previous), pjong == 0 {
-                out.insert(String(head.dropLast()) + syllable(pcho, pjung, jongB) + "다")
+            // ㅂ 不规则：와/워 整个是词尾变来的，连音节一起去掉，前一个字补 ㅂ
+            if any || after == .vowel {
+                if jung == 9 || jung == 14, let previous = head.last,
+                   let (pcho, pjung, pjong) = split(previous), pjong == 0 {
+                    out.insert(String(head.dropLast()) + syllable(pcho, pjung, jongB) + "다")
+                }
+            }
+            // ㅅ 不规则（나아→낫다、지어→짓다）：어/아 和 으 前都发生
+            if any || after == .vowel || after == .eu {
+                out.insert(head + syllable(cho, jung, jongS) + "다")
+            }
+            // ㄹ 脱落还原（사는→살다、여는→열다）：는/ㄴ/ㅂ니다 这类前面才掉
+            if any || after == .consonant {
+                out.insert(head + syllable(cho, jung, jongL) + "다")
+            }
+            // ㅎ 不规则（하얀→하얗다）：冠形 ㄴ 前
+            if any || after == .consonant {
+                out.insert(head + syllable(cho, jung, jongH) + "다")
             }
         }
 
         if jong == jongL {
-            out.insert(head + syllable(cho, jung, jongD) + "다")   // ㄷ 不规则：걸→걷다
-            out.insert(head + syllable(cho, jung) + "르다")         // 르 不规则：몰→모르다
+            // ㄷ 不规则（들어→듣다、걸으면→걷다）：어/아 和 으 前
+            if any || after == .vowel || after == .eu {
+                out.insert(head + syllable(cho, jung, jongD) + "다")
+            }
+            // 르 不规则（불러→부르다、몰라→모르다）：**只在 라/러 前**
+            if any || after == .vowel {
+                out.insert(head + syllable(cho, jung) + "르다")
+            }
+        }
+
+        // 冠形词尾 -(으)ㄴ / -(으)ㄹ 也并进词干音节。「-에 대한」是最常用的句式之一，
+        // 不拆的话 `대한` 只剩名词「大寒」。ㄹ 词干接冠形词尾时先掉 ㄹ：만들다→만든。
+        if jong == jongN || jong == jongL {
+            out.insert(head + syllable(cho, jung) + "다")
+            if jong == jongN { out.insert(head + syllable(cho, jung, jongL) + "다") }
+            if jong == jongN, let merged = unmerge[jung] {   // 하얀→하야→하얗다 走 ㅎ 那条
+                out.insert(head + syllable(cho, merged, jongH) + "다")
+            }
         }
         return out
+    }
+
+    /// 另起一个音节的词尾，以及它属于哪一类。
+    /// （并进词干音节的那些 —— 过去时 ㅆ、冠形 ㄴ/ㄹ、元音缩合 —— 在
+    /// `lemmaCandidates` 里按音节拆，不在这张表上。）
+    ///
+    /// 这张表**不需要完整**：它只负责把切口切准，切不中还有退前缀兜底。
+    private static let endings: [(String, After)] = [
+        // 으 类
+        ("으십시오", .eu), ("으세요", .eu), ("으시면", .eu), ("으니까", .eu), ("으면서", .eu),
+        ("으려고", .eu), ("으므로", .eu), ("으면", .eu), ("으니", .eu), ("으며", .eu),
+        ("은데요", .eu), ("을까", .eu), ("을지", .eu), ("은", .eu), ("을", .eu),
+        // 어/아 类
+        ("었습니다", .vowel), ("았습니다", .vowel), ("였습니다", .vowel), ("겠습니다", .consonant),
+        ("었어요", .vowel), ("았어요", .vowel), ("였어요", .vowel), ("겠어요", .consonant),
+        ("어요", .vowel), ("아요", .vowel), ("여요", .vowel), ("어서", .vowel), ("아서", .vowel),
+        ("여서", .vowel), ("어도", .vowel), ("아도", .vowel), ("어야", .vowel), ("아야", .vowel),
+        ("어라", .vowel), ("아라", .vowel), ("잖아요", .vowel), ("잖아", .vowel),
+        ("었다", .vowel), ("았다", .vowel), ("였다", .vowel), ("었어", .vowel), ("았어", .vowel),
+        ("었지", .vowel), ("았지", .vowel), ("었", .vowel), ("았", .vowel), ("였", .vowel),
+        ("러", .vowel), ("라", .vowel), ("어", .vowel), ("아", .vowel),
+        // 直接贴上去的
+        ("습니다", .consonant), ("습니까", .consonant), ("십시오", .consonant), ("세요", .consonant),
+        ("는군요", .consonant), ("는데요", .consonant), ("는데", .consonant), ("는다", .consonant),
+        ("는가", .consonant), ("는지", .consonant), ("자마자", .consonant), ("면서", .consonant),
+        ("려고", .consonant), ("므로", .consonant), ("지만", .consonant), ("도록", .consonant),
+        ("든지", .consonant), ("거나", .consonant), ("네요", .consonant), ("군요", .consonant),
+        ("지요", .consonant), ("기는", .consonant), ("기가", .consonant), ("기를", .consonant),
+        ("기에", .consonant), ("기도", .consonant), ("겠다", .consonant), ("겠", .consonant),
+        ("면", .consonant), ("며", .consonant), ("고", .consonant), ("지", .consonant),
+        ("서", .consonant), ("도", .consonant), ("게", .consonant), ("자", .consonant),
+        ("니", .consonant), ("는", .consonant), ("던", .consonant), ("요", .consonant),
+        ("죠", .consonant), ("기", .consonant), ("음", .consonant),
+    ]
+
+    /// 按词尾把查询词切开，得到「词干 + 后面接的是哪类词尾」。
+    ///
+    /// 走两轮 —— 韩语词尾是叠着的：`먹었어요` 要先脱 `어요` 得到 `먹었`，
+    /// 再脱 `었` 才落到 `먹`。一轮只能脱一层。
+    ///
+    /// 单音节词尾算「弱切口」：`사도`（使徒）脱一个 `도` 就成了 `사다`。
+    /// 所以整词本身查得到时，只认两个音节以上的词尾。
+    private static func stems(of query: String, weak: Bool) -> [(String, After)] {
+        var found: [(String, After)] = []
+        var seen = Set<String>()
+        var frontier = [query]
+        for _ in 0..<2 {
+            var next: [String] = []
+            for stem in frontier {
+                for (ending, after) in endings
+                where (weak || ending.count >= 2) && stem.hasSuffix(ending)
+                      && stem.count > ending.count {
+                    let cut = String(stem.dropLast(ending.count))
+                    if seen.insert(cut + "\u{1}" + String(describing: after)).inserted {
+                        found.append((cut, after))
+                        next.append(cut)
+                    }
+                }
+            }
+            frontier = next
+        }
+        return found
     }
 
     // MARK: - 查
@@ -138,11 +242,14 @@ enum KrDict {
     ///
     /// **活用形命中后必须顺着它解析到词条** —— 返回活用形本身等于没还原。
     /// 这一条踩过：`읽는`、`없어요`、`가는` 全都停在活用形上，六个用例一起失败。
-    private static func direct(_ db: OpaquePointer, _ word: String) -> [String] {
-        rows(db, """
-            SELECT DISTINCT word FROM entry WHERE word = ?1
+    private static func direct(_ db: OpaquePointer, _ word: String,
+                               verbsOnly: Bool = false) -> [String] {
+        let filter = verbsOnly ? "AND (pos LIKE '%동사%' OR pos LIKE '%형용사%')" : ""
+        return rows(db, """
+            SELECT DISTINCT word FROM entry WHERE word = ?1 \(filter)
             UNION
-            SELECT DISTINCT e.word FROM form f JOIN entry e ON e.id = f.entry_id WHERE f.form = ?1
+            SELECT DISTINCT e.word FROM form f JOIN entry e ON e.id = f.entry_id
+            WHERE f.form = ?1 \(filter.replacingOccurrences(of: "pos", with: "e.pos"))
             """, [word], columns: 1).map { $0[0] }
     }
 
@@ -155,19 +262,36 @@ enum KrDict {
         var out = direct(db, query).map { Match(word: $0, restored: false) }
         var seen = Set(out.map(\.word))
 
-        let characters = Array(query)
-        for length in stride(from: characters.count, through: 1, by: -1) {
-            let stem = String(characters[0..<length])
-            // 原样那一层已经查过了，别重复
-            if length == characters.count && !out.isEmpty && stem == query { continue }
+        /// - Parameter verbsOnly: 在词尾处切开得到的词干，只可能是用言。
+        ///   不限制的话 `먹었어요` 会顺出名词「먹」（墨），`걸으면` 顺出「걸」。
+        func restore(_ stem: String, after: After = .any, verbsOnly: Bool = false) -> [Match] {
             var round: [Match] = []
-            for candidate in lemmaCandidates(stem).sorted() {
-                for word in direct(db, candidate) where !seen.contains(word) {
-                    seen.insert(word)
+            for candidate in lemmaCandidates(stem, after: after).sorted() {
+                for word in direct(db, candidate, verbsOnly: verbsOnly)
+                where seen.insert(word).inserted {
                     round.append(Match(word: word, restored: true))
                 }
             }
-            if !round.isEmpty { out += round; break }
+            return round
+        }
+
+        // 按语法切：先看这个词是由哪个词尾结尾的，在那儿断开再还原词干。
+        // 整词查到了也照样做一遍 —— 同形太常见：`대한` 既是名词「大寒」，
+        // 也是「-에 대한」里 `대하다` 的冠形词形，后者才是句子里几乎必然的那个。
+        var byGrammar: [Match] = []
+        // 并进音节的词尾（过去时 ㅆ、冠形 ㄴ/ㄹ、元音缩合）在原词上就能拆
+        byGrammar += restore(query, after: .any, verbsOnly: !out.isEmpty)
+        for (stem, after) in stems(of: query, weak: out.isEmpty) {
+            byGrammar += restore(stem, after: after, verbsOnly: true)
+        }
+        if !out.isEmpty || !byGrammar.isEmpty { return out + byGrammar }
+
+        // 词尾表没覆盖到 —— 退着找词干兜底。词尾永远列不全，
+        // 这一层保证「表里没有的写法」不至于查不到，代价是可能带出噪音。
+        let characters = Array(query)
+        for length in stride(from: characters.count - 1, through: 1, by: -1) {
+            let round = restore(String(characters[0..<length]))
+            if !round.isEmpty { return out + round }
         }
         return out
     }
