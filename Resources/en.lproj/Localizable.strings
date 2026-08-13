@@ -392,3 +392,8 @@
 "home.notesNone" = "None yet";
 "menu.minimize" = "Minimise";
 "krdict.searchHint" = "Search this database — Korean or Chinese";
+"menu.clearOnQuit.tip" = "Turn this off to stay signed in to dictionary sites — the app never stores your password, only the site's own session cookie";
+"home.login" = "Site sign-in";
+"home.loginKept" = "Kept — no need to sign in again";
+"home.loginCleared" = "Cleared on quit — you sign in again each time";
+"home.keepLogin" = "Stay signed in";

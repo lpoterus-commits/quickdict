@@ -392,3 +392,8 @@
 "home.notesNone" = "还没添加";
 "menu.minimize" = "最小化";
 "krdict.searchHint" = "在词库里查：韩语或中文都行";
+"menu.clearOnQuit.tip" = "关掉它，词典网站的登录状态就能留到下次 —— App 不保存你的密码，保留的是网站发的登录凭据";
+"home.login" = "网站登录";
+"home.loginKept" = "会记住，下次不用重登";
+"home.loginCleared" = "每次退出都清掉，下次要重新登录";
+"home.keepLogin" = "记住登录";

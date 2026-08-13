@@ -47,6 +47,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             case "dictionaries": self.showDictionaryEditor()
             case "hotkeys": self.showHotKeyEditor()
             case "help": self.showHelp()
+            case "keepLogin":
+                self.toggleClearOnQuit()
+                self.homeWindow.refresh(config: self.config)
             case "config": self.openConfigFile()
             default: break
             }
@@ -526,6 +529,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let clearOnQuit = NSMenuItem(title: t("menu.clearOnQuit"), action: #selector(toggleClearOnQuit), keyEquivalent: "")
         clearOnQuit.target = self
         clearOnQuit.state = config.clearDataOnQuit ? .on : .off
+        clearOnQuit.toolTip = t("menu.clearOnQuit.tip")
         menu.addItem(clearOnQuit)
         menu.addItem(.separator())
 

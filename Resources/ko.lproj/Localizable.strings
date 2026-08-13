@@ -394,3 +394,8 @@
 "home.notesNone" = "아직 없음";
 "menu.minimize" = "최소화";
 "krdict.searchHint" = "이 사전에서 찾기 — 한국어도 중국어도";
+"menu.clearOnQuit.tip" = "끄면 사전 사이트 로그인이 다음에도 유지됩니다. 비밀번호는 저장하지 않고 사이트가 준 세션만 남깁니다";
+"home.login" = "사이트 로그인";
+"home.loginKept" = "유지됩니다. 다시 로그인할 필요 없음";
+"home.loginCleared" = "종료할 때 지웁니다. 매번 다시 로그인";
+"home.keepLogin" = "로그인 유지";

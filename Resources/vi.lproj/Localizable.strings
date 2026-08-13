@@ -394,3 +394,8 @@
 "home.notesNone" = "Chưa có";
 "menu.minimize" = "Thu nhỏ";
 "krdict.searchHint" = "Tìm trong cơ sở dữ liệu này — tiếng Hàn hoặc tiếng Trung";
+"menu.clearOnQuit.tip" = "Tắt mục này để giữ đăng nhập ở các trang từ điển — ứng dụng không lưu mật khẩu, chỉ giữ phiên do trang cấp";
+"home.login" = "Đăng nhập trang";
+"home.loginKept" = "Được giữ — không phải đăng nhập lại";
+"home.loginCleared" = "Xoá khi thoát — lần sau phải đăng nhập lại";
+"home.keepLogin" = "Giữ đăng nhập";

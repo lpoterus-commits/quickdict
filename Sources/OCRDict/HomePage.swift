@@ -10,12 +10,15 @@ enum HomePage {
         var accessibility: Bool
         var database: Bool
         var notes: Int
+        /// 词典网站的登录状态能不能留到下次
+        var staysLoggedIn: Bool
 
         static func current(config: AppConfig) -> Status {
             Status(screen: CGPreflightScreenCaptureAccess(),
                    accessibility: AXIsProcessTrusted(),
                    database: DictionaryPresets.bundledDatabase != nil,
-                   notes: config.dictionaries.filter(\.isNotes).count)
+                   notes: config.dictionaries.filter(\.isNotes).count,
+                   staysLoggedIn: !config.clearDataOnQuit)
         }
     }
 
@@ -88,9 +91,11 @@ enum HomePage {
     /// 权限和词库。**给不了的直接说出来，并写清楚少了什么功能** ——
     /// 权限没给时症状是「按了没反应」，不说明的话根本猜不到原因。
     private static func statusSection(_ status: Status) -> String {
-        func line(_ ok: Bool, _ label: String, _ detail: String, action: String?) -> String {
+        func line(_ ok: Bool, _ label: String, _ detail: String,
+                  action: String?, button label2: String = "") -> String {
             let button = (ok || action == nil) ? ""
-                : "<button class=\"fix\" data-do=\"\(action!)\">\(t("home.fix"))</button>"
+                : "<button class=\"fix\" data-do=\"\(action!)\">"
+                    + (label2.isEmpty ? t("home.fix") : label2) + "</button>"
             return """
             <div class="state \(ok ? "ok" : "bad")"><span class="dot"></span>
             <b>\(esc(label))</b><span class="detail">\(esc(detail))</span>\(button)</div>
@@ -107,6 +112,9 @@ enum HomePage {
         \(line(status.notes > 0, t("home.notes"),
                status.notes > 0 ? t("home.notesCount", status.notes) : t("home.notesNone"),
                action: "dictionaries"))
+        \(line(status.staysLoggedIn, t("home.login"),
+               status.staysLoggedIn ? t("home.loginKept") : t("home.loginCleared"),
+               action: "keepLogin", button: t("home.keepLogin")))
         """
     }
 
