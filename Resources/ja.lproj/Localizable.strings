@@ -14,8 +14,8 @@
 "menu.editConfig"          = "設定ファイルを編集…";
 "menu.reloadConfig"        = "設定を読み込み直す";
 "menu.clearData"           = "閲覧データを消去（%@）";
-"menu.clearData.tip"       = "内蔵ウインドウの Cookie・localStorage・キャッシュを消します。辞書サイトはそこに検索履歴を残します。";
-"menu.clearOnQuit"         = "終了時に消去";
+"menu.clearData.tip"       = "キャッシュとサイトの localStorage（辞書サイトの「最近の検索」）を消します。ログインは影響を受けません。";
+"menu.clearOnQuit"         = "終了時に閲覧データを消去";
 "menu.launchAtLogin"       = "ログイン時に起動";
 "menu.diagnostics"         = "権限と認識言語…";
 "menu.about"               = "QuickDict について";
@@ -394,8 +394,15 @@
 "home.notesNone" = "未追加";
 "menu.minimize" = "しまう";
 "krdict.searchHint" = "この辞書データを検索 — 韓国語でも中国語でも";
-"menu.clearOnQuit.tip" = "オフにすると辞書サイトのログイン状態が次回も残ります。パスワードは保存せず、サイト発行のセッションだけを保持します";
+"menu.clearOnQuit.tip" = "キャッシュとサイトの「最近の検索」だけを消します。ログインには影響しません。";
 "home.login" = "サイトのログイン";
 "home.loginKept" = "保持されます。次回もそのまま";
 "home.loginCleared" = "終了時に消去。毎回ログインし直しになります";
 "home.keepLogin" = "ログインを保持";
+"menu.clearLogins" = "ログイン情報を消去（ログアウトします）";
+"menu.clearLogins.tip" = "Cookie だけを消します。キャッシュやサイトの「最近の検索」は残り、次回はログインし直しになります";
+"menu.logoutOnQuit" = "終了時にログイン情報も消去";
+"menu.logoutOnQuit.tip" = "オフにすると辞書サイトのログイン状態が次回も残ります。パスワードは保存せず、サイト発行のセッションだけを保持します";
+"hud.loginsCleared" = "ログイン情報を消去しました。次回はログインが必要です";
+"hud.logoutOnQuitOn" = "終了時にログイン情報も消去します";
+"hud.logoutOnQuitOff" = "終了時もログイン情報を残します";

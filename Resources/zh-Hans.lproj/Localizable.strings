@@ -12,8 +12,8 @@
 "menu.editConfig"          = "编辑配置文件…";
 "menu.reloadConfig"        = "重新载入配置";
 "menu.clearData"           = "清除浏览数据（%@）";
-"menu.clearData.tip"       = "清空内嵌窗口的 Cookie、localStorage 和缓存。词典网站的「最近搜索」就存在这里。";
-"menu.clearOnQuit"         = "退出时自动清除";
+"menu.clearData.tip"       = "清空缓存和网站存的 localStorage（词典站的「最近搜索」就在这里）。**登录不受影响**";
+"menu.clearOnQuit"         = "退出时清除浏览数据";
 "menu.launchAtLogin"       = "开机自动启动";
 "menu.diagnostics"         = "权限与识别语言自检…";
 "menu.about"               = "关于 快捷查词助手";
@@ -392,8 +392,15 @@
 "home.notesNone" = "还没添加";
 "menu.minimize" = "最小化";
 "krdict.searchHint" = "在词库里查：韩语或中文都行";
-"menu.clearOnQuit.tip" = "关掉它，词典网站的登录状态就能留到下次 —— App 不保存你的密码，保留的是网站发的登录凭据";
+"menu.clearOnQuit.tip" = "只清缓存和网站存的「最近搜索」，登录不受影响";
 "home.login" = "网站登录";
 "home.loginKept" = "会记住，下次不用重登";
 "home.loginCleared" = "每次退出都清掉，下次要重新登录";
 "home.keepLogin" = "记住登录";
+"menu.clearLogins" = "清除登录凭据（会登出）";
+"menu.clearLogins.tip" = "只清 Cookie —— 缓存和网站记的「最近搜索」不动，下次要重新登录";
+"menu.logoutOnQuit" = "退出时清除登录凭据";
+"menu.logoutOnQuit.tip" = "关掉它，词典网站的登录状态就能留到下次 —— App 不保存你的密码，保留的是网站发的登录凭据";
+"hud.loginsCleared" = "登录凭据已清除，下次要重新登录";
+"hud.logoutOnQuitOn" = "退出时将同时清除登录凭据";
+"hud.logoutOnQuitOff" = "退出时保留登录凭据";

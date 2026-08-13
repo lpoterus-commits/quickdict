@@ -83,6 +83,17 @@ done
         echo "  FAIL 词库页面的查询入口 — 输入框/回车/样式 只齐了 $ok/3"
     fi
 
+echo "── browsing data vs sign-ins"
+# 两类数据必须能分开清。一股脑全清的话，「别让网站记住我搜过什么」和
+# 「别让我每次重登」就只能二选一 —— 它们本来没有关系。
+kinds=$("$BIN" --clear-kinds 2>/dev/null)
+if [ "$kinds" = "logins=1 browsing>1 disjoint=yes" ]; then
+    pass=$((pass + 1))
+else
+    fail=$((fail + 1))
+    echo "  FAIL 数据分类 — got: $kinds"
+fi
+
 echo "── home page"
 # 主页内容是按当前配置生成的。这里盯两件事：四段都在，
 # 以及**没有把文案键漏成原文**（`menu.capture` 这种键名直接显示在界面上过一次）。

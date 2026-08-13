@@ -12,8 +12,8 @@
 "menu.editConfig"          = "Edit Config File…";
 "menu.reloadConfig"        = "Reload Config";
 "menu.clearData"           = "Clear Browsing Data (%@)";
-"menu.clearData.tip"       = "Clears cookies, localStorage and cache of the built-in window. Dictionary sites store your recent searches there.";
-"menu.clearOnQuit"         = "Clear on Quit";
+"menu.clearData.tip"       = "Clears caches and site localStorage — where dictionary sites keep their recent searches. Sign-ins are not touched.";
+"menu.clearOnQuit"         = "Clear Browsing Data on Quit";
 "menu.launchAtLogin"       = "Launch at Login";
 "menu.diagnostics"         = "Permissions & Languages…";
 "menu.about"               = "About QuickDict";
@@ -392,8 +392,15 @@
 "home.notesNone" = "None yet";
 "menu.minimize" = "Minimise";
 "krdict.searchHint" = "Search this database — Korean or Chinese";
-"menu.clearOnQuit.tip" = "Turn this off to stay signed in to dictionary sites — the app never stores your password, only the site's own session cookie";
+"menu.clearOnQuit.tip" = "Clears caches and the sites' recent-search lists. Sign-ins are not affected.";
 "home.login" = "Site sign-in";
 "home.loginKept" = "Kept — no need to sign in again";
 "home.loginCleared" = "Cleared on quit — you sign in again each time";
 "home.keepLogin" = "Stay signed in";
+"menu.clearLogins" = "Clear Sign-ins (signs you out)";
+"menu.clearLogins.tip" = "Cookies only — caches and the sites' own recent-search lists stay; you sign in again next time";
+"menu.logoutOnQuit" = "Clear Sign-ins on Quit";
+"menu.logoutOnQuit.tip" = "Turn this off to stay signed in to dictionary sites — the app never stores your password, only the site's own session cookie";
+"hud.loginsCleared" = "Sign-ins cleared — you'll sign in again next time";
+"hud.logoutOnQuitOn" = "Sign-ins will be cleared on quit";
+"hud.logoutOnQuitOff" = "Sign-ins are kept on quit";

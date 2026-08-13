@@ -18,7 +18,7 @@ enum HomePage {
                    accessibility: AXIsProcessTrusted(),
                    database: DictionaryPresets.bundledDatabase != nil,
                    notes: config.dictionaries.filter(\.isNotes).count,
-                   staysLoggedIn: !config.clearDataOnQuit)
+                   staysLoggedIn: !config.clearLoginsOnQuit)
         }
     }
 

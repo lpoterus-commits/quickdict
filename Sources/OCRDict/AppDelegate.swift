@@ -48,7 +48,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             case "hotkeys": self.showHotKeyEditor()
             case "help": self.showHelp()
             case "keepLogin":
-                self.toggleClearOnQuit()
+                self.toggleLogoutOnQuit()
                 self.homeWindow.refresh(config: self.config)
             case "config": self.openConfigFile()
             default: break
@@ -110,8 +110,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationWillTerminate(_ notification: Notification) {
         hotKey.unregister()
-        if config.clearDataOnQuit {
-            WebData.clearBlocking()
+        // 两个开关各清各的：都开就等于以前那个「全清」
+        if config.clearDataOnQuit && config.clearLoginsOnQuit {
+            WebData.clearBlocking(.all)
+        } else if config.clearDataOnQuit {
+            WebData.clearBlocking(.browsing)
+        } else if config.clearLoginsOnQuit {
+            WebData.clearBlocking(.logins)
         }
     }
 
@@ -526,11 +531,24 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         clear.toolTip = t("menu.clearData.tip")
         menu.addItem(clear)
 
+        let clearLogins = NSMenuItem(title: t("menu.clearLogins"),
+                                     action: #selector(clearWebLogins), keyEquivalent: "")
+        clearLogins.target = self
+        clearLogins.toolTip = t("menu.clearLogins.tip")
+        menu.addItem(clearLogins)
+
         let clearOnQuit = NSMenuItem(title: t("menu.clearOnQuit"), action: #selector(toggleClearOnQuit), keyEquivalent: "")
         clearOnQuit.target = self
         clearOnQuit.state = config.clearDataOnQuit ? .on : .off
         clearOnQuit.toolTip = t("menu.clearOnQuit.tip")
         menu.addItem(clearOnQuit)
+
+        let logoutOnQuit = NSMenuItem(title: t("menu.logoutOnQuit"),
+                                      action: #selector(toggleLogoutOnQuit), keyEquivalent: "")
+        logoutOnQuit.target = self
+        logoutOnQuit.state = config.clearLoginsOnQuit ? .on : .off
+        logoutOnQuit.toolTip = t("menu.logoutOnQuit.tip")
+        menu.addItem(logoutOnQuit)
         menu.addItem(.separator())
 
         let login = NSMenuItem(title: t("menu.launchAtLogin"), action: #selector(toggleLaunchAtLogin), keyEquivalent: "")
@@ -718,11 +736,28 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         HUD.shared.show(t("hud.configReloaded"))
     }
 
+    /// 只清登录 —— 缓存和网站存的搜索记录不动
+    @objc private func clearWebLogins() {
+        WebData.clear(.logins) { [weak self] in
+            HUD.shared.show(t("hud.loginsCleared"))
+            self?.statusItem.menu = self?.buildMenu()
+        }
+    }
+
+    @objc private func toggleLogoutOnQuit() {
+        config.clearLoginsOnQuit.toggle()
+        ConfigStore.save(config)
+        statusItem.menu = buildMenu()
+        homeWindow.refresh(config: config)
+        HUD.shared.show(t(config.clearLoginsOnQuit ? "hud.logoutOnQuitOn" : "hud.logoutOnQuitOff"))
+    }
+
+    /// 清浏览数据 —— **登录留着**。想登出用上面那一项。
     @objc private func clearWebData() {
         let before = WebData.diskUsage()
         resultWindow.blankOut()
         NotesCache.clearAll()
-        WebData.clear { [weak self] in
+        WebData.clear(.browsing) { [weak self] in
             let freed = max(0, before - WebData.diskUsage())
             HUD.shared.show(t("hud.dataCleared", WebData.formatted(freed)))
             self?.statusItem.menu = self?.buildMenu()

@@ -144,9 +144,12 @@ struct AppConfig: Codable {
     /// 结果窗口是否默认置顶。false 时切到别的 App 会被正常盖住；
     /// 需要一边看词典一边打字时，用工具栏上的图钉按钮临时置顶。
     var alwaysOnTop: Bool
-    /// 退出时清空内嵌 WebView 的 Cookie / localStorage / 缓存。
+    /// 退出时清空浏览数据（缓存、localStorage 等）。**不含登录凭据**。
     /// 本 App 自己不记历史，但词典网站会往 localStorage 里塞「最近搜索」。
     var clearDataOnQuit: Bool
+    /// 退出时把登录凭据（Cookie）也清掉 —— 清了下次要重新登录。
+    /// 和上面那个分开：「不想让网站记住我搜过什么」和「不想每次重登」是两件事。
+    var clearLoginsOnQuit: Bool
     /// 二维码里的链接打开前先弹窗确认。二维码是不可读的，扫到什么网址肉眼看不出来，
     /// 想稳一点就把这个打开。
     var qrConfirmBeforeOpen: Bool
@@ -184,6 +187,7 @@ struct AppConfig: Codable {
         openInBrowser: false,
         alwaysOnTop: false,
         clearDataOnQuit: true,
+        clearLoginsOnQuit: false,
         qrConfirmBeforeOpen: false,
         koreanExtraParticles: [],
         koreanExtraStandalone: [],
@@ -208,7 +212,7 @@ extension AppConfig {
     enum CodingKeys: String, CodingKey {
         case hotkeys
         case autoDetectLanguage, ocrLanguages, defaultLatinLanguage, latinConfidenceThreshold
-        case collapseWhitespaceToSpace, openInBrowser, alwaysOnTop, clearDataOnQuit
+        case collapseWhitespaceToSpace, openInBrowser, alwaysOnTop, clearDataOnQuit, clearLoginsOnQuit
         case qrConfirmBeforeOpen, koreanExtraParticles, koreanExtraStandalone
         case sourceLanguages, dictionaryLanguage, windowWidth, windowHeight, windowZoom, speechRate, speechSkipsNumbers, dictionaries
     }
@@ -236,6 +240,9 @@ extension AppConfig {
         openInBrowser = try c.decodeIfPresent(Bool.self, forKey: .openInBrowser) ?? d.openInBrowser
         alwaysOnTop = try c.decodeIfPresent(Bool.self, forKey: .alwaysOnTop) ?? d.alwaysOnTop
         clearDataOnQuit = try c.decodeIfPresent(Bool.self, forKey: .clearDataOnQuit) ?? d.clearDataOnQuit
+        // 旧配置里 clearDataOnQuit 是「全清」的意思，包括登录。原样迁过来，
+        // 免得某人本来选的是「退出抹干净」，升级后登录却悄悄留了下来。
+        clearLoginsOnQuit = try c.decodeIfPresent(Bool.self, forKey: .clearLoginsOnQuit) ?? clearDataOnQuit
         qrConfirmBeforeOpen = try c.decodeIfPresent(Bool.self, forKey: .qrConfirmBeforeOpen) ?? d.qrConfirmBeforeOpen
         koreanExtraParticles = try c.decodeIfPresent([String].self, forKey: .koreanExtraParticles) ?? []
         koreanExtraStandalone = try c.decodeIfPresent([String].self, forKey: .koreanExtraStandalone) ?? []

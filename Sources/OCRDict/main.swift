@@ -98,6 +98,42 @@ if CommandLine.arguments.count >= 4, CommandLine.arguments[1] == "--route" {
     exit(0)
 }
 
+// 调试入口：--clear-kinds 检查两类数据的划分：登录只含 Cookie，
+// 浏览数据不含 Cookie，两者不相交
+if CommandLine.arguments.contains("--clear-kinds") {
+    let logins = WebData.Kind.logins.types
+    let browsing = WebData.Kind.browsing.types
+    print("logins=\(logins.count) browsing\(browsing.count > 1 ? ">1" : "<=1") "
+        + "disjoint=\(logins.isDisjoint(with: browsing) ? "yes" : "no")")
+    exit(0)
+}
+
+// 调试入口：--clear browsing|logins|all 只清指定的一类，用来验证两者确实互不牵连
+if CommandLine.arguments.count >= 3, CommandLine.arguments[1] == "--clear" {
+    let kind: WebData.Kind = CommandLine.arguments[2] == "logins" ? .logins
+        : (CommandLine.arguments[2] == "browsing" ? .browsing : .all)
+    WebData.clearBlocking(kind)
+    print("已清除：\(CommandLine.arguments[2])")
+    exit(0)
+}
+
+// 调试入口：--webdata 列出哪些站点存了东西、存的是不是登录凭据
+if CommandLine.arguments.contains("--webdata") {
+    var done = false
+    WebData.records { list in
+        print("落盘 \(WebData.formatted(WebData.diskUsage()))，\(list.count) 个站点")
+        for entry in list {
+            print("  \(entry.hasLogin ? "登录" : "  · ")  \(entry.site)")
+        }
+        done = true
+    }
+    let deadline = Date().addingTimeInterval(5)
+    while !done, Date() < deadline {
+        RunLoop.current.run(mode: .default, before: Date().addingTimeInterval(0.05))
+    }
+    exit(0)
+}
+
 // 调试入口：--home-html 打印主页内容，验证它确实跟着配置走
 if CommandLine.arguments.contains("--home-html") {
     let config = ConfigStore.load()
