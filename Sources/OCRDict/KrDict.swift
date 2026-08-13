@@ -390,6 +390,20 @@ enum KrDict {
         return dir
     }
 
+    /// 词库页面自己的输入框。
+    ///
+    /// 窗口顶上那个查询框是**所有词典共用**的，敲下去查的是当前选中的那一本；
+    /// 这里这个只查词库，而且韩中双向都认 —— 想连着查几个词时不用惦记选没选对。
+    private static func searchBar(_ query: String) -> String {
+        """
+        <div class="find">
+          <input id="kq" type="search" value="\(esc(query))"
+                 placeholder="\(esc(t("krdict.searchHint")))">
+          <button id="kgo">\(t("home.lookup"))</button>
+        </div>
+        """
+    }
+
     private static func render(db: OpaquePointer, query: String, name: String, source: URL) -> String {
         let hangul = query.unicodeScalars.contains { (0xAC00...0xD7AF).contains($0.value) }
         let matches = hangul ? lemmatize(db, query)
@@ -415,6 +429,7 @@ enum KrDict {
         <style>\(css)</style></head><body>
         <header><h1>\(esc(query))</h1>
         <span class="src">\(esc(name)) · \(t("krdict.offline"))</span></header>
+        \(searchBar(query))
         \(body)
         <footer>\(t("krdict.credit"))</footer>
         <script>\(script)</script></body></html>
@@ -487,6 +502,18 @@ enum KrDict {
     /// 点词换查、点喇叭朗读。两件事都发回 App 做 —— 页面是 file://，
     /// 自己既查不了库也发不出声。
     private static let script = """
+    const box = document.getElementById('kq');
+    function find() {
+      const text = box.value.trim();
+      if (!text) { box.focus(); return; }
+      window.webkit.messageHandlers.quickdict.postMessage({action: 'search', text: text});
+    }
+    if (box) {
+      box.addEventListener('keydown', e => { if (e.key === 'Enter') find(); });
+      document.getElementById('kgo').onclick = find;
+      // 光标停在词尾，接着改比重打快
+      box.addEventListener('focus', () => box.setSelectionRange(box.value.length, box.value.length));
+    }
     document.addEventListener('click', function (event) {
       const word = event.target.closest('.w');
       if (word) { event.preventDefault();
@@ -539,6 +566,15 @@ enum KrDict {
     .rel span { color:var(--dim); font-size:11.5px; }
     .w { color:var(--accent); text-decoration:none; cursor:pointer;
          padding:1px 6px; border-radius:6px; background:rgba(127,127,127,.12); }
+    .find { display:flex; gap:7px; margin:14px 0 2px; }
+    #kq { flex:1; min-width:0; font:14px -apple-system,"PingFang SC","Apple SD Gothic Neo",sans-serif;
+          padding:7px 12px; border-radius:9px; border:1px solid var(--line);
+          background:var(--card); color:var(--fg); -webkit-appearance:none; appearance:none; }
+    #kq:focus { outline:2px solid var(--accent); outline-offset:-1px; }
+    #kgo { font:14px -apple-system,"PingFang SC",sans-serif; color:var(--fg); cursor:pointer;
+           padding:0 18px; border:1px solid var(--line); background:var(--card);
+           border-radius:9px; -webkit-appearance:none; appearance:none; }
+    #kgo:hover { border-color:var(--accent); }
     .none { margin:24px 0 8px; font-size:15px; }
     .hint { color:var(--dim); font-size:13px; line-height:2.1; }
     footer { margin-top:28px; padding-top:12px; border-top:1px solid var(--line);

@@ -393,3 +393,4 @@
 "home.notesCount" = "%ld개";
 "home.notesNone" = "아직 없음";
 "menu.minimize" = "최소화";
+"krdict.searchHint" = "이 사전에서 찾기 — 한국어도 중국어도";

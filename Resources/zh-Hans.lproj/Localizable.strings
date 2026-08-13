@@ -391,3 +391,4 @@
 "home.notesCount" = "%ld 本";
 "home.notesNone" = "还没添加";
 "menu.minimize" = "最小化";
+"krdict.searchHint" = "在词库里查：韩语或中文都行";

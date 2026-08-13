@@ -393,3 +393,4 @@
 "home.notesCount" = "%ld 件";
 "home.notesNone" = "未追加";
 "menu.minimize" = "しまう";
+"krdict.searchHint" = "この辞書データを検索 — 韓国語でも中国語でも";

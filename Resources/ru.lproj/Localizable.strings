@@ -393,3 +393,4 @@
 "home.notesCount" = "%ld шт.";
 "home.notesNone" = "Пока нет";
 "menu.minimize" = "Убрать в Dock";
+"krdict.searchHint" = "Искать в этой базе — по-корейски или по-китайски";

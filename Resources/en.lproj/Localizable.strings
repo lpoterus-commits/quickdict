@@ -391,3 +391,4 @@
 "home.notesCount" = "%ld added";
 "home.notesNone" = "None yet";
 "menu.minimize" = "Minimise";
+"krdict.searchHint" = "Search this database — Korean or Chinese";

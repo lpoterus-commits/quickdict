@@ -69,6 +69,20 @@ for md in Tests/notes/*.md; do
     fi
 done
 
+    # 词库页面自带的查询入口：输入框、回车绑定、以及**它的样式规则**。
+    # 样式漏掉过一次 —— 补丁挂的锚点早被删了，替换静默失败，框子还在但没样式。
+    page=$("$BIN" --krdict "$KRDICT" "가다" 2>/dev/null)
+    ok=0
+    printf '%s' "$page" | grep -q 'id="kq"' && ok=$((ok+1))
+    printf '%s' "$page" | grep -q "e.key === 'Enter'" && ok=$((ok+1))
+    printf '%s' "$page" | grep -q '#kq {' && ok=$((ok+1))
+    if [ "$ok" = "3" ]; then
+        pass=$((pass + 1))
+    else
+        fail=$((fail + 1))
+        echo "  FAIL 词库页面的查询入口 — 输入框/回车/样式 只齐了 $ok/3"
+    fi
+
 echo "── home page"
 # 主页内容是按当前配置生成的。这里盯两件事：四段都在，
 # 以及**没有把文案键漏成原文**（`menu.capture` 这种键名直接显示在界面上过一次）。
