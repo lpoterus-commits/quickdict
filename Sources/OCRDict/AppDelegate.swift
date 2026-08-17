@@ -849,23 +849,25 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         about.target = self
         appMenu.addItem(about)
         appMenu.addItem(.separator())
-        appMenu.addItem(withTitle: t("menu.hideWindow"), action: Selector(("performClose:")), keyEquivalent: "w")
-        appMenu.addItem(withTitle: t("menu.minimize"), action: Selector(("performMiniaturize:")), keyEquivalent: "m")
+        appMenu.addItem(withTitle: t("menu.hideWindow"), action: #selector(NSWindow.performClose(_:)), keyEquivalent: "w")
+        appMenu.addItem(withTitle: t("menu.minimize"), action: #selector(NSWindow.performMiniaturize(_:)), keyEquivalent: "m")
         appMenu.addItem(withTitle: t("menu.quit"), action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
         appItem.submenu = appMenu
         main.addItem(appItem)
 
         let editItem = NSMenuItem()
         let editMenu = NSMenu(title: t("menu.edit"))
+        // undo:/redo: 是响应链上的动作，系统框架里没有任何类声明它们，
+        // 所以只能写字符串 —— 其余几项都换成了 #selector，由编译器校对
         editMenu.addItem(withTitle: t("menu.undo"), action: Selector(("undo:")), keyEquivalent: "z")
         let redo = NSMenuItem(title: t("menu.redo"), action: Selector(("redo:")), keyEquivalent: "z")
         redo.keyEquivalentModifierMask = [.command, .shift]
         editMenu.addItem(redo)
         editMenu.addItem(.separator())
-        editMenu.addItem(withTitle: t("menu.cut"), action: Selector(("cut:")), keyEquivalent: "x")
-        editMenu.addItem(withTitle: t("menu.copy"), action: Selector(("copy:")), keyEquivalent: "c")
-        editMenu.addItem(withTitle: t("menu.paste"), action: Selector(("paste:")), keyEquivalent: "v")
-        editMenu.addItem(withTitle: t("menu.selectAll"), action: Selector(("selectAll:")), keyEquivalent: "a")
+        editMenu.addItem(withTitle: t("menu.cut"), action: #selector(NSText.cut(_:)), keyEquivalent: "x")
+        editMenu.addItem(withTitle: t("menu.copy"), action: #selector(NSText.copy(_:)), keyEquivalent: "c")
+        editMenu.addItem(withTitle: t("menu.paste"), action: #selector(NSText.paste(_:)), keyEquivalent: "v")
+        editMenu.addItem(withTitle: t("menu.selectAll"), action: #selector(NSText.selectAll(_:)), keyEquivalent: "a")
         editItem.submenu = editMenu
         main.addItem(editItem)
 

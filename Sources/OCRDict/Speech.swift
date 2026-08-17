@@ -11,7 +11,10 @@ import NaturalLanguage
 ///
 /// 原脚本只活在浏览器标签页里；在这儿它挂在全局快捷键上，任何 App 里都能用，
 /// 而且多了浏览器版做不到的一条：**截图 → OCR → 朗读**，扫描版教材也能听。
-final class Speech: NSObject, AVSpeechSynthesizerDelegate {
+/// 全部状态只在主线程碰：快捷键处理器、`speak`、以及合成器的完成回调
+/// （实测 `didFinish` 回调在主线程，不是文档承诺的，所以这里记一笔）。
+/// 因此对 `AVSpeechSynthesizer` 不是 Sendable 这件事按「已核对」处理。
+final class Speech: NSObject, AVSpeechSynthesizerDelegate, @unchecked Sendable {
     static let shared = Speech()
 
     private let synthesizer = AVSpeechSynthesizer()

@@ -259,7 +259,7 @@ enum KrDict {
     /// 因为它也可能是 `보다` 的连接形。两个都给，让人自己看 —— 这种同形
     /// 本地没有任何信号能判，硬选一个只会选错。
     static func lemmatize(_ db: OpaquePointer, _ query: String) -> [Match] {
-        var out = direct(db, query).map { Match(word: $0, restored: false) }
+        let out = direct(db, query).map { Match(word: $0, restored: false) }
         var seen = Set(out.map(\.word))
 
         /// - Parameter verbsOnly: 在词尾处切开得到的词干，只可能是用言。

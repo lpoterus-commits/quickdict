@@ -47,16 +47,35 @@ enum LineJoiner {
 
     /// 用户在配置里补充的条目，和内置表合并使用。
     /// 内置表继续随版本更新，用户的补充不会被覆盖 —— 所以是「合并」而不是「替换」。
-    private static var extraParticles: Set<String> = []
-    private static var extraStandalone: Set<String> = []
+    ///
+    /// **这两张表跨线程**：改是在主线程（启动、「重新载入配置」），
+    /// 读是在后台队列（截图 OCR 之后拼行）。所以要加锁 ——
+    /// 边读边改一个 Set 不是「顺序可能不对」，是会崩。
+    /// 实测：ThreadSanitizer 在 `particles.getter` 上报数据竞争。
+    ///
+    /// 顺带把合并结果存下来。原来每读一次算一遍并集，而拼行是逐行调用的。
+    private static let tableLock = NSLock()
+    private static var mergedParticles = danglingParticles
+    private static var mergedStandalone = standaloneSyllables
 
     static func configure(extraParticles: [String], extraStandalone: [String]) {
-        self.extraParticles = Set(extraParticles)
-        self.extraStandalone = Set(extraStandalone)
+        tableLock.lock()
+        defer { tableLock.unlock() }
+        mergedParticles = danglingParticles.union(extraParticles)
+        mergedStandalone = standaloneSyllables.union(extraStandalone)
     }
 
-    private static var particles: Set<String> { danglingParticles.union(extraParticles) }
-    private static var standalone: Set<String> { standaloneSyllables.union(extraStandalone) }
+    private static var particles: Set<String> {
+        tableLock.lock()
+        defer { tableLock.unlock() }
+        return mergedParticles
+    }
+
+    private static var standalone: Set<String> {
+        tableLock.lock()
+        defer { tableLock.unlock() }
+        return mergedStandalone
+    }
 
     static func joined(_ lines: [OCRLine]) -> Result {
         let cleaned = lines
