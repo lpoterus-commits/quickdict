@@ -1,4 +1,5 @@
 import AppKit
+import ServiceManagement
 import ImageIO
 
 // 调试入口：不启动 GUI，直接对一张图跑完 OCR → 清洗 → 语种判定 → 出 URL。
@@ -98,6 +99,16 @@ if CommandLine.arguments.count >= 4, CommandLine.arguments[1] == "--route" {
     exit(0)
 }
 
+// 调试入口：--combos 列出编辑器允许的每个「来源 + 动作」组合，
+// 用来和 AppDelegate.dispatch 的实际分支对账
+if CommandLine.arguments.contains("--combos") {
+    for source in HotKeyEditorController.sources {
+        let actions = HotKeyEditorController.actions(for: source)
+        print("\(source.rawValue): " + (actions.isEmpty ? "-" : actions.map(\.rawValue).joined(separator: ",")))
+    }
+    exit(0)
+}
+
 // 调试入口：--clear-kinds 检查两类数据的划分：登录只含 Cookie，
 // 浏览数据不含 Cookie，两者不相交
 if CommandLine.arguments.contains("--clear-kinds") {
@@ -131,6 +142,29 @@ if CommandLine.arguments.contains("--webdata") {
     while !done, Date() < deadline {
         RunLoop.current.run(mode: .default, before: Date().addingTimeInterval(0.05))
     }
+    exit(0)
+}
+
+// 调试入口：--login on|off 直接试注册/注销登录项，把系统给的错误原样打出来
+if CommandLine.arguments.count >= 3, CommandLine.arguments[1] == "--login" {
+    do {
+        if CommandLine.arguments[2] == "on" {
+            try SMAppService.mainApp.register()
+        } else {
+            try SMAppService.mainApp.unregister()
+        }
+        print("成功，当前状态码 \(SMAppService.mainApp.status.rawValue)")
+    } catch {
+        print("失败：\(error)")
+    }
+    print("Bundle: \(Bundle.main.bundlePath)")
+    exit(0)
+}
+
+// 调试入口：--help-html 打印使用说明。它是按配置生成的用户文档，
+// 出错的方式和界面一样（漏译、印出按不出来的键），所以也要能自动检查
+if CommandLine.arguments.contains("--help-html") {
+    print(HelpDocument.html(config: ConfigStore.load()))
     exit(0)
 }
 
@@ -191,6 +225,20 @@ if CommandLine.arguments.contains("--diag") {
     print("本地化自检: lang.ko = \"\(LanguageNames.display("ko"))\"  menu.lookup = \"\(t("menu.lookup"))\"")
     print("屏幕录制权限: \(CGPreflightScreenCaptureAccess() ? "已授权" : "未授权")")
     print("辅助功能权限: \(SelectionReader.isTrusted ? "已授权" : "未授权")")
+    // 开机自启：特设签名的 App 注册登录项常常会失败，而失败是静默的 ——
+    // 用户只会发现「开机没起来」，猜不到原因。所以写进自检。
+    let loginStatus: String
+    switch SMAppService.mainApp.status {
+    case .enabled: loginStatus = "已启用"
+    case .notRegistered: loginStatus = "未注册"
+    case .notFound: loginStatus = "注册已失效（App 重新构建或移动过，重新勾一次即可）"
+    case .requiresApproval: loginStatus = "等待用户在系统设置里批准"
+    @unknown default: loginStatus = "未知"
+    }
+    print("开机自启: \(loginStatus)")
+    let installed = LocalDictionaries.installed
+    print("本机装了的词典 App: \(installed.isEmpty ? "无" : installed.map(\.name).joined(separator: ", "))")
+
     print("\n快捷键 (\(config.hotkeys.count) 条):")
     for binding in config.hotkeys {
         let source: String

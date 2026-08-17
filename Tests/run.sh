@@ -83,6 +83,42 @@ done
         echo "  FAIL 词库页面的查询入口 — 输入框/回车/样式 只齐了 $ok/3"
     fi
 
+echo "── configurable vs implemented"
+# 快捷键编辑器里能选的每一种「来源 + 动作」，dispatch 里都必须真的有分支。
+# 曾经不一致：「划词 + 只放剪贴板」「划词 + 扫码」选得上，按下去却静默变成查词。
+combos=$("$BIN" --combos 2>/dev/null)
+want="screenshot: lookup,clipboard,qrcode,speak
+selection: lookup,speak,speakfaster,speakslower
+manual: -
+home: -"
+if [ "$combos" = "$want" ]; then
+    pass=$((pass + 1))
+else
+    fail=$((fail + 1))
+    echo "  FAIL 组合表和实现对不上"
+    diff <(printf '%s' "$want") <(printf '%s' "$combos") | sed 's/^/    /'
+fi
+
+# 源码里每个 t("…") 都得有译文 —— 没有的话界面上会直接显示键名本身，
+# 编译器不报错。主页上就出现过「menu.capture」当标签。
+untranslated=$(python3 - <<'PY'
+import re, pathlib
+pat = re.compile(r'(?<![A-Za-z0-9_.])t\("([^"\\]+)"')
+used = set()
+for f in pathlib.Path("Sources/OCRDict").glob("*.swift"):
+    used |= set(pat.findall(f.read_text(encoding="utf-8")))
+have = set(re.findall(r'^"([^"]+)"\s*=',
+    pathlib.Path("Resources/en.lproj/Localizable.strings").read_text(encoding="utf-8"), re.M))
+print(" ".join(sorted(used - have)))
+PY
+)
+if [ -z "$untranslated" ]; then
+    pass=$((pass + 1))
+else
+    fail=$((fail + 1))
+    echo "  FAIL 这些键没有译文: $untranslated"
+fi
+
 echo "── browsing data vs sign-ins"
 # 两类数据必须能分开清。一股脑全清的话，「别让网站记住我搜过什么」和
 # 「别让我每次重登」就只能二选一 —— 它们本来没有关系。

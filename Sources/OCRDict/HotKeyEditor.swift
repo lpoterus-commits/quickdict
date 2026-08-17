@@ -236,19 +236,14 @@ final class HotKeyEditorController: NSObject, NSWindowDelegate {
         source.tag = index
 
         let action = NSPopUpButton()
-        action.addItems(withTitles: [t("keys.actionLookup"), t("keys.actionClipboard"),
-                                     t("keys.actionQR"), t("keys.actionSpeak"),
-                                     t("keys.actionFaster"), t("keys.actionSlower")])
-        switch binding.captureAction {
-        case .lookup: action.selectItem(at: 0)
-        case .clipboard: action.selectItem(at: 1)
-        case .qrcode: action.selectItem(at: 2)
-        case .speak: action.selectItem(at: 3)
-        case .speakFaster: action.selectItem(at: 4)
-        case .speakSlower: action.selectItem(at: 5)
-        }
-        // 自己输入时没有取到的文字，「只放剪贴板」「扫码」无从谈起
-        action.isEnabled = binding.captureSource != .manual && binding.captureSource != .home
+        // **只列这个来源真的支持的动作**。以前六个动作对每个来源都摆出来，
+        // 于是「划词 + 只放剪贴板」「划词 + 扫码」选得上却没有实现 ——
+        // 按下去会静默变成查词。选不到的东西，就不该出现在菜单里。
+        let available = Self.actions(for: binding.captureSource)
+        action.addItems(withTitles: available.map(Self.title))
+        action.selectItem(at: available.firstIndex(of: binding.captureAction) ?? 0)
+        action.isEnabled = !available.isEmpty && binding.captureSource != .manual
+            && binding.captureSource != .home
         action.widthAnchor.constraint(equalToConstant: 130).isActive = true
         action.target = self
         action.action = #selector(actionChanged(_:))
@@ -289,15 +284,45 @@ final class HotKeyEditorController: NSObject, NSWindowDelegate {
         let picked = Self.sources[sender.indexOfSelectedItem]
         bindings[sender.tag].source = picked.rawValue
         // 自己输入时窗口是空的，没有词可以拿去做「只放剪贴板」或「扫码」
-        if picked == .manual || picked == .home {
-            bindings[sender.tag].action = CaptureAction.lookup.rawValue
+        // 换了来源，原来的动作可能在新来源下根本不存在（划词→截图 时的调速）
+        let available = Self.actions(for: picked)
+        if !available.contains(bindings[sender.tag].captureAction) {
+            bindings[sender.tag].action = (available.first ?? .lookup).rawValue
         }
         validateAndRefresh()
     }
 
+    /// 每个来源支持的动作。这张表就是 `AppDelegate.dispatch` 的真实分支，
+    /// 两边必须对得上 —— 编辑器里能选的，按下去就得有反应。
+    ///
+    /// - 截图：取到的是图，四种都成立
+    /// - 划词：取到的是文字，扫码无从谈起，「只放剪贴板」⌘C 本来就能做
+    /// - 调速：和取词完全无关，挂在划词下面（默认键就是这么配的）
+    /// - 自己输入 / 主页：不取词，没有动作可选
+    static func actions(for source: CaptureSource) -> [CaptureAction] {
+        switch source {
+        case .screenshot: return [.lookup, .clipboard, .qrcode, .speak]
+        case .selection: return [.lookup, .speak, .speakFaster, .speakSlower]
+        case .manual, .home: return []
+        }
+    }
+
+    static func title(_ action: CaptureAction) -> String {
+        switch action {
+        case .lookup: return t("keys.actionLookup")
+        case .clipboard: return t("keys.actionClipboard")
+        case .qrcode: return t("keys.actionQR")
+        case .speak: return t("keys.actionSpeak")
+        case .speakFaster: return t("keys.actionFaster")
+        case .speakSlower: return t("keys.actionSlower")
+        }
+    }
+
     @objc private func actionChanged(_ sender: NSPopUpButton) {
-        let actions: [CaptureAction] = [.lookup, .clipboard, .qrcode, .speak, .speakFaster, .speakSlower]
-        bindings[sender.tag].action = actions[sender.indexOfSelectedItem].rawValue
+        let source = bindings[sender.tag].captureSource
+        let available = Self.actions(for: source)
+        guard available.indices.contains(sender.indexOfSelectedItem) else { return }
+        bindings[sender.tag].action = available[sender.indexOfSelectedItem].rawValue
         validateAndRefresh()
     }
 

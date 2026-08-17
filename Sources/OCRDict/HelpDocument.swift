@@ -77,7 +77,9 @@ enum HelpDocument {
                 : (site.languages.contains("*") ? t("help.dict.fallback")
                    : site.languages.map { LanguageNames.display($0) }.joined(separator: " / "))
             let note = site.external == true ? t("help.dict.external") : ""
-            return "<tr><td><kbd>⌘\(index + 1)</kbd></td><td><b>\(esc(site.name))</b></td>"
+            // 窗口只认 ⌘1…⌘9，第十本往后没有键 —— 印一个「⌘10」出来是骗人
+            let key = index < 9 ? "<kbd>⌘\(index + 1)</kbd>" : ""
+            return "<tr><td>\(key)</td><td><b>\(esc(site.name))</b></td>"
                 + "<td>\(auto)</td><td>\(note)</td></tr>"
         }.joined()
 
