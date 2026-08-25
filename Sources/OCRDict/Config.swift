@@ -172,6 +172,7 @@ struct AppConfig: Codable {
     var speechRate: Double
     /// 朗读时跳过数字。读诗歌、课文时行号页码是噪音，开了它们就被静音
     var speechSkipsNumbers: Bool
+    /// 用哪个引擎发声：
     var dictionaries: [DictSite]
 
     static let fallback = AppConfig(

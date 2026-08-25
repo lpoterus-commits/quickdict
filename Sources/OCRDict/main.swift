@@ -1,4 +1,5 @@
 import AppKit
+import AVFoundation
 import ServiceManagement
 import ImageIO
 
@@ -102,8 +103,8 @@ if CommandLine.arguments.count >= 4, CommandLine.arguments[1] == "--route" {
 // 调试入口：--combos 列出编辑器允许的每个「来源 + 动作」组合，
 // 用来和 AppDelegate.dispatch 的实际分支对账
 if CommandLine.arguments.contains("--combos") {
-    for source in HotKeyEditorController.sources {
-        let actions = HotKeyEditorController.actions(for: source)
+    for source in HotkeysPane.sources {
+        let actions = HotkeysPane.actions(for: source)
         print("\(source.rawValue): " + (actions.isEmpty ? "-" : actions.map(\.rawValue).joined(separator: ",")))
     }
     exit(0)
@@ -175,6 +176,14 @@ if CommandLine.arguments.contains("--home-html") {
     exit(0)
 }
 
+// 调试入口：--perm-html 打印权限页。和主页一样，它也是按实际状态生成的用户文档，
+// 会以同样的方式坏掉（漏译、状态判反），所以也要能自动检查
+if CommandLine.arguments.contains("--perm-html") {
+    let config = ConfigStore.load()
+    print(HomePage.permissionsHTML(config: config, status: .current(config: config)))
+    exit(0)
+}
+
 // 调试入口：--lemma <词库> <词> 只跑变形还原，输出查到的词典形
 if CommandLine.arguments.count >= 4, CommandLine.arguments[1] == "--lemma" {
     guard let db = KrDict.debugOpen(CommandLine.arguments[2]) else {
@@ -207,14 +216,17 @@ if CommandLine.arguments.count >= 3,
         }
     }
     if CommandLine.arguments[1] == "--speak-dry" { exit(0) }
+
     Speech.shared.speak(text, config: config)
     // 合成是异步的，等它读完
     while Speech.shared.isSpeaking || CFRunLoopRunInMode(.defaultMode, 0.2, false) == .handledSource {
         if !Speech.shared.isSpeaking { break }
     }
     Thread.sleep(forTimeInterval: 0.5)
+    Speech.shared.shutdown()
     exit(0)
 }
+
 
 // 调试入口：打印解析后的配置和权限状态，不启动 GUI
 if CommandLine.arguments.contains("--diag") {

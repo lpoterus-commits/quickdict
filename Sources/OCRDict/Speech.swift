@@ -1,7 +1,8 @@
 import AVFoundation
+import Foundation
 import NaturalLanguage
 
-/// 朗读引擎。从用户多年打磨的浏览器脚本（Tampermonkey「韩语朗读 v4.8」）移植，
+/// 朗读的总调度。从用户多年打磨的浏览器脚本（Tampermonkey「韩语朗读 v4.8」）移植，
 /// 保留了那套为**学语言的人**调出来的处理管线：
 ///
 /// - **清洗**：去掉符号，只留文字和停顿标点 —— 逗号句号不读出声，但换来自然的抑扬
@@ -11,26 +12,48 @@ import NaturalLanguage
 ///
 /// 原脚本只活在浏览器标签页里；在这儿它挂在全局快捷键上，任何 App 里都能用，
 /// 而且多了浏览器版做不到的一条：**截图 → OCR → 朗读**，扫描版教材也能听。
-/// 全部状态只在主线程碰：快捷键处理器、`speak`、以及合成器的完成回调
-/// （实测 `didFinish` 回调在主线程，不是文档承诺的，所以这里记一笔）。
-/// 因此对 `AVSpeechSynthesizer` 不是 Sendable 这件事按「已核对」处理。
-final class Speech: NSObject, AVSpeechSynthesizerDelegate, @unchecked Sendable {
+///
+/// ## 3.1 起：声音可以换引擎出
+///
+/// 上面那套管线一个字没改，换掉的只是最后一步「把这段文字变成声音」。
+/// 发声走 macOS 自带的合成器。**3.3 之前还有本机 Qwen 和微软在线两条路，
+/// 连同整个 Python 边车一起移到了 Ausculta**（2026-08-25，用户拍板）——
+/// 那边的「文字转语音」是独立成篇的合成工具，配着音频波形用；
+/// 这里要的只是「按一下把选中的文字读出来」，系统嗓音够用且零依赖。
+final class Speech: NSObject, @unchecked Sendable {
     static let shared = Speech()
 
-    private let synthesizer = AVSpeechSynthesizer()
+    /// 唯一那条。类型写成协议而不是具体类，是为了测试能塞假的进来 ——
+    /// 队列逻辑（顺序、失败换引擎、节尾停顿）没有声卡也该能验。
+    private var system: SpeechEngine = SystemSpeechEngine()
+
     /// 上一次读的内容。快捷键按下时没有选中文字，就重读它。
     private var cached = ""
-    /// 待读队列。**不一次性塞给合成器**，读完一段再喂下一段 ——
+    /// 待读队列。**不一次性塞给引擎**，读完一段再喂下一段 ——
     /// 这样中途调语速，下一段就是新速度，不用停下来重放。
-    private var queue: [(text: String, language: String, stanzaEnd: Bool)] = []
-    private var currentRate = AVSpeechUtteranceDefaultSpeechRate
+    private var queue: [SpeechChunk] = []
+    private var currentRate = 1.0
+    /// 从 `speak` 被调用到队列读空为止都是 true。
+    /// 注意它**包含还在合成、没出声的那段时间** —— 对用户来说「按了朗读键」就算在读了，
+    /// 这时再按一次该是「停下」，不该是「重读上一段」。
+    private var running = false
 
-    private override init() {
-        super.init()
-        synthesizer.delegate = self
+    private override init() { super.init() }
+
+    var isSpeaking: Bool { running }
+
+    /// App 退出时叫一次。
+    func shutdown() { stop() }
+
+    /// **只给测试用**：把发声那条换成假的。
+    ///
+    /// 队列那段异步逻辑（一段读完接下一段、节尾停一拍）光靠听验不出顺序，
+    /// 而真引擎依赖声卡，不适合进自动化测试。生产代码里没有任何地方调它。
+    func injectEnginesForTesting(system: SpeechEngine) {
+        self.system = system
     }
 
-    var isSpeaking: Bool { synthesizer.isSpeaking }
+    // MARK: - 入口
 
     /// 全局快捷键的入口。一颗键管三件事，按当下状态分流：
     /// 有选中 → 读它（正在读就掐掉重来）；没选中 → 正在读就停，闲着就重读上一段。
@@ -40,7 +63,7 @@ final class Speech: NSObject, AVSpeechSynthesizerDelegate, @unchecked Sendable {
             speak(text, config: config)
             return
         }
-        if synthesizer.isSpeaking {
+        if running {
             stop()
         } else if !cached.isEmpty {
             speak(cached, config: config)
@@ -51,50 +74,113 @@ final class Speech: NSObject, AVSpeechSynthesizerDelegate, @unchecked Sendable {
 
     func speak(_ text: String, config: AppConfig) {
         stop()
-        let stanzas = Self.stanzas(of: text, skipNumbers: config.speechSkipsNumbers)
-        guard !stanzas.isEmpty else {
+        let chunks = Self.plan(text, config: config)
+        guard !chunks.isEmpty else {
             HUD.shared.show(t("hud.nothingToSpeak"))
             return
         }
         cached = text
         setRate(config.speechRate)
-
-        for stanza in stanzas {
-            // 行内混排也各读各的：「사랑이라고 해요，意思是爱」拆成韩语段 + 中文段，
-            // 各配各的嗓音。只按节切的话，整节用一个嗓音，混进来的那种语言会被啃坏。
-            let runs = Self.runs(of: stanza, config: config)
-            for (index, run) in runs.enumerated() {
-                queue.append((run.text, run.language, index == runs.count - 1))
-            }
-        }
+        queue = chunks
+        running = true
         speakNext()
     }
 
     /// 语速改了从**下一段**起生效 —— 已经在嘴里的那句让它说完
     func setRate(_ multiplier: Double) {
-        currentRate = Float(min(max(multiplier, 0.5), 2.0)) * AVSpeechUtteranceDefaultSpeechRate
-    }
-
-    private func speakNext() {
-        guard !queue.isEmpty else { return }
-        let item = queue.removeFirst()
-        let utterance = AVSpeechUtterance(string: item.text)
-        utterance.voice = Self.voice(for: item.language)
-        utterance.rate = currentRate
-        // 节尾停一拍（原脚本对空行的处理）；节内换语言不停，读起来才连贯
-        utterance.postUtteranceDelay = item.stanzaEnd ? 0.3 : 0
-        synthesizer.speak(utterance)
-    }
-
-    func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer,
-                           didFinish utterance: AVSpeechUtterance) {
-        speakNext()
+        currentRate = min(max(multiplier, 0.5), 2.0)
     }
 
     func stop() {
         queue.removeAll()
-        if synthesizer.isSpeaking { synthesizer.stopSpeaking(at: .immediate) }
+        running = false
+        system.stop()
     }
+
+    // MARK: - 排活
+
+    /// 把一段文字排成待读队列：清洗 → 分节 → 判语种 → 按引擎决定要不要切句。
+    ///
+    /// 抽成静态函数是为了能在没有引擎、没有 App 的情况下单测它 ——
+    /// 排活的正确性和「谁来发声」无关。
+    static func plan(_ text: String, config: AppConfig) -> [SpeechChunk] {
+        var chunks: [SpeechChunk] = []
+        for stanza in stanzas(of: text, skipNumbers: config.speechSkipsNumbers) {
+            // 行内混排也各读各的：「사랑이라고 해요，意思是爱」拆成韩语段 + 中文段，
+            // 各配各的嗓音。只按节切的话，整节用一个嗓音，混进来的那种语言会被啃坏。
+            let runs = self.runs(of: stanza, config: config)
+            for (index, run) in runs.enumerated() {
+                // **一节一段，不再切句。** 神经引擎在的时候这里要切开，是因为它得把
+                // 整段算完才出声，切碎能让第一声早点来；系统合成器是流式的，
+                // 整段喂进去反而更连贯 —— 切开只会在每个接缝上留一道生硬的断。
+                chunks.append(SpeechChunk(text: run.text, language: run.language,
+                                          stanzaEnd: index == runs.count - 1))
+            }
+        }
+        return chunks
+    }
+
+
+    /// 按句末标点切句。切不动的超长句（有些语言、有些 OCR 结果整段没有标点）
+    /// 退而求其次在空格处硬切，免得一块吞进两百字、等出一分钟。
+    static func sentences(of text: String, hardLimit: Int = 160) -> [String] {
+        let enders: Set<Character> = ["。", ".", "？", "?", "！", "!", "…"]
+        var out: [String] = []
+        var current = ""
+        for ch in text {
+            current.append(ch)
+            if enders.contains(ch) {
+                let piece = current.trimmingCharacters(in: .whitespaces)
+                if piece.contains(where: { $0.isLetter || $0.isNumber }) { out.append(piece) }
+                current = ""
+            }
+        }
+        let tail = current.trimmingCharacters(in: .whitespaces)
+        if tail.contains(where: { $0.isLetter || $0.isNumber }) { out.append(tail) }
+
+        return out.flatMap { $0.count > hardLimit ? split($0, at: hardLimit) : [$0] }
+    }
+
+    /// 没有标点可切时的下策：在空格处断开，凑够额度就收。
+    /// 韩语、英语、意大利语都是分词书写的，这条走得通；中日文没有空格，
+    /// 那就按字数硬断 —— 听感上会有个不自然的停顿，但总好过等半分钟不出声。
+    private static func split(_ text: String, at limit: Int) -> [String] {
+        var out: [String] = []
+        var current = ""
+        for word in text.split(separator: " ", omittingEmptySubsequences: true) {
+            if current.isEmpty {
+                current = String(word)
+            } else if current.count + word.count + 1 <= limit {
+                current += " " + word
+            } else {
+                out.append(current)
+                current = String(word)
+            }
+            while current.count > limit {          // 单个「词」就超长 = 无空格文本
+                out.append(String(current.prefix(limit)))
+                current = String(current.dropFirst(limit))
+            }
+        }
+        if !current.isEmpty { out.append(current) }
+        return out
+    }
+
+    // MARK: - 播放
+
+    private func speakNext() {
+        guard running, !queue.isEmpty else {
+            running = false
+            return
+        }
+        let chunk = queue.removeFirst()
+        // 系统合成器是流式的，喂进去就开始出声，没有「合成失败要换引擎补读」这回事 ——
+        // 那套 fallback 是给神经引擎准备的，随它一起下了（2026-08-25）。
+        system.play(chunk, rate: currentRate) { [weak self] _ in
+            guard let self, self.running else { return }
+            self.speakNext()
+        }
+    }
+
 
     // MARK: - 文本处理（对应原脚本的 sanitize + buildSegments）
 
@@ -228,20 +314,9 @@ final class Speech: NSObject, AVSpeechSynthesizerDelegate, @unchecked Sendable {
         return best.key.rawValue
     }
 
-    /// 语言代码 → 这台机器上真实存在的嗓音。
-    ///
-    /// 先按偏好区域找（zh 该配 zh-CN 而不是 yue-HK）；找不到就扫一遍已安装的嗓音
-    /// 按前缀匹配 —— macOS 带着约四十种语言的嗓音，写死一张表反而会漏。
+    /// 语言代码 → 这台机器上真实存在的嗓音。留在这里是为了兼容老调用点，
+    /// 实现已经搬到 `SystemSpeechEngine`。
     static func voice(for code: String) -> AVSpeechSynthesisVoice? {
-        let preferred = [
-            "ko": "ko-KR", "zh": "zh-CN", "ja": "ja-JP", "en": "en-US",
-            "ru": "ru-RU", "vi": "vi-VN", "it": "it-IT", "fr": "fr-FR",
-            "de": "de-DE", "es": "es-ES", "el": "el-GR", "he": "he-IL",
-            "ar": "ar-001", "th": "th-TH", "hi": "hi-IN", "pt": "pt-BR",
-        ][code]
-        if let preferred, let voice = AVSpeechSynthesisVoice(language: preferred) { return voice }
-        if let voice = AVSpeechSynthesisVoice(language: code) { return voice }
-        return AVSpeechSynthesisVoice.speechVoices()
-            .first { $0.language.hasPrefix(code + "-") }
+        SystemSpeechEngine.voice(for: code)
     }
 }

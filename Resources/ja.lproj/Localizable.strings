@@ -155,6 +155,7 @@
 
 /* ---- 言語名 ---- */
 "lang.ko" = "韓国語";   "lang.ja" = "日本語";   "lang.zh" = "中国語";
+"lang.el" = "ギリシャ語";  "lang.he" = "ヘブライ語";  "lang.hi" = "ヒンディー語";
 "lang.en" = "英語";     "lang.it" = "イタリア語"; "lang.fr" = "フランス語";
 "lang.de" = "ドイツ語"; "lang.es" = "スペイン語"; "lang.pt" = "ポルトガル語";
 "lang.ru" = "ロシア語"; "lang.nl" = "オランダ語"; "lang.sv" = "スウェーデン語";
@@ -357,7 +358,7 @@
 "notes.usingCopy" = "複製";
 "window.speak" = "現在の語を読み上げます。もう一度押すと停止";
 "help.win.speak" = "読み上げ";
-"help.win.speakNote" = "認識された言語の音声で、オフラインで読み上げます";
+"help.win.speakNote" = "認識された言語のニューラル音声で、この Mac の中だけで読み上げます";
 
 /* 全局朗读 */
 "keys.actionSpeak" = "読み上げ";
@@ -406,3 +407,18 @@
 "hud.loginsCleared" = "ログイン情報を消去しました。次回はログインが必要です";
 "hud.logoutOnQuitOn" = "終了時にログイン情報も消去します";
 "hud.logoutOnQuitOff" = "終了時もログイン情報を残します";
+
+/* 主窗口外壳与语音页（3.1） */
+"shell.section.use" = "使う";
+"shell.section.settings" = "設定";
+"shell.section.about" = "情報";
+"shell.pane.home" = "ホーム";
+"shell.pane.lookup" = "辞書";
+"shell.pane.permissions" = "権限";
+"home.permMissing" = "権限が足りません。一部のショートカットが無反応になります";
+"home.permGo" = "確認する";
+"dict.saved" = "保存しました";
+"dict.reverted" = "保存済みの内容に戻しました";
+"keys.reverted" = "保存済みの内容に戻しました";
+
+

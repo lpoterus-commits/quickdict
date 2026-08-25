@@ -5,12 +5,17 @@ import ServiceManagement
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItem: NSStatusItem!
     private let hotKey = HotKeyManager()
-    private let resultWindow = ResultWindowController()
-    private let helpWindow = HelpWindowController()
-    private let hotKeyEditor = HotKeyEditorController()
-    private let dictEditor = DictionaryEditorController()
+    /// 唯一的窗口。原来那六个窗口现在是它左边导航里的六页。
+    private let mainWindow = MainWindowController()
+    private let lookupPane = LookupPane()
+    private let dictionariesPane = DictionariesPane()
+    private let hotkeysPane = HotkeysPane()
+    private var homePane: WebPane!
+    private var permissionsPane: WebPane!
+    private var helpPane: WebPane!
+    /// 设置向导还是独立窗口：它是**首次启动时挡在前面的一步**，
+    /// 收进侧边栏就失去了「先把这两个权限给了再说」的意思。
     private let onboarding = OnboardingController()
-    private let homeWindow = HomeWindowController()
     private var config = AppConfig.fallback
     private var isBusy = false
 
@@ -26,17 +31,38 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let firstRun = OnboardingController.isFirstRun
         config = ConfigStore.load()
         Reachability.start()
+        // 神经语音的边车。**这里不等它** —— fork 出去就走，模型在后台加载十秒左右，
+        // 这十秒里朗读照常能用，只是先由系统嗓音顶着。装不上就一辈子由系统嗓音顶着。
         applyKoreanTables()
         setupMainMenu()
         setupStatusItem()
         applyHotKeys()
         // 结果页面上改了资料清单 —— 存回配置，菜单里的词典列表也跟着更新
         // 主页上的输入框和按钮
-        homeWindow.onLookup = { [weak self] text, dictionary in
+        buildPanes()
+        mainWindow.onLookup = { [weak self] text, dictionary in
             guard let self else { return }
             self.handle(text: text, config: self.config, forced: dictionary)
         }
-        homeWindow.onRun = { [weak self] what in
+        mainWindow.onCapture = { [weak self] what in
+            guard let self else { return }
+            switch what {
+            case "screenshot": self.triggerLookup()
+            case "selection": self.triggerSelectionLookup()
+            case "clipboard": self.triggerClipboardCapture()
+            case "speak": self.speakSelection()
+            default: break
+            }
+        }
+        // 快捷键设置那一页进出时要摘掉 / 装回全局热键，否则录制时按 ⌃⌥9 会直接触发截图
+        mainWindow.onPaneChanged = { [weak self] from, to in
+            guard let self else { return }
+            if to == .hotkeys { self.hotKey.unregister() }
+            else if from == .hotkeys { self.applyHotKeys() }
+            // 合成过程页切走就停止记录 —— 没人看的时候一条都不该产生，
+            // 否则挂着快捷键读一天会攒下几千条
+        }
+        mainWindow.onRun = { [weak self] what in
             guard let self else { return }
             switch what {
             case "screenshot": self.triggerLookup()
@@ -44,22 +70,23 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             case "clipboard": self.triggerClipboardCapture()
             case "speak": self.speakSelection()
             case "onboarding": self.showOnboarding()
-            case "dictionaries": self.showDictionaryEditor()
-            case "hotkeys": self.showHotKeyEditor()
-            case "help": self.showHelp()
+            case "dictionaries": self.mainWindow.select(.dictionaries)
+            case "hotkeys": self.mainWindow.select(.hotkeys)
+            case "help": self.mainWindow.select(.help)
+            case "lookup": self.mainWindow.select(.lookup)
             case "keepLogin":
                 self.toggleLogoutOnQuit()
-                self.homeWindow.refresh(config: self.config)
+                self.mainWindow.refreshCurrent()
             case "config": self.openConfigFile()
             default: break
             }
         }
-        resultWindow.onZoomChanged = { [weak self] value in
+        lookupPane.onZoomChanged = { [weak self] value in
             guard let self, self.config.windowZoom != value else { return }
             self.config.windowZoom = value
             ConfigStore.save(self.config)
         }
-        resultWindow.onNotesChanged = { [weak self] site in
+        lookupPane.onNotesChanged = { [weak self] site in
             guard let self, let i = self.config.dictionaries.firstIndex(where: { $0.id == site.id })
             else { return }
             self.config.dictionaries[i] = site
@@ -91,6 +118,51 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             rebuildDictionaries()
             NSApp.terminate(nil)
         }
+        // 调试用：--shot <页> <out.png> 把主窗口某一页渲染出来存成图。
+        //
+        // 界面改动没法靠单元测试验 —— 侧边栏对没对齐、工具栏挤不挤、深色模式下
+        // 有没有一块死白，这些只有看图才知道。截的是**真窗口**（走 CGWindowList），
+        // 所以 WebView 里的内容也在，不是只有原生控件的空壳。
+        if let i = args.firstIndex(of: "--shot"), i + 2 < args.count {
+            let paneName = args[i + 1]
+            let out = URL(fileURLWithPath: args[i + 2])
+            let pane = PaneID(rawValue: paneName) ?? .home
+            mainWindow.show(config: config, select: pane)
+            // `--shot-speak <文字>`：先真读一段再截。
+            // **合成过程页的空状态验证不了任何东西** —— 那一页的全部内容都是读的时候
+            // 才长出来的，不读一段就截，等于只验了「标题画得出来」。
+            // `--shot-delay <秒>` 给合成留时间；不给的话按引擎慢的那档估一个。
+            let speakText = args.firstIndex(of: "--shot-speak").flatMap {
+                $0 + 1 < args.count ? args[$0 + 1] : nil
+            }
+            let delay = args.firstIndex(of: "--shot-delay").flatMap {
+                $0 + 1 < args.count ? Double(args[$0 + 1]) : nil
+            } ?? (speakText == nil ? 2.5 : 25.0)
+            // `--shot-size 1400x1900`：内容长的页（语音页现在有五节）用默认窗口尺寸
+            // 截出来只剩上半截，下面那几节永远验不到。
+            if let i = args.firstIndex(of: "--shot-size"), i + 1 < args.count {
+                let parts = args[i + 1].lowercased().split(separator: "x").compactMap { Double($0) }
+                if parts.count == 2, let window = mainWindow.hostWindow {
+                    var frame = window.frame
+                    // 从左上角长出去：改高度时窗口顶边不动，截出来才和平时看到的一样
+                    frame.origin.y -= parts[1] - frame.height
+                    frame.size = NSSize(width: parts[0], height: parts[1])
+                    window.setFrame(frame, display: true)
+                }
+            }
+            if let speakText {
+                // 等边车热起来再读，否则整段都会记成「系统嗓音」，看不出真实分工
+                DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) { [weak self] in
+                    guard let self else { return }
+                    Speech.shared.speak(speakText, config: self.config)
+                }
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
+                self?.writeScreenshot(to: out)
+                NSApp.terminate(nil)
+            }
+            return
+        }
         if args.contains("--home") { showHome() }
         if args.contains("--help-window") { showHelp() }
         if args.contains("--onboarding") { showOnboarding() }
@@ -110,6 +182,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationWillTerminate(_ notification: Notification) {
         hotKey.unregister()
+        // 边车是个吃几个 G 内存的 Python 进程，绝不能让它活过 App
+        Speech.shared.shutdown()
         // 两个开关各清各的：都开就等于以前那个「全清」
         if config.clearDataOnQuit && config.clearLoginsOnQuit {
             WebData.clearBlocking(.all)
@@ -144,12 +218,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     /// 菜单里的「主页」
     @objc func showHome() {
-        homeWindow.show(config: config)
+        mainWindow.show(config: config, select: .home)
     }
 
-    /// 菜单里的「打开查词窗口」—— 不取字，自己输入
+    /// 菜单里的「打开查词窗口」—— 不取字，自己输入。
+    /// 窗口已经开着且查过词的话**一个字都不动**，只是把它叫回来并把光标放进查词框：
+    /// 菜单栏 App 不进 ⌘Tab，这个快捷键就是「找回窗口」的唯一办法。
     @objc func openLookupWindow() {
-        resultWindow.openBlank(config: config)
+        mainWindow.show(config: config, select: .lookup)
+        mainWindow.focusSearch()
     }
 
     private func dispatch(_ binding: HotKeyBinding) {
@@ -386,7 +463,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             NSWorkspace.shared.open(url)
             return
         }
-        resultWindow.present(text: text, route: route, config: cfg, index: index)
+        mainWindow.show(config: cfg, select: .lookup)
+        mainWindow.setSearchText(text)
+        lookupPane.show(text: text, route: route, config: cfg, index: index)
     }
 
     // MARK: - 热键
@@ -679,46 +758,120 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     @objc private func showHelp() {
-        helpWindow.show(config: config)
+        mainWindow.show(config: config, select: .help)
     }
 
     @objc private func showDictionaryEditor() {
-        dictEditor.show(sites: config.dictionaries,
-                        config: config,
-                        onReset: { [weak self] in
-                            guard let self else { return [] }
-                            return DictionaryPresets.dictionaries(target: self.config.dictionaryLanguage,
-                                                                  sources: self.config.sourceLanguages)
-                        },
-                        onSave: { [weak self] sites in
-                            guard let self else { return }
-                            self.config.dictionaries = sites
-                            ConfigStore.save(self.config)
-                            self.statusItem.menu = self.buildMenu()
-                            HUD.shared.show(t("hud.dictionariesSaved", sites.count))
-                        })
+        mainWindow.show(config: config, select: .dictionaries)
     }
 
     @objc private func showHotKeyEditor() {
-        // 录制期间必须先把全局热键摘掉，否则按 ⌃⌥9 会直接触发截图，根本录不进去
-        hotKey.unregister()
-        hotKeyEditor.onClose = { [weak self] in self?.applyHotKeys() }
+        mainWindow.show(config: config, select: .hotkeys)
+    }
 
-        hotKeyEditor.show(config: config) { [weak self] bindings in
+    /// 六页各自装好回调，然后挂到外壳上。
+    ///
+    /// 视图不在这里建 —— 页是第一次切到才建的（见 `MainWindowController.showPane`），
+    /// 所以启动时这一段只是接线，不产生任何界面开销。
+    private func buildPanes() {
+        homePane = WebPane(title: t("shell.pane.home")) { config in
+            HomePage.html(config: config, status: .current(config: config))
+        }
+        permissionsPane = WebPane(title: t("shell.pane.permissions")) { config in
+            HomePage.permissionsHTML(config: config, status: .current(config: config))
+        }
+        helpPane = WebPane(title: t("menu.help")) { config in
+            HelpDocument.html(config: config)
+        }
+        for pane in [homePane, permissionsPane, helpPane] {
+            pane?.onAction = { [weak self] action, body in
+                guard let self else { return }
+                if action == "lookup", let text = body["text"] as? String {
+                    let dictionary = body["dict"] as? String
+                    self.handle(text: text, config: self.config,
+                                forced: (dictionary?.isEmpty ?? true) ? nil : dictionary)
+                    return
+                }
+                if action == "run", let what = body["what"] as? String {
+                    self.runHomeAction(what)
+                }
+            }
+        }
+
+        lookupPane.hostWindow = { [weak self] in self?.mainWindow.hostWindow }
+        lookupPane.onQueryChanged = { [weak self] text in self?.mainWindow.setSearchText(text) }
+
+
+        dictionariesPane.hostWindow = { [weak self] in self?.mainWindow.hostWindow }
+        dictionariesPane.configure(
+            onReset: { [weak self] in
+                guard let self else { return [] }
+                return DictionaryPresets.dictionaries(target: self.config.dictionaryLanguage,
+                                                      sources: self.config.sourceLanguages)
+            },
+            onSave: { [weak self] sites in
+                guard let self else { return }
+                self.config.dictionaries = sites
+                ConfigStore.save(self.config)
+                self.statusItem.menu = self.buildMenu()
+                HUD.shared.show(t("hud.dictionariesSaved", sites.count))
+            })
+
+        hotkeysPane.configure { [weak self] bindings in
             guard let self else { return }
             self.config.hotkeys = bindings
             ConfigStore.save(self.config)
-
             // 立刻重注册，把「这个组合被别人占了」当场反馈回编辑器，而不是等用户按下才发现
             let failed = self.hotKey.register(self.config.hotkeys) { [weak self] binding in
                 self?.dispatch(binding)
             }
             self.statusItem.menu = self.buildMenu()
-            self.hotKeyEditor.report(failed: failed)
-            if failed.isEmpty {
-                self.hotKeyEditor.close()
-                HUD.shared.show(t("hud.hotkeysUpdated"))
-            }
+            self.hotkeysPane.report(failed: failed)
+            if failed.isEmpty { HUD.shared.show(t("hud.hotkeysUpdated")) }
+        }
+
+        mainWindow.register(.home, homePane)
+        mainWindow.register(.lookup, lookupPane)
+        mainWindow.register(.dictionaries, dictionariesPane)
+        mainWindow.register(.hotkeys, hotkeysPane)
+        mainWindow.register(.permissions, permissionsPane)
+        mainWindow.register(.help, helpPane)
+    }
+
+    private func writeScreenshot(to url: URL) {
+        guard let window = mainWindow.hostWindow else {
+            FileHandle.standardError.write("窗口没建起来\n".data(using: .utf8)!)
+            return
+        }
+        let id = CGWindowID(window.windowNumber)
+        guard let image = CGWindowListCreateImage(.null, .optionIncludingWindow, id,
+                                                  [.boundsIgnoreFraming, .bestResolution]) else {
+            FileHandle.standardError.write("截不到图（多半是没给屏幕录制权限）\n".data(using: .utf8)!)
+            return
+        }
+        let rep = NSBitmapImageRep(cgImage: image)
+        guard let data = rep.representation(using: .png, properties: [:]) else { return }
+        try? data.write(to: url)
+        print("\(url.path)  \(image.width)x\(image.height)")
+    }
+
+    /// 主页那些按钮点下去要做什么
+    private func runHomeAction(_ what: String) {
+        switch what {
+        case "screenshot": triggerLookup()
+        case "selection": triggerSelectionLookup()
+        case "clipboard": triggerClipboardCapture()
+        case "speak": speakSelection()
+        case "onboarding": showOnboarding()
+        case "dictionaries": mainWindow.select(.dictionaries)
+        case "hotkeys": mainWindow.select(.hotkeys)
+        case "help": mainWindow.select(.help)
+        case "lookup": mainWindow.select(.lookup)
+        case "keepLogin":
+            toggleLogoutOnQuit()
+            mainWindow.refreshCurrent()
+        case "config": openConfigFile()
+        default: break
         }
     }
 
@@ -748,14 +901,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         config.clearLoginsOnQuit.toggle()
         ConfigStore.save(config)
         statusItem.menu = buildMenu()
-        homeWindow.refresh(config: config)
+        mainWindow.refresh(config: config)
         HUD.shared.show(t(config.clearLoginsOnQuit ? "hud.logoutOnQuitOn" : "hud.logoutOnQuitOff"))
     }
 
     /// 清浏览数据 —— **登录留着**。想登出用上面那一项。
     @objc private func clearWebData() {
         let before = WebData.diskUsage()
-        resultWindow.blankOut()
+        lookupPane.blankOut()
         NotesCache.clearAll()
         WebData.clear(.browsing) { [weak self] in
             let freed = max(0, before - WebData.diskUsage())

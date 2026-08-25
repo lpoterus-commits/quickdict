@@ -6,8 +6,10 @@ import AppKit
 /// 「本地文件 · 我的语法笔记.md」）。要改就点「更改…」，在表单里选，不用手打 URL。
 ///
 /// 命中语言同理 —— 原先要按格式手敲 `ko, zh`，现在是个勾选菜单。
-final class DictionaryEditorController: NSObject, NSWindowDelegate {
-    private var window: NSWindow?
+final class DictionariesPane: NSObject, ShellPane {
+    var paneTitle: String { t("menu.dictionaries") }
+
+    private var contentView: NSView?
     private var rowsStack: NSStackView!
     private var statusLabel: NSTextField!
 
@@ -17,27 +19,33 @@ final class DictionaryEditorController: NSObject, NSWindowDelegate {
     private var onReset: (() -> [DictSite])?
     private var sheetController: DictionarySheetController?
     private var notesSheet: NotesSourcesSheetController?
+    /// 有没有还没保存的改动。**有的话切走再切回来不重新读配置** ——
+    /// 独立窗口时代关掉就等于放弃，现在页是随手切的，改到一半切去查个词
+    /// 回来发现全没了，那才是真的难用。
+    private var dirty = false
 
-    func show(sites: [DictSite], config cfg: AppConfig,
-              onReset: @escaping () -> [DictSite],
-              onSave: @escaping ([DictSite]) -> Void) {
-        self.sites = sites
-        self.config = cfg
+    /// 出 sheet 要挂在窗口上，问外壳要
+    var hostWindow: (() -> NSWindow?)?
+
+    /// 启动时装一次回调。数据每次切过来再从配置读（见 paneWillAppear）。
+    func configure(onReset: @escaping () -> [DictSite],
+                   onSave: @escaping ([DictSite]) -> Void) {
         self.onSave = onSave
         self.onReset = onReset
-        build()
-        rebuildRows()
+    }
 
-        window?.level = .floating
-        NSApp.activate(ignoringOtherApps: true)
-        window?.makeKeyAndOrderFront(nil)
-        window?.orderFrontRegardless()
+    func paneWillAppear(config cfg: AppConfig) {
+        config = cfg
+        guard !dirty else { return }
+        sites = cfg.dictionaries
+        rebuildRows()
+        status(t("dict.hint"), warning: false)
     }
 
     // MARK: - 构建
 
-    private func build() {
-        guard window == nil else { return }
+    func makePaneView() -> NSView {
+        if let contentView { return contentView }
 
         rowsStack = NSStackView()
         rowsStack.orientation = .vertical
@@ -111,15 +119,8 @@ final class DictionaryEditorController: NSObject, NSWindowDelegate {
             buttonBar.bottomAnchor.constraint(equalTo: content.bottomAnchor, constant: -16),
         ])
 
-        let panel = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 760, height: 440),
-                             styleMask: [.titled, .closable, .resizable],
-                             backing: .buffered, defer: false)
-        panel.title = t("dict.title")
-        panel.contentView = content
-        panel.isReleasedWhenClosed = false
-        panel.delegate = self
-        panel.center()
-        window = panel
+        contentView = content
+        return content
     }
 
     private func makeHeader() -> NSStackView {
@@ -269,7 +270,7 @@ final class DictionaryEditorController: NSObject, NSWindowDelegate {
     // MARK: - 增删改
 
     @objc private func changeSite(_ sender: NSButton) {
-        guard sites.indices.contains(sender.tag), let window else { return }
+        guard sites.indices.contains(sender.tag), let window = hostWindow?() else { return }
         commitFields()
         let index = sender.tag
         // 本地资料是一份清单，不是一个网址 —— 用它自己的界面改
@@ -291,7 +292,7 @@ final class DictionaryEditorController: NSObject, NSWindowDelegate {
     }
 
     @objc private func addNotes() {
-        guard let window else { return }
+        guard let window = hostWindow?() else { return }
         commitFields()
         editNotes(at: nil, in: window)
     }
@@ -315,7 +316,7 @@ final class DictionaryEditorController: NSObject, NSWindowDelegate {
     }
 
     @objc private func addSite() {
-        guard let window else { return }
+        guard let window = hostWindow?() else { return }
         commitFields()
         let controller = DictionarySheetController()
         sheetController = controller
@@ -338,12 +339,19 @@ final class DictionaryEditorController: NSObject, NSWindowDelegate {
     @objc private func resetSites() {
         guard let onReset else { return }
         sites = onReset()
+        dirty = true
         rebuildRows()
         status(t("keys.resetHint"), warning: false)
     }
 
-    @objc private func cancel() { window?.orderOut(nil)
-        }
+    /// 撤销还没保存的改动，回到配置里那一份。
+    /// 页是关不掉的，所以「取消」在这里的意思从「关窗口」变成了「还原」。
+    @objc private func cancel() {
+        sites = config.dictionaries
+        dirty = false
+        rebuildRows()
+        status(t("dict.reverted"), warning: false)
+    }
 
     @objc private func save() {
         commitFields()
@@ -353,7 +361,8 @@ final class DictionaryEditorController: NSObject, NSWindowDelegate {
             return
         }
         onSave?(sites)
-        window?.orderOut(nil)
+        dirty = false
+        status(t("dict.saved"), warning: false)
     }
 
     /// 焦点还在名称框里时按保存，那一格的值还没提交，先抓出来
@@ -369,6 +378,7 @@ final class DictionaryEditorController: NSObject, NSWindowDelegate {
     private func apply(_ field: NSTextField) {
         guard sites.indices.contains(field.tag) else { return }
         sites[field.tag].name = field.stringValue.trimmingCharacters(in: .whitespaces)
+        dirty = true
     }
 
     private func firstProblem() -> String? {
@@ -381,15 +391,9 @@ final class DictionaryEditorController: NSObject, NSWindowDelegate {
         statusLabel.textColor = warning ? .systemOrange : .secondaryLabelColor
     }
 
-    func windowShouldClose(_ sender: NSWindow) -> Bool {
-        window?.orderOut(nil)
-        return false
-    }
-
-    func windowDidResignKey(_ notification: Notification) { window?.level = .normal }
 }
 
-extension DictionaryEditorController: NSTextFieldDelegate {
+extension DictionariesPane: NSTextFieldDelegate {
     func controlTextDidEndEditing(_ obj: Notification) {
         if let field = obj.object as? NSTextField { apply(field) }
     }

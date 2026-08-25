@@ -131,16 +131,34 @@ else
 fi
 
 echo "── home page"
-# 主页内容是按当前配置生成的。这里盯两件事：四段都在，
-# 以及**没有把文案键漏成原文**（`menu.capture` 这种键名直接显示在界面上过一次）。
+# 主页和权限页都是按当前配置/状态生成的。这里盯两件事：
+#   1. 该有的段都在（3.1 起搜索框上移到了工具栏、设置项进了侧边栏，主页只剩取词和词典）
+#   2. **没有把文案键漏成原文**（`menu.capture` 这种键名直接显示在界面上过一次）
+leaked() { printf '%s' "$1" | grep -oE '>(menu|home|help|dict|about|shell|speech)\.[a-zA-Z.]+<' | sort -u; }
+
 home=$("$BIN" --home-html 2>/dev/null)
-missing=$(printf '%s' "$home" | grep -oE '>(menu|home|help|dict|about)\.[a-zA-Z.]+<' | sort -u)
+missing=$(leaked "$home")
 sections=$(printf '%s' "$home" | grep -c "<h2>")
-if [ "$sections" = "4" ] && [ -z "$missing" ] && printf '%s' "$home" | grep -q 'id="q"'; then
+# 取词、词典两段；权限缺了才会多冒一条提示，所以 2 段起
+if [ "$sections" -ge 2 ] && [ -z "$missing" ] \
+   && printf '%s' "$home" | grep -q 'data-do="screenshot"' \
+   && printf '%s' "$home" | grep -q 'data-dict='; then
     pass=$((pass + 1))
 else
     fail=$((fail + 1))
-    echo "  FAIL home page — 段落 $sections/4，搜索框 $(printf '%s' "$home" | grep -c 'id=\"q\"')"
+    echo "  FAIL home page — 段落 $sections（至少 2），取词卡 $(printf '%s' "$home" | grep -c 'data-do=')"
+    [ -n "$missing" ] && echo "    漏译: $missing"
+fi
+
+perm=$("$BIN" --perm-html 2>/dev/null)
+missing=$(leaked "$perm")
+# 五行状态：屏幕录制、辅助功能、离线词库、我的资料、登录保留
+states=$(printf '%s' "$perm" | grep -c 'class="state')
+if [ "$states" = "5" ] && [ -z "$missing" ]; then
+    pass=$((pass + 1))
+else
+    fail=$((fail + 1))
+    echo "  FAIL permissions page — 状态行 $states/5"
     [ -n "$missing" ] && echo "    漏译: $missing"
 fi
 
@@ -169,6 +187,42 @@ case "$qr" in
     *"en.dict.naver.com"*) pass=$((pass + 1)) ;;
     *) fail=$((fail + 1)); echo "  FAIL qr-url.png → $qr" ;;
 esac
+
+BUILD_TMP=$(mktemp -d); trap 'rm -rf "$BUILD_TMP"' EXIT
+echo "── neural speech fully removed"
+# 3.3 把整个 Python 边车（Qwen + Edge）移到了 Ausculta。
+# **拆掉一个功能最容易剩下的是「半截」**：源码删了但文档还在承诺、
+# 字符串留着没人用、bundle 里还躺着 .py。这几条盯的就是那个半截。
+ok=1
+if grep -rlq -e 'TTSSidecar' -e 'NeuralSpeech' -e 'SpeechTrace' -e 'SpeechPane' -e 'SpeechHistory' -e 'qwen-tts' Sources 2>/dev/null; then
+    ok=0; echo "  FAIL 源码里还有边车残留：$(grep -rl -e TTSSidecar -e NeuralSpeech -e SpeechTrace -e SpeechPane -e SpeechHistory -e qwen-tts Sources | tr '\n' ' ')"
+fi
+# 六份语言文件条目数必须一致 —— 删键时漏掉一份，那门语言就会露出原始键名
+counts=$(for f in Resources/*.lproj/Localizable.strings; do grep -c '^"' "$f"; done | sort -u | wc -l | tr -d ' ')
+if [ "$counts" != "1" ]; then
+    ok=0; echo "  FAIL 六份 Localizable.strings 条目数不一致"
+fi
+# 源码里 t("…") 用到的键，每份语言文件都得有
+missing=$(grep -rhoE '(^|[^A-Za-z0-9_])t\("[a-zA-Z][a-zA-Z0-9_.]*"\)' Sources \
+          | grep -oE '"[^"]+"' | tr -d '"' | sort -u > "$BUILD_TMP/keys.txt"
+          for f in Resources/*.lproj/Localizable.strings; do
+              grep -oE '^"[^"]+"' "$f" | tr -d '"' | sort -u > "$BUILD_TMP/have.txt"
+              comm -23 "$BUILD_TMP/keys.txt" "$BUILD_TMP/have.txt"
+          done | sort -u)
+if [ -n "$missing" ]; then
+    ok=0; echo "  FAIL 有键没翻译：$(echo "$missing" | head -3 | tr '\n' ' ')"
+fi
+# 文档不能还在承诺自带神经语音（「已移走」的说明句不算，那是在讲历史）
+for doc in README.md README.zh-CN.md FEATURES.md; do
+    if grep -q -e 'install.sh qwen' -e 'tts-diag' -e 'Tools/qwen-tts' "$doc" 2>/dev/null; then
+        ok=0; echo "  FAIL $doc 还写着边车的安装/诊断步骤"
+    fi
+done
+# 装出来的 App 里不能还躺着边车
+if [ -d "$(dirname "$BIN")/../Resources/qwen-tts" ]; then
+    ok=0; echo "  FAIL App bundle 里还有 Resources/qwen-tts/"
+fi
+[ "$ok" = 1 ] && pass=$((pass + 1)) || fail=$((fail + 1))
 
 echo
 echo "passed $pass, failed $fail"

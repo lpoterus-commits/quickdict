@@ -19,3 +19,11 @@ func t(_ key: String, _ arguments: CVarArg...) -> String {
 var appVersion: String {
     Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "dev"
 }
+
+/// 构建号，`build.sh` 每次盖一个 `MMDD.HHMM`。
+///
+/// **光有版本号是不够的**：3.3_beta 这种号一天不会变，而一天可能装七八回，
+/// 界面上全长一个样，用的人没法判断手上跑的是不是刚构建的那一次。
+var appBuild: String {
+    Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? ""
+}

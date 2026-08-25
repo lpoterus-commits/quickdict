@@ -58,28 +58,28 @@ final class KeyRecorderButton: NSButton {
     deinit { if let monitor { NSEvent.removeMonitor(monitor) } }
 }
 
-final class HotKeyEditorController: NSObject, NSWindowDelegate {
-    private var window: NSWindow?
+final class HotkeysPane: NSObject, ShellPane {
+    private var contentView: NSView?
+    /// 有没有还没保存的改动。有的话切走再切回来不重新读配置。
+    private var dirty = false
     private var rowsStack: NSStackView!
     private var statusLabel: NSTextField!
 
     private var bindings: [HotKeyBinding] = []
     private var config: AppConfig = .fallback
     private var onSave: (([HotKeyBinding]) -> Void)?
-    /// 关窗时回调，用于恢复被临时注销的全局热键
-    var onClose: (() -> Void)?
+    var paneTitle: String { t("menu.hotkeys") }
 
-    func show(config: AppConfig, onSave: @escaping ([HotKeyBinding]) -> Void) {
-        self.config = config
-        self.bindings = config.hotkeys
+    /// 启动时装一次回调
+    func configure(onSave: @escaping ([HotKeyBinding]) -> Void) {
         self.onSave = onSave
-        build()
-        rebuildRows()
+    }
 
-        window?.level = .floating
-        NSApp.activate(ignoringOtherApps: true)
-        window?.makeKeyAndOrderFront(nil)
-        window?.orderFrontRegardless()
+    func paneWillAppear(config cfg: AppConfig) {
+        guard !dirty else { return }
+        bindings = cfg.hotkeys
+        rebuildRows()
+        status(t("keys.pressSave"), warning: false)
     }
 
     /// 保存后由外部回报哪些注册失败了（通常是被别的程序占用）
@@ -95,8 +95,8 @@ final class HotKeyEditorController: NSObject, NSWindowDelegate {
 
     // MARK: - 构建
 
-    private func build() {
-        guard window == nil else { return }
+    func makePaneView() -> NSView {
+        if let contentView { return contentView }
 
         rowsStack = NSStackView()
         rowsStack.orientation = .vertical
@@ -170,15 +170,8 @@ final class HotKeyEditorController: NSObject, NSWindowDelegate {
             buttonBar.bottomAnchor.constraint(equalTo: content.bottomAnchor, constant: -16),
         ])
 
-        let panel = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 760, height: 440),
-                             styleMask: [.titled, .closable, .resizable],
-                             backing: .buffered, defer: false)
-        panel.title = t("keys.title")
-        panel.contentView = content
-        panel.isReleasedWhenClosed = false
-        panel.delegate = self
-        panel.center()
-        window = panel
+        contentView = content
+        return content
     }
 
     private func makeHeader() -> NSStackView {
@@ -229,7 +222,7 @@ final class HotKeyEditorController: NSObject, NSWindowDelegate {
         let source = NSPopUpButton()
         source.addItems(withTitles: [t("keys.sourceScreenshot"), t("keys.sourceSelection"),
                                      t("keys.sourceManual")])
-        source.selectItem(at: HotKeyEditorController.sources.firstIndex(of: binding.captureSource) ?? 0)
+        source.selectItem(at: HotkeysPane.sources.firstIndex(of: binding.captureSource) ?? 0)
         source.widthAnchor.constraint(equalToConstant: 110).isActive = true
         source.target = self
         source.action = #selector(sourceChanged(_:))
@@ -340,24 +333,31 @@ final class HotKeyEditorController: NSObject, NSWindowDelegate {
 
     @objc private func addBinding() {
         bindings.append(.make(key: "", source: .screenshot, dictionary: "auto"))
+        dirty = true
         validateAndRefresh()
         status(t("keys.newRowHint"), warning: true)
     }
 
     @objc private func resetDefaults() {
         bindings = AppConfig.fallback.hotkeys
+        dirty = true
         validateAndRefresh()
         status(t("keys.resetHint"), warning: false)
     }
 
+    /// 撤销还没保存的改动，回到配置里那一份。
+    /// 页是关不掉的，所以「取消」在这里的意思从「关窗口」变成了「还原」。
     @objc private func cancel() {
-        window?.orderOut(nil)
-        onClose?()
+        bindings = ConfigStore.load().hotkeys
+        dirty = false
+        rebuildRows()
+        status(t("keys.reverted"), warning: false)
     }
 
     @objc private func save() {
         guard let problem = firstProblem() else {
             onSave?(bindings)
+            dirty = false
             return
         }
         status(problem, warning: true)
@@ -383,6 +383,7 @@ final class HotKeyEditorController: NSObject, NSWindowDelegate {
     }
 
     private func validateAndRefresh() {
+        dirty = true
         rebuildRows()
         if let problem = firstProblem() {
             status(problem, warning: true)
@@ -396,18 +397,6 @@ final class HotKeyEditorController: NSObject, NSWindowDelegate {
         statusLabel.textColor = warning ? .systemOrange : .secondaryLabelColor
     }
 
-    func windowShouldClose(_ sender: NSWindow) -> Bool {
-        window?.orderOut(nil)
-        onClose?()
-        return false
-    }
-
-    func windowDidResignKey(_ notification: Notification) {
-        window?.level = .normal
-    }
-
-    func close() { window?.orderOut(nil)
-        }
 }
 
 extension HotKeyBinding {

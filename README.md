@@ -93,9 +93,17 @@ Typically 0–1 flags per paragraph, so it stays useful rather than noisy.
 Plus direct keys per dictionary: `⌘⌥N` Naver, `⌘⌥K` 국어사전, `⌘⌥P` Papago, `⌘⌥G` Google Translate.
 These are generated from whichever dictionaries your language actually has — no dead shortcuts.
 
-**Result window** — `⌘1`…`⌘9` switch dictionary, `⌘L` fix a misrecognized character and search again,
-`esc` to close, pin button to keep it on top. Without the pin it floats only while it appears, then
-drops behind as soon as you click elsewhere.
+**One window, navigation on the left** — until 3.1 this app had six separate windows (home, a floating
+lookup panel, dictionary settings, shortcuts, the guide, first-run setup). They are now pages of a
+single window: a toolbar across the top with the four capture actions and the one search field, a
+sidebar on the left, and the content below-right. `⌘1`…`⌘9` switch dictionary, `⌘L` jumps back to the
+search field to fix a misrecognized character. First-run setup is still its own window — it is the step
+that stands in front of you the first time, and a sidebar row would not be that.
+
+**Speech page** — what has been read aloud, replayable and exportable as WAV; which engine is running
+and how fast it is on this machine; which voice each language uses; and a box to type anything you want
+to hear. History is kept per utterance, not per synthesised chunk. Segments read by the system voice
+have no audio to export — the list says so rather than pretending otherwise.
 
 **First-run setup** — picks your dictionary language from the system language, walks you through the two
 permissions with live status, and detects the Gatekeeper quarantine flag if you downloaded a build.
@@ -115,9 +123,14 @@ another app are flagged in red the moment you save.
 
 ## Privacy
 
-Recognition is entirely on-device: Vision OCR, Vision barcodes, NaturalLanguage detection, the system
-dictionary, geometry. Measured over repeated runs, the process opens **zero network sockets**, and
-`URLSession` appears **zero times** in the source.
+**Entirely on-device, no exceptions.** Recognition: Vision OCR, Vision barcodes, NaturalLanguage
+detection, the system dictionary, geometry. Speech: the macOS system synthesiser.
+
+**The app opens no sockets of its own.** Beyond the dictionary pages you open yourself, it makes no
+outbound connections at all.
+
+> 3.1/3.2 had two exceptions: a local speech sidecar on `127.0.0.1`, and an optional Edge engine that
+> sent the text being read to Microsoft. **Both went away in 3.3** — speech synthesis moved to Ausculta.
 
 Only opening a dictionary page needs the network — because that page *is* the network. The app records
 no lookup history, and the embedded browser's cookies and localStorage are wiped on quit by default
@@ -167,7 +180,8 @@ noun 먹, ink.
 regression tests over real inflected forms**. Ambiguity is not resolved by guessing: `대한` is both
 the noun 大寒 and the adnominal of `대하다`, so both are shown.
 
-Click a synonym on the page to look it up; click 🔊 to hear it. Nothing leaves the machine.
+Click a synonym on the page to look it up; click 🔊 to hear it. Nothing leaves the machine —
+speech is synthesised here too, by the macOS system voice.
 
 > See [KRDICT-NOTICE.md](Resources/KRDICT-NOTICE.md) for the data's licence and the changes made
 > to it. That data is CC BY-SA and **not** covered by this project's MIT licence.
@@ -315,12 +329,17 @@ Naver form: the Korean-Korean dictionary takes over automatic routing and Google
 "QuickDict 3.app/Contents/MacOS/OCRDict" --join image.png # line-rejoining only
 "QuickDict 3.app/Contents/MacOS/OCRDict" --ocr  image.png # full lookup pipeline
 "QuickDict 3.app/Contents/MacOS/OCRDict" --qr   image.png # barcode detection only
+"QuickDict 3.app/Contents/MacOS/OCRDict" --tts-compare T  # run T through every installed engine
+"QuickDict 3.app/Contents/MacOS/OCRDict" --speak-dry TEXT # cleanup, stanzas and language runs
+"QuickDict 3.app/Contents/MacOS/OCRDict" --speak-chunks T # how the text is split for synthesis
+"QuickDict 3.app/Contents/MacOS/OCRDict" --shot speech o.png # render one page to an image
 ./Tests/run.sh                                            # 28 integration tests
+./Tests/speech/run.sh --with-tts                          # speech engine, headless and silent
 ```
 
 ## Source layout
 
-~3300 lines of Swift, no third-party dependencies.
+~3300 lines of Swift and no third-party dependencies — nothing outside the macOS SDK, and no separate runtime to install.
 
 | File | Role |
 |---|---|
@@ -331,10 +350,13 @@ Naver form: the Korean-Korean dictionary takes over automatic routing and Google
 | `OCR.swift` / `QRCode.swift` | Vision text and barcode recognition |
 | `SelectionReader.swift` | Reading the selection: Accessibility first, `⌘C` fallback |
 | `HotKeyManager.swift` | Carbon global hotkeys (no Accessibility permission needed) |
-| `ResultWindow.swift` | Result window with embedded WebView |
+| `MainWindow.swift` | The window shell: toolbar, sidebar, page switching |
+| `LookupPane.swift` | The lookup page and its embedded WebView |
 | `HotKeyEditor.swift` | Shortcut recording UI |
 | `HelpDocument.swift` | The guide, generated from live config |
 | `Config.swift` | Config model, tolerant of missing fields |
+| `Speech.swift` | Read-aloud: cleanup, stanzas, language runs, chunking, the play queue |
+| `SpeechEngine.swift` | The "turn text into sound" protocol + the macOS system voice |
 
 ## License
 

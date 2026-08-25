@@ -133,6 +133,7 @@
 
 /* ---- Language names ---- */
 "lang.ko" = "Korean";      "lang.ja" = "Japanese";   "lang.zh" = "Chinese";
+"lang.el" = "Greek";  "lang.he" = "Hebrew";  "lang.hi" = "Hindi";
 "lang.en" = "English";     "lang.it" = "Italian";    "lang.fr" = "French";
 "lang.de" = "German";      "lang.es" = "Spanish";    "lang.pt" = "Portuguese";
 "lang.ru" = "Russian";     "lang.nl" = "Dutch";      "lang.sv" = "Swedish";
@@ -355,7 +356,7 @@
 "notes.usingCopy" = "copy";
 "window.speak" = "Speak the current query. Click again to stop";
 "help.win.speak" = "Speak";
-"help.win.speakNote" = "Reads the current word offline with the system voice for its language";
+"help.win.speakNote" = "Reads the current word with the neural voice for its language, all on this Mac";
 
 /* 全局朗读 */
 "keys.actionSpeak" = "Speak";
@@ -404,3 +405,18 @@
 "hud.loginsCleared" = "Sign-ins cleared — you'll sign in again next time";
 "hud.logoutOnQuitOn" = "Sign-ins will be cleared on quit";
 "hud.logoutOnQuitOff" = "Sign-ins are kept on quit";
+
+/* 主窗口外壳与语音页（3.1） */
+"shell.section.use" = "Use";
+"shell.section.settings" = "Settings";
+"shell.section.about" = "About";
+"shell.pane.home" = "Home";
+"shell.pane.lookup" = "Look up";
+"shell.pane.permissions" = "Permissions";
+"home.permMissing" = "A permission is missing — some shortcuts will do nothing";
+"home.permGo" = "Take a look";
+"dict.saved" = "Saved";
+"dict.reverted" = "Back to the saved version";
+"keys.reverted" = "Back to the saved version";
+
+

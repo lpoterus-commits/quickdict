@@ -30,6 +30,14 @@ lipo -create \
 echo "    $(lipo -archs "$APP/Contents/MacOS/OCRDict")"
 cp Resources/Info.plist "$APP/Contents/Info.plist"
 
+# 给每次构建盖一个时间戳。**仓库里那个写死的 CFBundleVersion 分不清版本** ——
+# 一天装了七八回，界面上全是同一个「3.3_beta」，用的人没法判断手上跑的是哪一次。
+# 格式 MMDD.HHMM，够短能塞进侧栏，又够细能对上「刚才那次构建」。
+BUILD_STAMP=$(date "+%m%d.%H%M")
+/usr/libexec/PlistBuddy -c "Set :CFBundleVersion $BUILD_STAMP" \
+    "$APP/Contents/Info.plist" >/dev/null
+echo "    构建号 $BUILD_STAMP"
+
 # 离线词库。仓库里存压缩包（18MB），解开是 49MB —— 压着进 git，摊开进 App。
 # 解压一次要几秒，所以已经解开且比压缩包新就跳过。
 if [ -f Resources/krdict-kozh.sqlite.gz ]; then

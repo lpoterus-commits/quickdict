@@ -1,66 +1,51 @@
 import AppKit
 import WebKit
 
-final class LookupPanel: NSPanel {
-    var onCancel: (() -> Void)?
-    var onCommandDigit: ((Int) -> Void)?
-    var onFocusQuery: (() -> Void)?
-    /// 传 nil 表示回到 100%
-    var onZoom: ((Double?) -> Void)?
+/// 查词页：语种胶囊 + 词典切换 + 内嵌网页。
+///
+/// 3.1 之前这是一个独立的浮窗（`ResultWindowController`）。收进主窗口之后：
+///
+/// - **输入框上移到工具栏**。一个 App 里摆两个搜索框，用的人分不清该往哪个里打字。
+///   现在窗口顶上那个就是「要查的词」，`⌘L` 回到它，取词进来的字也落在它里面。
+/// - **⌘1…⌘9 / ⌘± / ⌘0 挂到窗口上**（见 `MainWindow`），因为只有这一页用得上，
+///   做成全局菜单项会在别的页里变成按了没反应的死键。
+/// - **图钉给了整个窗口**。原来钉的是浮窗，现在钉的是主窗口，语义一样。
+///
+/// 除此之外，词典路由、本地词库现场渲染、笔记页回传、弹窗改走浏览器 —— 一个字没改。
+final class LookupPane: NSObject, ShellPane, WKScriptMessageHandler {
 
-    override var canBecomeKey: Bool { true }
-    override var canBecomeMain: Bool { true }
+    var paneTitle: String { t("shell.pane.lookup") }
 
-    override func cancelOperation(_ sender: Any?) { onCancel?() }
-
-    override func performKeyEquivalent(with event: NSEvent) -> Bool {
-        let flags = event.modifierFlags.intersection(.deviceIndependentFlagsMask)
-        if flags == .command, let chars = event.charactersIgnoringModifiers?.lowercased() {
-            if chars == "0" { onZoom?(nil); return true }
-            if let n = Int(chars), (1...9).contains(n) {
-                onCommandDigit?(n - 1)
-                return true
-            }
-            if chars == "l" { onFocusQuery?(); return true }
-            if chars == "w" { onCancel?(); return true }
-            // 「＋」在多数键盘上要按 shift，所以 = 和 + 都认
-            if chars == "=" || chars == "+" { onZoom?(0.1); return true }
-            if chars == "-" { onZoom?(-0.1); return true }
-        }
-        return super.performKeyEquivalent(with: event)
-    }
-}
-
-/// 查词结果窗口：顶部是可编辑的词条 + 词典切换，下面是内嵌网页。
-/// 窗口复用，webView 保持热的，第二次查词几乎没有启动成本。
-final class ResultWindowController: NSObject, NSWindowDelegate, NSTextFieldDelegate {
-    private var panel: LookupPanel?
     private var webView: WKWebView!
-    private var queryField: NSTextField!
     private var langLabel: NSTextField!
     private var siteSelector: NSSegmentedControl!
     private var progress: NSProgressIndicator!
-    private var pinButton: NSButton!
-    private var speakButton: NSButton!
+    private var contentView: NSView?
 
+    /// 要查的词。真正的输入框在工具栏上，这里只留一份值 ——
+    /// 两边靠 `setQuery` 和 `onQueryChanged` 同步。
+    private(set) var query = ""
     private var sites: [DictSite] = []
     private var currentIndex = 0
     private var config: AppConfig = .fallback
-    private var didPosition = false
-    private var isPinned = false
+
+    /// 词变了（页面上点了近义词之类），把工具栏那个框也改过来
+    var onQueryChanged: ((String) -> Void)?
     /// 页面上改了资料清单，交给外面存配置
     var onNotesChanged: ((DictSite) -> Void)?
+    /// 缩放比例存回配置，下次打开还是这个大小
+    var onZoomChanged: ((Double) -> Void)?
+    /// 出弹窗要挂在窗口上，问外壳要
+    var hostWindow: (() -> NSWindow?)?
 
     // MARK: - 对外入口
 
-    func present(text: String, route: RouteResult, config: AppConfig, index: Int) {
-        self.config = config
-        self.sites = config.dictionaries
-        buildWindowIfNeeded()
+    /// 取词进来了：换词、换语种胶囊、按路由结果选词典、加载。
+    func show(text: String, route: RouteResult, config cfg: AppConfig, index: Int) {
+        config = cfg
+        sites = cfg.dictionaries
+        setQuery(text)
 
-        queryField.stringValue = text
-        // openBlank 会把占位文字换成「输入要查的词」，这里是取词来的，换回去
-        queryField.placeholderString = t("window.queryPlaceholder")
         langLabel.stringValue = route.ambiguous ? "\(route.displayName)?" : route.displayName
         langLabel.toolTip = route.ambiguous
             ? t("window.langUncertain", String(format: "%.0f%%", route.confidence * 100))
@@ -69,93 +54,56 @@ final class ResultWindowController: NSObject, NSWindowDelegate, NSTextFieldDeleg
 
         rebuildSelector()
         load(index: index)
-
-        positionIfNeeded()
-        // 弹出瞬间抬到 floating，否则 accessory App 抢不到前台，窗口会被埋在别的窗口后面。
-        // 失去焦点时再沉回 normal（见 windowDidResignKey），这样既能弹出来又不会挡路。
-        panel?.level = .floating
-        NSApp.activate(ignoringOtherApps: true)
-        panel?.makeKeyAndOrderFront(nil)
-        panel?.orderFrontRegardless()
-        panel?.makeFirstResponder(webView)
     }
 
-    /// 打开查词窗口。
+    /// 切到这一页但没有词的情况：留一页说明，别显示一片白。
     ///
-    /// 这个入口有两个职责，取决于窗口里有没有东西：
-    ///
-    /// - **空的** → 开一个空窗口，光标落在输入框里，自己敲要查的词
-    /// - **已经查过** → 只是把它叫回来，**内容一个字都不动**
-    ///
-    /// 第二条是要紧的。菜单栏工具不进 ⌘Tab，所以这个快捷键就是「把窗口找回来」的
-    /// 唯一办法；要是每次都清空，正读着的释义就没了 —— 那它就没法当这个用。
-    func openBlank(config cfg: AppConfig) {
-        let restoring = panel != nil && !(queryField?.stringValue.isEmpty ?? true)
+    /// **已经查过的话一个字都不动** —— 菜单栏工具不进 ⌘Tab，把窗口叫回来时
+    /// 正读着的释义不能没了。
+    func prepareBlank(config cfg: AppConfig) {
+        let restoring = !query.isEmpty
         config = cfg
         sites = cfg.dictionaries
-        buildWindowIfNeeded()
-
         rebuildSelector()
-        siteSelector.selectedSegment = currentIndex
-        if !restoring {
-            langLabel.stringValue = ""
-            langLabel.toolTip = nil
-            tintLanguage(uncertain: false)
-            queryField.stringValue = ""
-            // 占位文字换掉：这里不是「识别结果」，是等着人输入
-            queryField.placeholderString = t("window.queryPlaceholderManual")
-            // 还没有词，加载哪个词典都无从谈起。留空会是一片白，所以先放一页说明。
-            webView.loadHTMLString(Self.blankHint(), baseURL: nil)
-        }
-
-        positionIfNeeded()
-        panel?.level = .floating
-        NSApp.activate(ignoringOtherApps: true)
-        panel?.makeKeyAndOrderFront(nil)
-        panel?.orderFrontRegardless()
-        // 和 present 的区别就在这一行：焦点给输入框而不是网页。
-        // 叫回来的情况也给输入框 —— 想接着改词直接就能打。
-        panel?.makeFirstResponder(queryField)
-        queryField.selectText(nil)
+        siteSelector.selectedSegment = min(currentIndex, max(sites.count - 1, 0))
+        guard !restoring else { return }
+        langLabel.stringValue = ""
+        langLabel.toolTip = nil
+        tintLanguage(uncertain: false)
+        webView.loadHTMLString(Self.blankHint(), baseURL: nil)
     }
 
-    /// 空窗口的引导页。跟随系统深浅色，文案跟随界面语言。
-    private static func blankHint() -> String {
-        """
-        <!doctype html><meta charset="utf-8">
-        <style>
-        :root { color-scheme: light dark; }
-        body { margin:0; height:100vh; display:flex; flex-direction:column;
-               align-items:center; justify-content:center; gap:10px;
-               font:14px/1.7 -apple-system, "PingFang SC", sans-serif;
-               color:#8a8a8e; text-align:center; padding:0 32px; }
-        b { color:#6a6a6e; font-size:15px; font-weight:600; }
-        kbd { border:1px solid currentColor; border-radius:4px; padding:1px 5px;
-              font:12px ui-monospace, monospace; opacity:.8; }
-        </style>
-        <b>\(esc(t("window.blank.title")))</b>
-        <div>\(esc(t("window.blank.switch")))</div>
-        <div>\(esc(t("window.blank.local")))</div>
-        """
+    func paneWillAppear(config: AppConfig) {
+        prepareBlank(config: config)
     }
 
-    /// 语种胶囊上色。空的时候不画底，免得窗口一开就有个突兀的色块。
-    private func tintLanguage(uncertain: Bool) {
-        let empty = langLabel.stringValue.isEmpty
-        let base: NSColor = uncertain ? .systemOrange : .controlAccentColor
-        langLabel.layer?.backgroundColor = empty ? nil : base.withAlphaComponent(0.14).cgColor
-        langLabel.textColor = empty ? .secondaryLabelColor : base
+    /// 工具栏的搜索框回车走这里
+    func lookup(text: String, config cfg: AppConfig, index: Int?) {
+        config = cfg
+        sites = cfg.dictionaries
+        setQuery(text)
+        rebuildSelector()
+        load(index: index ?? currentIndex)
     }
 
-    private static func esc(_ s: String) -> String {
-        s.replacingOccurrences(of: "&", with: "&amp;")
-         .replacingOccurrences(of: "<", with: "&lt;")
-         .replacingOccurrences(of: ">", with: "&gt;")
+    /// ⌘1…⌘9
+    func selectSite(_ index: Int) { load(index: index) }
+
+    /// 清除浏览数据时一并把当前页面卸掉，否则内存里还留着刚查的词
+    func blankOut() {
+        setQuery("")
+        webView?.load(URLRequest(url: URL(string: "about:blank")!))
+    }
+
+    private func setQuery(_ text: String) {
+        query = text
+        onQueryChanged?(text)
     }
 
     /// 字号缩放。用 pageZoom 而不是 magnification —— 前者让文字重排，
     /// 后者是整页放大，窄窗口里会横向出滚动条。双指缩放走 magnification（系统管）。
-    private func zoom(by delta: Double?) {
+    func zoom(by delta: Double?) {
+        guard webView != nil else { return }
         // 取整到两位，否则 0.1 累加会攒出 1.3000000000000003 存进配置
         let value = delta.map { (min(max(config.windowZoom + $0, 0.5), 3.0) * 100).rounded() / 100 } ?? 1.0
         config.windowZoom = value
@@ -164,45 +112,10 @@ final class ResultWindowController: NSObject, NSWindowDelegate, NSTextFieldDeleg
         HUD.shared.show("\(Int(value * 100))%", duration: 1)
     }
 
-    /// 缩放比例存回配置，下次打开还是这个大小
-    var onZoomChanged: ((Double) -> Void)?
+    // MARK: - 搭视图
 
-    func hide() {
-        panel?.orderOut(nil)
-    }
-
-    /// 清除浏览数据时一并把当前页面卸掉，否则内存里还留着刚查的词
-    func blankOut() {
-        queryField?.stringValue = ""
-        webView?.load(URLRequest(url: URL(string: "about:blank")!))
-    }
-
-    // MARK: - 构建
-
-    private func buildWindowIfNeeded() {
-        guard panel == nil else { return }
-
-        let window = LookupPanel(
-            contentRect: NSRect(x: 0, y: 0, width: config.windowWidth, height: config.windowHeight),
-            styleMask: [.titled, .closable, .miniaturizable, .resizable, .utilityWindow],
-            backing: .buffered, defer: false)
-        window.title = t("window.title")
-        // 默认走普通窗口层级：切到别的 App 时它就该被正常盖住。
-        // 想让它压在最上面时，用工具栏的图钉按钮临时开启。
-        window.isFloatingPanel = false
-        isPinned = config.alwaysOnTop
-        window.level = isPinned ? .floating : .normal
-        window.hidesOnDeactivate = false
-        window.isReleasedWhenClosed = false
-        window.delegate = self
-        window.onCancel = { [weak self] in self?.hide() }
-        window.onCommandDigit = { [weak self] i in self?.load(index: i) }
-        window.onFocusQuery = { [weak self] in
-            guard let self else { return }
-            self.panel?.makeFirstResponder(self.queryField)
-            self.queryField.selectText(nil)
-        }
-        window.onZoom = { [weak self] delta in self?.zoom(by: delta) }
+    func makePaneView() -> NSView {
+        if let contentView { return contentView }
 
         langLabel = NSTextField(labelWithString: "")
         langLabel.font = .systemFont(ofSize: 12, weight: .semibold)
@@ -215,25 +128,16 @@ final class ResultWindowController: NSObject, NSWindowDelegate, NSTextFieldDeleg
         langLabel.setContentHuggingPriority(.required, for: .horizontal)
         langLabel.widthAnchor.constraint(greaterThanOrEqualToConstant: 56).isActive = true
 
-        queryField = NSTextField(string: "")
-        queryField.font = .systemFont(ofSize: 14)
-        queryField.placeholderString = t("window.queryPlaceholder")
-        queryField.bezelStyle = .roundedBezel
-        queryField.delegate = self
-        queryField.target = self
-        queryField.action = #selector(queryChanged)
-        queryField.setContentHuggingPriority(.defaultLow, for: .horizontal)
-
         siteSelector = NSSegmentedControl()
         siteSelector.segmentStyle = .rounded
         siteSelector.trackingMode = .selectOne
         siteSelector.target = self
         siteSelector.action = #selector(siteChanged)
-        siteSelector.setContentHuggingPriority(.required, for: .horizontal)
+        siteSelector.setContentHuggingPriority(.defaultLow, for: .horizontal)
 
-        speakButton = NSButton(image: NSImage(systemSymbolName: "speaker.wave.2",
-                                              accessibilityDescription: t("window.speak")) ?? NSImage(),
-                               target: self, action: #selector(speak))
+        let speakButton = NSButton(image: NSImage(systemSymbolName: "speaker.wave.2",
+                                                  accessibilityDescription: t("window.speak")) ?? NSImage(),
+                                   target: self, action: #selector(speak))
         speakButton.bezelStyle = .texturedRounded
         speakButton.toolTip = t("window.speak")
         speakButton.setContentHuggingPriority(.required, for: .horizontal)
@@ -245,19 +149,11 @@ final class ResultWindowController: NSObject, NSWindowDelegate, NSTextFieldDeleg
         browserButton.toolTip = t("window.openInBrowser")
         browserButton.setContentHuggingPriority(.required, for: .horizontal)
 
-        pinButton = NSButton(image: NSImage(systemSymbolName: "pin", accessibilityDescription: t("window.pin")) ?? NSImage(),
-                             target: self, action: #selector(togglePin))
-        pinButton.bezelStyle = .texturedRounded
-        pinButton.setButtonType(.pushOnPushOff)
-        pinButton.setContentHuggingPriority(.required, for: .horizontal)
-        updatePinButton()
-
-        let toolbar = NSStackView(views: [langLabel, queryField, siteSelector, speakButton,
-                                         browserButton, pinButton])
-        toolbar.orientation = .horizontal
-        toolbar.spacing = 8
-        toolbar.edgeInsets = NSEdgeInsets(top: 8, left: 12, bottom: 8, right: 12)
-        toolbar.translatesAutoresizingMaskIntoConstraints = false
+        let bar = NSStackView(views: [langLabel, siteSelector, speakButton, browserButton])
+        bar.orientation = .horizontal
+        bar.spacing = 8
+        bar.edgeInsets = NSEdgeInsets(top: 8, left: 14, bottom: 8, right: 14)
+        bar.translatesAutoresizingMaskIntoConstraints = false
 
         let webConfig = WKWebViewConfiguration()
         // 笔记页面上的「＋ 添加 / ✕ 移除」要 App 出手，开一条回传通道。
@@ -273,7 +169,6 @@ final class ResultWindowController: NSObject, NSWindowDelegate, NSTextFieldDeleg
         // 不设 uiDelegate 的话，页面调 window.open() 和 confirm() 会**静默失败** ——
         // Naver 的「加入单词本」就是这么点了没反应的
         webView.uiDelegate = self
-        webView.allowsBackForwardNavigationGestures = true
         webView.translatesAutoresizingMaskIntoConstraints = false
 
         progress = NSProgressIndicator()
@@ -288,17 +183,17 @@ final class ResultWindowController: NSObject, NSWindowDelegate, NSTextFieldDeleg
         separator.translatesAutoresizingMaskIntoConstraints = false
 
         let content = NSView()
-        content.addSubview(toolbar)
+        content.addSubview(bar)
         content.addSubview(separator)
         content.addSubview(webView)
         content.addSubview(progress)
 
         NSLayoutConstraint.activate([
-            toolbar.topAnchor.constraint(equalTo: content.topAnchor),
-            toolbar.leadingAnchor.constraint(equalTo: content.leadingAnchor),
-            toolbar.trailingAnchor.constraint(equalTo: content.trailingAnchor),
+            bar.topAnchor.constraint(equalTo: content.topAnchor),
+            bar.leadingAnchor.constraint(equalTo: content.leadingAnchor),
+            bar.trailingAnchor.constraint(equalTo: content.trailingAnchor),
 
-            separator.topAnchor.constraint(equalTo: toolbar.bottomAnchor),
+            separator.topAnchor.constraint(equalTo: bar.bottomAnchor),
             separator.leadingAnchor.constraint(equalTo: content.leadingAnchor),
             separator.trailingAnchor.constraint(equalTo: content.trailingAnchor),
             separator.heightAnchor.constraint(equalToConstant: 1),
@@ -313,8 +208,40 @@ final class ResultWindowController: NSObject, NSWindowDelegate, NSTextFieldDeleg
             webView.bottomAnchor.constraint(equalTo: content.bottomAnchor),
         ])
 
-        window.contentView = content
-        panel = window
+        contentView = content
+        return content
+    }
+
+    /// 空页的引导。跟随系统深浅色，文案跟随界面语言。
+    private static func blankHint() -> String {
+        """
+        <!doctype html><meta charset="utf-8">
+        <style>
+        :root { color-scheme: light dark; }
+        body { margin:0; height:100vh; display:flex; flex-direction:column;
+               align-items:center; justify-content:center; gap:10px;
+               font:14px/1.7 -apple-system, "PingFang SC", sans-serif;
+               color:#8a8a8e; text-align:center; padding:0 32px; }
+        b { color:#6a6a6e; font-size:15px; font-weight:600; }
+        </style>
+        <b>\(esc(t("window.blank.title")))</b>
+        <div>\(esc(t("window.blank.switch")))</div>
+        <div>\(esc(t("window.blank.local")))</div>
+        """
+    }
+
+    /// 语种胶囊上色。空的时候不画底，免得一切过来就有个突兀的色块。
+    private func tintLanguage(uncertain: Bool) {
+        let empty = langLabel.stringValue.isEmpty
+        let base: NSColor = uncertain ? .systemOrange : .controlAccentColor
+        langLabel.layer?.backgroundColor = empty ? nil : base.withAlphaComponent(0.14).cgColor
+        langLabel.textColor = empty ? .secondaryLabelColor : base
+    }
+
+    private static func esc(_ s: String) -> String {
+        s.replacingOccurrences(of: "&", with: "&amp;")
+         .replacingOccurrences(of: "<", with: "&lt;")
+         .replacingOccurrences(of: ">", with: "&gt;")
     }
 
     private func rebuildSelector() {
@@ -328,35 +255,16 @@ final class ResultWindowController: NSObject, NSWindowDelegate, NSTextFieldDeleg
         }
     }
 
-    private func updatePinButton() {
-        let symbol = isPinned ? "pin.fill" : "pin"
-        pinButton.image = NSImage(systemSymbolName: symbol, accessibilityDescription: t("window.pin")) ?? NSImage()
-        pinButton.state = isPinned ? .on : .off
-        pinButton.toolTip = isPinned ? t("window.pinned") : t("window.pin")
-    }
-
-    private func positionIfNeeded() {
-        guard !didPosition, let panel else { return }
-        didPosition = true
-        let mouse = NSEvent.mouseLocation
-        let screen = NSScreen.screens.first { NSMouseInRect(mouse, $0.frame, false) }
-            ?? NSScreen.main ?? NSScreen.screens[0]
-        let visible = screen.visibleFrame
-        let width = min(config.windowWidth, visible.width - 40)
-        let height = min(config.windowHeight, visible.height - 40)
-        panel.setFrame(NSRect(x: visible.midX - width / 2,
-                              y: visible.midY - height / 2 + visible.height * 0.05,
-                              width: width, height: height),
-                       display: true)
-    }
-
     // MARK: - 加载
 
     private func load(index: Int) {
         guard sites.indices.contains(index) else { return }
         let site = sites[index]
-        let query = queryField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !query.isEmpty, let url = DictRouter.url(site: site, query: query) else { return }
+        let text = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !text.isEmpty, let url = DictRouter.url(site: site, query: text) else { return }
+
+        // 查到一个词，就先把它的读音悄悄合成好。
+        // 神经语音算一个词要一秒半，而用户从「看到释义」到「想听一下」中间总有好几秒 ——
 
         if site.external == true {
             NSWorkspace.shared.open(url)
@@ -372,7 +280,7 @@ final class ResultWindowController: NSObject, NSWindowDelegate, NSTextFieldDeleg
             // 本地 SQLite 词库：每次查询现场出页面（几万词条不可能整个塞进 HTML）
             if site.isDatabase {
                 let source = URL(fileURLWithPath: site.localPath ?? url.path)
-                if let page = KrDict.page(database: source, query: query, name: site.name) {
+                if let page = KrDict.page(database: source, query: text, name: site.name) {
                     webView.loadFileURL(page, allowingReadAccessTo: page.deletingLastPathComponent())
                 }
                 return
@@ -388,23 +296,15 @@ final class ResultWindowController: NSObject, NSWindowDelegate, NSTextFieldDeleg
         }
     }
 
-    @objc private func togglePin() {
-        isPinned.toggle()
-        panel?.level = isPinned ? .floating : .normal
-        updatePinButton()
-    }
-
     private var currentURL: URL? {
         guard sites.indices.contains(currentIndex) else { return nil }
-        let query = queryField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
-        return DictRouter.url(site: sites[currentIndex], query: query)
+        let text = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        return DictRouter.url(site: sites[currentIndex], query: text)
     }
 
     // MARK: - Actions
 
     @objc private func siteChanged() { load(index: siteSelector.selectedSegment) }
-
-    @objc private func queryChanged() { load(index: currentIndex) }
 
     /// 读出当前查询词。走全局那台朗读引擎 —— 和 ⌘⌥Q 是同一个声音、同一套
     /// 清洗和语种判定，也不会出现两边同时张嘴的情况。
@@ -413,7 +313,7 @@ final class ResultWindowController: NSObject, NSWindowDelegate, NSTextFieldDeleg
             Speech.shared.stop()
             return
         }
-        let text = queryField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
+        let text = query.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty else { return }
         Speech.shared.speak(text, config: config)
     }
@@ -422,20 +322,11 @@ final class ResultWindowController: NSObject, NSWindowDelegate, NSTextFieldDeleg
         guard let url = currentURL else { return }
         NSWorkspace.shared.open(url)
     }
-
-    func windowShouldClose(_ sender: NSWindow) -> Bool {
-        hide()
-        return false
-    }
-
-    /// 一失去焦点就沉回普通层级，让它不再压着别的窗口。图钉按下时例外。
-    func windowDidResignKey(_ notification: Notification) {
-        guard !isPinned else { return }
-        panel?.level = .normal
-    }
 }
 
-extension ResultWindowController: WKNavigationDelegate {
+// MARK: - 加载进度
+
+extension LookupPane: WKNavigationDelegate {
     func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
         progress.isHidden = false
         progress.startAnimation(nil)
@@ -451,16 +342,16 @@ extension ResultWindowController: WKNavigationDelegate {
         progress.isHidden = true
     }
 
-    func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
+    func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!,
+                 withError error: Error) {
         progress.stopAnimation(nil)
         progress.isHidden = true
     }
 }
 
-
 // MARK: - 笔记页面的回传
 
-extension ResultWindowController: WKScriptMessageHandler {
+extension LookupPane {
     /// 页面上的「＋ 添加 / ✕ 移除」走到这里。
     ///
     /// 这条通道对 WebView 里加载的**所有**页面都可见，包括那些在线词典站点。
@@ -482,7 +373,7 @@ extension ResultWindowController: WKScriptMessageHandler {
         case "search":
             // 词库页面上点了一个词（近义词、反义词、提示里的词）：换成它再查一次
             guard let text = body["text"] as? String, !text.isEmpty else { return }
-            queryField.stringValue = text
+            setQuery(text)
             load(index: currentIndex)
         case "speak":
             guard let text = body["text"] as? String, !text.isEmpty else { return }
@@ -541,10 +432,9 @@ extension ResultWindowController: WKScriptMessageHandler {
     }
 }
 
-
 // MARK: - 弹窗与新窗口
 
-extension ResultWindowController: WKUIDelegate {
+extension LookupPane: WKUIDelegate {
     /// `window.open()` 要求宿主再造一个 WebView。这里不造，改成交给默认浏览器。
     ///
     /// 词典站的弹窗基本都是登录、加生词本这类**依赖登录态**的操作，
@@ -572,10 +462,10 @@ extension ResultWindowController: WKUIDelegate {
         alert.messageText = message
         alert.addButton(withTitle: t("alert.ok"))
         if cancellable { alert.addButton(withTitle: t("keys.cancel")) }
-        guard let panel else {
+        guard let window = hostWindow?() else {
             done(alert.runModal() == .alertFirstButtonReturn)
             return
         }
-        alert.beginSheetModal(for: panel) { done($0 == .alertFirstButtonReturn) }
+        alert.beginSheetModal(for: window) { done($0 == .alertFirstButtonReturn) }
     }
 }

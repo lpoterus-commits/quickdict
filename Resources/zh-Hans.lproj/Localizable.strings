@@ -133,6 +133,7 @@
 
 /* ---- 语言名 ---- */
 "lang.ko" = "韩语";   "lang.ja" = "日语";   "lang.zh" = "中文";
+"lang.el" = "希腊语";  "lang.he" = "希伯来语";  "lang.hi" = "印地语";
 "lang.en" = "英语";   "lang.it" = "意大利语"; "lang.fr" = "法语";
 "lang.de" = "德语";   "lang.es" = "西班牙语"; "lang.pt" = "葡萄牙语";
 "lang.ru" = "俄语";   "lang.nl" = "荷兰语";  "lang.sv" = "瑞典语";
@@ -355,7 +356,7 @@
 "notes.usingCopy" = "用副本";
 "window.speak" = "朗读当前查询词。再按一次停止";
 "help.win.speak" = "朗读";
-"help.win.speakNote" = "系统语音离线朗读当前词，按识别出的语种选嗓音";
+"help.win.speakNote" = "用本机的神经语音朗读当前词，按识别出的语种选嗓音";
 
 /* 全局朗读 */
 "keys.actionSpeak" = "朗读";
@@ -404,3 +405,18 @@
 "hud.loginsCleared" = "登录凭据已清除，下次要重新登录";
 "hud.logoutOnQuitOn" = "退出时将同时清除登录凭据";
 "hud.logoutOnQuitOff" = "退出时保留登录凭据";
+
+/* 主窗口外壳与语音页（3.1） */
+"shell.section.use" = "使用";
+"shell.section.settings" = "设置";
+"shell.section.about" = "关于";
+"shell.pane.home" = "主页";
+"shell.pane.lookup" = "查词";
+"shell.pane.permissions" = "权限";
+"home.permMissing" = "有权限还没给，部分快捷键会按了没反应";
+"home.permGo" = "去看看";
+"dict.saved" = "已保存";
+"dict.reverted" = "已还原成保存过的那一份";
+"keys.reverted" = "已还原成保存过的那一份";
+
+

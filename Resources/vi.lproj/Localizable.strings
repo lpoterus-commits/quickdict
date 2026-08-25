@@ -155,6 +155,7 @@
 
 /* ---- Tên ngôn ngữ ---- */
 "lang.ko" = "tiếng Hàn";  "lang.ja" = "tiếng Nhật";  "lang.zh" = "tiếng Trung";
+"lang.el" = "Tiếng Hy Lạp";  "lang.he" = "Tiếng Hebrew";  "lang.hi" = "Tiếng Hindi";
 "lang.en" = "tiếng Anh";  "lang.it" = "tiếng Ý";     "lang.fr" = "tiếng Pháp";
 "lang.de" = "tiếng Đức";  "lang.es" = "tiếng Tây Ban Nha"; "lang.pt" = "tiếng Bồ Đào Nha";
 "lang.ru" = "tiếng Nga";  "lang.nl" = "tiếng Hà Lan"; "lang.sv" = "tiếng Thuỵ Điển";
@@ -357,7 +358,7 @@
 "notes.usingCopy" = "bản sao";
 "window.speak" = "Đọc từ hiện tại. Nhấn lần nữa để dừng";
 "help.win.speak" = "Đọc to";
-"help.win.speakNote" = "Đọc từ ngoại tuyến bằng giọng của ngôn ngữ đó";
+"help.win.speakNote" = "Đọc từ bằng giọng nơ-ron của ngôn ngữ đó, ngay trên máy này";
 
 /* 全局朗读 */
 "keys.actionSpeak" = "Đọc to";
@@ -406,3 +407,18 @@
 "hud.loginsCleared" = "Đã xoá đăng nhập — lần sau cần đăng nhập lại";
 "hud.logoutOnQuitOn" = "Sẽ xoá đăng nhập khi thoát";
 "hud.logoutOnQuitOff" = "Giữ đăng nhập khi thoát";
+
+/* 主窗口外壳与语音页（3.1） */
+"shell.section.use" = "Sử dụng";
+"shell.section.settings" = "Cài đặt";
+"shell.section.about" = "Giới thiệu";
+"shell.pane.home" = "Trang chính";
+"shell.pane.lookup" = "Tra từ";
+"shell.pane.permissions" = "Quyền";
+"home.permMissing" = "Thiếu quyền — một số phím tắt sẽ không phản hồi";
+"home.permGo" = "Xem thử";
+"dict.saved" = "Đã lưu";
+"dict.reverted" = "Đã quay lại bản đã lưu";
+"keys.reverted" = "Đã quay lại bản đã lưu";
+
+

@@ -155,6 +155,7 @@
 
 /* ---- 언어 이름 ---- */
 "lang.ko" = "한국어";   "lang.ja" = "일본어";   "lang.zh" = "중국어";
+"lang.el" = "그리스어";  "lang.he" = "히브리어";  "lang.hi" = "힌디어";
 "lang.en" = "영어";     "lang.it" = "이탈리아어"; "lang.fr" = "프랑스어";
 "lang.de" = "독일어";   "lang.es" = "스페인어"; "lang.pt" = "포르투갈어";
 "lang.ru" = "러시아어"; "lang.nl" = "네덜란드어"; "lang.sv" = "스웨덴어";
@@ -357,7 +358,7 @@
 "notes.usingCopy" = "복사본";
 "window.speak" = "현재 단어를 읽어 줍니다. 다시 누르면 중지";
 "help.win.speak" = "읽어 주기";
-"help.win.speakNote" = "인식된 언어의 시스템 음성으로 오프라인 발음";
+"help.win.speakNote" = "인식된 언어의 뉴럴 음성으로 이 기기에서 발음";
 
 /* 全局朗读 */
 "keys.actionSpeak" = "읽기";
@@ -406,3 +407,18 @@
 "hud.loginsCleared" = "로그인 정보를 지웠습니다. 다음에 다시 로그인하세요";
 "hud.logoutOnQuitOn" = "종료할 때 로그인 정보도 지웁니다";
 "hud.logoutOnQuitOff" = "종료해도 로그인 정보를 남깁니다";
+
+/* 主窗口外壳与语音页（3.1） */
+"shell.section.use" = "사용";
+"shell.section.settings" = "설정";
+"shell.section.about" = "정보";
+"shell.pane.home" = "홈";
+"shell.pane.lookup" = "사전";
+"shell.pane.permissions" = "권한";
+"home.permMissing" = "권한이 없어 일부 단축키가 동작하지 않습니다";
+"home.permGo" = "확인하기";
+"dict.saved" = "저장했습니다";
+"dict.reverted" = "저장된 내용으로 되돌렸습니다";
+"keys.reverted" = "저장된 내용으로 되돌렸습니다";
+
+

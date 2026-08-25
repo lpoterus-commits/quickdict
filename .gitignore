@@ -17,5 +17,13 @@ releases/
 .build-x86/
 dist/
 
+# 朗读测试自己编出来的那份（整模块 + Tests/speech/main.swift）
+.build-tests/
+
 # 离线词库的解压产物（仓库里只存 .gz）
 Resources/krdict-kozh.sqlite
+
+# Python 字节码。3.3 把边车整个移交 Ausculta 了，这条留着挡将来 ——
+# 字节码进仓库没意义，进 App 包还会撑破代码签名的封印
+__pycache__/
+*.pyc
