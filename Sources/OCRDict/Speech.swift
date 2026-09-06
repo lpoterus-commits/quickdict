@@ -109,10 +109,15 @@ final class Speech: NSObject, @unchecked Sendable {
         currentRate = min(max(multiplier, 0.5), 2.0)
     }
 
+    /// 所有引擎都在这个列表里。**「掐掉正在发声的东西」必须遍历它** ——
+    /// 只停一条的话，加第二条引擎那天就会变成「按停止没反应」：
+    /// 队列停了，可已经在播的那段音频还在自己放完。（3.3 真发生过。）
+    private var engines: [SpeechEngine] { [remote, system] }
+
     func stop() {
         queue.removeAll()
         running = false
-        system.stop()
+        engines.forEach { $0.stop() }
     }
 
     // MARK: - 排活

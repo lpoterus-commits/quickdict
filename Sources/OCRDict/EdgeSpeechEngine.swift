@@ -45,6 +45,10 @@ final class EdgeSpeechEngine: NSObject, SpeechEngine, AVAudioPlayerDelegate, @un
 
     var isReady: Bool { Reachability.isOnline }
 
+    /// 真的在出声吗。**给测试用** —— 「按停止没反应」这个 bug 的表现就是
+    /// 队列停了而这里还是 true，光看队列状态验不出来。
+    var isPlaying: Bool { player?.isPlaying == true }
+
     func supports(_ language: String) -> Bool { Self.voices[language] != nil }
 
     // MARK: - 发声

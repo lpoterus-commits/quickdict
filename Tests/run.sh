@@ -200,6 +200,26 @@ else
     diff <(printf '%s' "$want_seg") <(printf '%s' "$seg") | head -6 | sed 's/^/    /'
 fi
 
+echo "── stop reaches every engine"
+# 「按停止没反应」的真实原因：加了第二条引擎，停止却只停了第一条 ——
+# 队列停了，而已经在播的那段音频自己放完。塞两个假引擎数一下。
+reached=$("$BIN" --speak-stop-check 2>/dev/null)
+if [ "$reached" = "system=1 remote=1" ]; then
+    pass=$((pass + 1))
+else
+    fail=$((fail + 1))
+    echo "  FAIL 停止没到达每条引擎: $reached"
+fi
+
+# 上面那条只验接线。这条验声音**真的断了** —— 播一段、中途叫停、看还在不在响。
+# 要联网，连不上就跳过，不当失败。
+stopped=$("$BIN" --tts-edge-stop 2>/dev/null | tr '\n' ' ')
+case "$stopped" in
+    *"停止前 isPlaying=true"*"停止后 isPlaying=false"*) pass=$((pass + 1)) ;;
+    *"没能开始播放"*|"") echo "  skipped — 在线合成不可用" ;;
+    *) fail=$((fail + 1)); echo "  FAIL 叫停后声音没断: $stopped" ;;
+esac
+
 echo "── speak key is a toggle"
 # 朗读键按下去该做什么。**光靠听分不出对错**，所以把决策抽成纯函数单独验。
 # 最要紧的一条是第一行：划完词按了朗读，那段文字还选着 ——

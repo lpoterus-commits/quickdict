@@ -162,6 +162,47 @@ if CommandLine.arguments.count >= 3, CommandLine.arguments[1] == "--login" {
     exit(0)
 }
 
+// 调试入口：--tts-edge-stop 播一段，中途叫停，看声音是不是真的断了
+if CommandLine.arguments.contains("--tts-edge-stop") {
+    let engine = EdgeSpeechEngine()
+    let chunk = SpeechChunk(text: "오늘은 날씨가 참 좋습니다. 도서관에 가서 책을 읽을 생각입니다.",
+                            language: "ko", stanzaEnd: false)
+    var started = false
+    engine.play(chunk, rate: 1.0) { _ in }
+    let deadline = Date().addingTimeInterval(10)
+    while !started, Date() < deadline {
+        RunLoop.current.run(mode: .default, before: Date().addingTimeInterval(0.05))
+        started = engine.isPlaying
+    }
+    guard started else { print("没能开始播放，无法验证"); exit(1) }
+    print("停止前 isPlaying=\(engine.isPlaying)")
+    engine.stop()
+    RunLoop.current.run(mode: .default, before: Date().addingTimeInterval(0.2))
+    print("停止后 isPlaying=\(engine.isPlaying)")
+    exit(0)
+}
+
+// 调试入口：--speak-stop-check 验「停止」有没有到达每一条引擎。
+// 塞两个只会数数的假引擎进去，喂一段，然后停，看两边各被停了几次。
+if CommandLine.arguments.contains("--speak-stop-check") {
+    final class CountingEngine: SpeechEngine {
+        var stopped = 0
+        var isReady = true
+        func supports(_ language: String) -> Bool { true }
+        func play(_ chunk: SpeechChunk, rate: Double, completion: @escaping (Bool) -> Void) {}
+        func stop() { stopped += 1 }
+    }
+    let fakeSystem = CountingEngine(), fakeRemote = CountingEngine()
+    Speech.shared.injectEnginesForTesting(system: fakeSystem, remote: fakeRemote)
+    var config = ConfigStore.load()
+    config.speechEngine = "edge"
+    Speech.shared.speak("사랑해요", config: config)
+    fakeSystem.stopped = 0; fakeRemote.stopped = 0    // speak 自己会先停一次，不算
+    Speech.shared.stop()
+    print("system=\(fakeSystem.stopped) remote=\(fakeRemote.stopped)")
+    exit(0)
+}
+
 // 调试入口：--speak-decide <选中的文字> <0|1 正在读> <上一段> 打印按键该做什么
 if CommandLine.arguments.count >= 5, CommandLine.arguments[1] == "--speak-decide" {
     switch Speech.outcome(selection: CommandLine.arguments[2],
