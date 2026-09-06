@@ -420,5 +420,7 @@
 "dict.saved" = "저장했습니다";
 "dict.reverted" = "저장된 내용으로 되돌렸습니다";
 "keys.reverted" = "저장된 내용으로 되돌렸습니다";
-
-
+"menu.onlineVoice" = "온라인 음성(Microsoft)";
+"menu.onlineVoice.tip" = "Microsoft의 신경망 음성으로 바꿉니다. 시스템 음성보다 자연스럽지만 **인터넷이 필요**합니다. 연결이 없거나 시간이 초과되거나 지원하지 않는 언어면 시스템 음성으로 되돌아갑니다. 읽은 부분은 로컬에 캐시됩니다.";
+"hud.voiceOnline" = "Microsoft 온라인 음성으로 바꿨습니다";
+"hud.voiceSystem" = "시스템 음성으로 되돌렸습니다";

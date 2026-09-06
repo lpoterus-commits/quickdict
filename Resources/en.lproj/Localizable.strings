@@ -418,5 +418,7 @@
 "dict.saved" = "Saved";
 "dict.reverted" = "Back to the saved version";
 "keys.reverted" = "Back to the saved version";
-
-
+"menu.onlineVoice" = "Online Voices (Microsoft)";
+"menu.onlineVoice.tip" = "Microsoft's neural voices, better than the system ones. Needs a network — offline, on timeout, or for a language it lacks, it falls back to the system voice. Spoken passages are cached locally.";
+"hud.voiceOnline" = "Using Microsoft online voices";
+"hud.voiceSystem" = "Back to system voices";

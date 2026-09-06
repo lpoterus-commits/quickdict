@@ -26,6 +26,11 @@ final class Speech: NSObject, @unchecked Sendable {
     /// 唯一那条。类型写成协议而不是具体类，是为了测试能塞假的进来 ——
     /// 队列逻辑（顺序、失败换引擎、节尾停顿）没有声卡也该能验。
     private var system: SpeechEngine = SystemSpeechEngine()
+    /// 在线引擎。**永远只是加分项** —— 它不在、不通、不认这门语言，
+    /// 都无声地退回系统嗓音，用户不该因为网络不好就按了键没声音。
+    private var remote: SpeechEngine = EdgeSpeechEngine()
+    /// 这次朗读用哪条。跟着 `speak` 传进来的配置走，中途不变。
+    private var preferRemote = false
 
     /// 上一次读的内容。快捷键按下时没有选中文字，就重读它。
     private var cached = ""
@@ -49,8 +54,9 @@ final class Speech: NSObject, @unchecked Sendable {
     ///
     /// 队列那段异步逻辑（一段读完接下一段、节尾停一拍）光靠听验不出顺序，
     /// 而真引擎依赖声卡，不适合进自动化测试。生产代码里没有任何地方调它。
-    func injectEnginesForTesting(system: SpeechEngine) {
+    func injectEnginesForTesting(system: SpeechEngine, remote: SpeechEngine? = nil) {
         self.system = system
+        if let remote { self.remote = remote }
     }
 
     // MARK: - 入口
@@ -81,6 +87,7 @@ final class Speech: NSObject, @unchecked Sendable {
         }
         cached = text
         setRate(config.speechRate)
+        preferRemote = config.speechEngine == "edge"
         queue = chunks
         running = true
         speakNext()
@@ -173,11 +180,23 @@ final class Speech: NSObject, @unchecked Sendable {
             return
         }
         let chunk = queue.removeFirst()
-        // 系统合成器是流式的，喂进去就开始出声，没有「合成失败要换引擎补读」这回事 ——
-        // 那套 fallback 是给神经引擎准备的，随它一起下了（2026-08-25）。
-        system.play(chunk, rate: currentRate) { [weak self] _ in
+
+        func viaSystem() {
+            system.play(chunk, rate: currentRate) { [weak self] _ in
+                guard let self, self.running else { return }
+                self.speakNext()
+            }
+        }
+
+        // 在线引擎优先，但**失败必须能接上** —— 断网、超时、这门语言它没有，
+        // 都当场换系统嗓音把这一段读完，而不是整段哑掉。
+        guard preferRemote, remote.isReady, remote.supports(chunk.language) else {
+            viaSystem()
+            return
+        }
+        remote.play(chunk, rate: currentRate) { [weak self] spoke in
             guard let self, self.running else { return }
-            self.speakNext()
+            if spoke { self.speakNext() } else { viaSystem() }
         }
     }
 

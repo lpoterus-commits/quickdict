@@ -420,5 +420,7 @@
 "dict.saved" = "保存しました";
 "dict.reverted" = "保存済みの内容に戻しました";
 "keys.reverted" = "保存済みの内容に戻しました";
-
-
+"menu.onlineVoice" = "オンライン音声（Microsoft）";
+"menu.onlineVoice.tip" = "Microsoft のニューラル音声に切り替えます。システム音声より自然ですが**通信が必要**です。オフライン・タイムアウト・非対応言語では自動的にシステム音声に戻ります。読んだ箇所はローカルにキャッシュされます。";
+"hud.voiceOnline" = "Microsoft のオンライン音声に切り替えました";
+"hud.voiceSystem" = "システム音声に戻しました";

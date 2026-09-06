@@ -162,6 +162,34 @@ if CommandLine.arguments.count >= 3, CommandLine.arguments[1] == "--login" {
     exit(0)
 }
 
+// 调试入口：--tts-token 打印握手用的时间戳令牌，好和独立算法对账
+if CommandLine.arguments.contains("--tts-token") {
+    print(EdgeSpeechEngine.securityToken())
+    exit(0)
+}
+
+// 调试入口：--tts-edge <语种> <文本> 只跑一次在线合成，报字节数和耗时
+if CommandLine.arguments.count >= 4, CommandLine.arguments[1] == "--tts-edge" {
+    let engine = EdgeSpeechEngine()
+    let chunk = SpeechChunk(text: CommandLine.arguments[3],
+                            language: CommandLine.arguments[2], stanzaEnd: false)
+    guard engine.supports(chunk.language) else { print("这门语言微软没有"); exit(1) }
+    let started = Date()
+    var done = false
+    engine.play(chunk, rate: 1.0) { spoke in
+        print(spoke
+              ? "成功：音频 \(String(format: "%.2f", engine.lastAudioSeconds)) 秒，"
+                + "等待 \(String(format: "%.2f", engine.lastWaitSeconds)) 秒"
+              : "失败，会回落系统嗓音")
+        done = true
+    }
+    let deadline = started.addingTimeInterval(20)
+    while !done, Date() < deadline {
+        RunLoop.current.run(mode: .default, before: Date().addingTimeInterval(0.05))
+    }
+    exit(0)
+}
+
 // 调试入口：--help-html 打印使用说明。它是按配置生成的用户文档，
 // 出错的方式和界面一样（漏译、印出按不出来的键），所以也要能自动检查
 if CommandLine.arguments.contains("--help-html") {

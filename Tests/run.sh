@@ -83,6 +83,25 @@ done
         echo "  FAIL 词库页面的查询入口 — 输入框/回车/样式 只齐了 $ok/3"
     fi
 
+echo "── edge handshake token"
+# 握手令牌算错就整条在线路线不通，而症状只是「回落到系统嗓音」—— 悄无声息。
+# 这里用一份独立实现对账：Windows 文件时间取整到 5 分钟 + 固定令牌，SHA-256 大写。
+got=$("$BIN" --tts-token 2>/dev/null)
+want=$(python3 -c "
+import hashlib, time
+ticks = int(time.time()) + 11644473600
+ticks -= ticks % 300
+print(hashlib.sha256(f'{ticks * 10_000_000}6A5AA1D4EAFF4E9FB37E23D68491D6F4'.encode()).hexdigest().upper())
+")
+if [ "$got" = "$want" ]; then
+    pass=$((pass + 1))
+else
+    fail=$((fail + 1))
+    echo "  FAIL 令牌算法对不上"
+    echo "    got:  $got"
+    echo "    want: $want"
+fi
+
 echo "── configurable vs implemented"
 # 快捷键编辑器里能选的每一种「来源 + 动作」，dispatch 里都必须真的有分支。
 # 曾经不一致：「划词 + 只放剪贴板」「划词 + 扫码」选得上，按下去却静默变成查词。

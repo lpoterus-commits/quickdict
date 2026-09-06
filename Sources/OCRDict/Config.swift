@@ -168,6 +168,9 @@ struct AppConfig: Codable {
     var windowHeight: Double
     /// 结果窗口的字号比例。⌘+ / ⌘- 改，⌘0 回到 1.0
     var windowZoom: Double
+    /// 用哪个引擎发声："system"（macOS 自带，离线、秒回）或 "edge"（微软在线，好听但要联网）。
+    /// 选 edge 时**仍然保留系统嗓音兜底** —— 断网、超时、这门语言微软没有，都回落。
+    var speechEngine: String
     /// 朗读语速，1.0 = 正常，范围 0.5–2.0
     var speechRate: Double
     /// 朗读时跳过数字。读诗歌、课文时行号页码是噪音，开了它们就被静音
@@ -197,6 +200,7 @@ struct AppConfig: Codable {
         windowWidth: 900,
         windowHeight: 680,
         windowZoom: 1.0,
+        speechEngine: "system",
         speechRate: 1.0,
         speechSkipsNumbers: false,
         // 默认词典按系统语言自动定 —— 装上就能用，不需要先去改配置
@@ -215,7 +219,7 @@ extension AppConfig {
         case autoDetectLanguage, ocrLanguages, defaultLatinLanguage, latinConfidenceThreshold
         case collapseWhitespaceToSpace, openInBrowser, alwaysOnTop, clearDataOnQuit, clearLoginsOnQuit
         case qrConfirmBeforeOpen, koreanExtraParticles, koreanExtraStandalone
-        case sourceLanguages, dictionaryLanguage, windowWidth, windowHeight, windowZoom, speechRate, speechSkipsNumbers, dictionaries
+        case sourceLanguages, dictionaryLanguage, windowWidth, windowHeight, windowZoom, speechEngine, speechRate, speechSkipsNumbers, dictionaries
     }
 
     init(from decoder: Decoder) throws {
@@ -254,6 +258,7 @@ extension AppConfig {
         windowWidth = try c.decodeIfPresent(Double.self, forKey: .windowWidth) ?? d.windowWidth
         windowHeight = try c.decodeIfPresent(Double.self, forKey: .windowHeight) ?? d.windowHeight
         windowZoom = try c.decodeIfPresent(Double.self, forKey: .windowZoom) ?? d.windowZoom
+        speechEngine = try c.decodeIfPresent(String.self, forKey: .speechEngine) ?? d.speechEngine
         speechRate = try c.decodeIfPresent(Double.self, forKey: .speechRate) ?? d.speechRate
         speechSkipsNumbers = try c.decodeIfPresent(Bool.self, forKey: .speechSkipsNumbers) ?? d.speechSkipsNumbers
         let dicts = try c.decodeIfPresent([DictSite].self, forKey: .dictionaries) ?? d.dictionaries

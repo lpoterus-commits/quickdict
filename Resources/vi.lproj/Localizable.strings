@@ -420,5 +420,7 @@
 "dict.saved" = "Đã lưu";
 "dict.reverted" = "Đã quay lại bản đã lưu";
 "keys.reverted" = "Đã quay lại bản đã lưu";
-
-
+"menu.onlineVoice" = "Giọng trực tuyến (Microsoft)";
+"menu.onlineVoice.tip" = "Dùng giọng nơ-ron của Microsoft, hay hơn giọng hệ thống nhưng **cần mạng**. Mất mạng, quá thời gian chờ hoặc ngôn ngữ không có thì tự quay về giọng hệ thống. Đoạn đã đọc được lưu đệm cục bộ.";
+"hud.voiceOnline" = "Đã chuyển sang giọng trực tuyến Microsoft";
+"hud.voiceSystem" = "Đã quay lại giọng hệ thống";

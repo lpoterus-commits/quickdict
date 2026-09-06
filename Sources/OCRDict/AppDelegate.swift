@@ -602,6 +602,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         clearLogins.toolTip = t("menu.clearLogins.tip")
         menu.addItem(clearLogins)
 
+        let onlineVoice = NSMenuItem(title: t("menu.onlineVoice"),
+                                     action: #selector(toggleSpeechEngine), keyEquivalent: "")
+        onlineVoice.target = self
+        onlineVoice.state = config.speechEngine == "edge" ? .on : .off
+        onlineVoice.toolTip = t("menu.onlineVoice.tip")
+        menu.addItem(onlineVoice)
+
         let clearOnQuit = NSMenuItem(title: t("menu.clearOnQuit"), action: #selector(toggleClearOnQuit), keyEquivalent: "")
         clearOnQuit.target = self
         clearOnQuit.state = config.clearDataOnQuit ? .on : .off
@@ -901,6 +908,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             HUD.shared.show(t("hud.dataCleared", WebData.formatted(freed)))
             self?.statusItem.menu = self?.buildMenu()
         }
+    }
+
+    /// 在线音色开关。关掉随时能回系统嗓音 —— 这一条是加分项，不是依赖。
+    @objc private func toggleSpeechEngine() {
+        config.speechEngine = config.speechEngine == "edge" ? "system" : "edge"
+        ConfigStore.save(config)
+        statusItem.menu = buildMenu()
+        HUD.shared.show(t(config.speechEngine == "edge" ? "hud.voiceOnline" : "hud.voiceSystem"))
     }
 
     @objc private func toggleClearOnQuit() {

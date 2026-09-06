@@ -418,5 +418,7 @@
 "dict.saved" = "已保存";
 "dict.reverted" = "已还原成保存过的那一份";
 "keys.reverted" = "已还原成保存过的那一份";
-
-
+"menu.onlineVoice" = "在线音色（微软）";
+"menu.onlineVoice.tip" = "换成微软的神经网络嗓音，比系统嗓音好听。**要联网** —— 断网、超时或这门语言没有时，自动退回系统嗓音。读过的段落会缓存在本地。";
+"hud.voiceOnline" = "已改用微软在线音色";
+"hud.voiceSystem" = "已改回系统嗓音";
