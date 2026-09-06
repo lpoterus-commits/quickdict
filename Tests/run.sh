@@ -200,6 +200,19 @@ else
     diff <(printf '%s' "$want_seg") <(printf '%s' "$seg") | head -6 | sed 's/^/    /'
 fi
 
+echo "── slash becomes a pause"
+# 斜杠在教材里是并列标记（-아/어서、가/이）。念到中间不断一下，
+# 两个词会黏成一个不存在的词。换成逗号是因为**两条引擎都认逗号**，
+# 而 SSML 的 <break> 只有在线那条懂。
+slash=$("$BIN" --speak-dry "가/이 그리고 전자／후자" 2>/dev/null)
+if [ "$slash" = "节1 [ko] 가，이 그리고 전자，후자" ]; then
+    pass=$((pass + 1))
+else
+    fail=$((fail + 1))
+    echo "  FAIL 斜杠停顿"
+    echo "    got: $slash"
+fi
+
 echo "── barcode"
 qr=$("$BIN" --qr Tests/fixtures/qr-url.png 2>/dev/null | head -1)
 case "$qr" in

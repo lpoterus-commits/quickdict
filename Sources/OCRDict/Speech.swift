@@ -232,7 +232,15 @@ final class Speech: NSObject, @unchecked Sendable {
     /// 合成器会把它们一个个念出来，听感崩坏。
     static func sanitize(_ text: String, skipNumbers: Bool) -> String {
         var out = String.UnicodeScalarView()
+        // 斜杠当停顿读。`-아/어서`、`가/이` 这类并列，念到中间就该断一下，
+        // 不然两个词会黏成一个不存在的词。
+        //
+        // 换成逗号，而不是插一个停顿标记：**逗号两条引擎都认** —— 系统合成器和
+        // 微软在线嗓音都会在逗号处收一下气口，而 SSML 的 <break> 只有后者懂。
+        // 全角斜杠一起认，教材里两种都有。
+        let pause: Unicode.Scalar = "，"
         for scalar in text.unicodeScalars {
+            if scalar == "/" || scalar == "／" { out.append(pause); continue }
             let c = Character(scalar)
             let keep: Bool
             let category = scalar.properties.generalCategory
