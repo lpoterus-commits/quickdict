@@ -293,23 +293,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                         self?.copyToClipboard(joined)
                     }
 
-                case .speak:
-                    // 拼行走完整管线：断词还原后的文本才读得顺。
-                    // 段落换行 LineJoiner 会保留，正好喂给分节停顿。
-                    let lines = OCR.recognizeLines(image: image, languages: cfg.ocrLanguages,
-                                                   autoDetect: cfg.autoDetectLanguage)
-                    let joined = LineJoiner.joined(lines)
-                    DispatchQueue.main.async {
-                        self?.isBusy = false
-                        guard !joined.text.isEmpty else {
-                            HUD.shared.show(t("hud.noText"))
-                            return
-                        }
-                        Speech.shared.speak(joined.text, config: cfg)
-                    }
-
-                case .speakFaster, .speakSlower:
-                    // dispatch 在截图前就把调速拦下了，到不了这里
+                case .speak, .speakFaster, .speakSlower:
+                    // 朗读只走划词那一条入口，调速在 dispatch 里就拦下了。
+                    // 编辑器也不再提供这些组合，正常路径到不了这里。
                     DispatchQueue.main.async { self?.isBusy = false }
 
                 case .lookup:

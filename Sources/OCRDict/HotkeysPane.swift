@@ -294,7 +294,7 @@ final class HotkeysPane: NSObject, ShellPane {
     /// - 自己输入 / 主页：不取词，没有动作可选
     static func actions(for source: CaptureSource) -> [CaptureAction] {
         switch source {
-        case .screenshot: return [.lookup, .clipboard, .qrcode, .speak]
+        case .screenshot: return [.lookup, .clipboard, .qrcode]
         case .selection: return [.lookup, .speak, .speakFaster, .speakSlower]
         case .manual, .home: return []
         }

@@ -192,12 +192,11 @@ enum DictionaryPresets {
             .make(key: "9", control: true, option: true, source: .screenshot, dictionary: "auto"),
             .make(key: "0", control: true, option: true, source: .screenshot, action: .clipboard),
             .make(key: "8", control: true, option: true, source: .screenshot, action: .qrcode),
-            .make(key: "7", control: true, option: true, source: .screenshot, action: .speak),
             .make(key: "D", option: true, command: true, source: .selection, dictionary: "auto"),
             .make(key: "F", option: true, command: true, source: .manual),
             .make(key: "H", option: true, command: true, source: .home),
-            // 原浏览器脚本用左Alt+Q，全局热键抢 ⌥Q 会挡住打特殊字符，加上 ⌘
-            .make(key: "Q", option: true, command: true, source: .selection, action: .speak),
+            // 朗读只有划词这一条入口（截图那条 2026-09-06 去掉了）
+            .make(key: "7", control: true, option: true, source: .selection, action: .speak),
             // 原脚本用裸 ] [ 调速，全局热键得带修饰键
             .make(key: "]", option: true, command: true, source: .selection, action: .speakFaster),
             .make(key: "[", option: true, command: true, source: .selection, action: .speakSlower),

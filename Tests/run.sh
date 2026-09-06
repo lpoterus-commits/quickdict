@@ -87,7 +87,7 @@ echo "── configurable vs implemented"
 # 快捷键编辑器里能选的每一种「来源 + 动作」，dispatch 里都必须真的有分支。
 # 曾经不一致：「划词 + 只放剪贴板」「划词 + 扫码」选得上，按下去却静默变成查词。
 combos=$("$BIN" --combos 2>/dev/null)
-want="screenshot: lookup,clipboard,qrcode,speak
+want="screenshot: lookup,clipboard,qrcode
 selection: lookup,speak,speakfaster,speakslower
 manual: -
 home: -"
