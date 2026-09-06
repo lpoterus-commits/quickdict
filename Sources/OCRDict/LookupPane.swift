@@ -306,7 +306,7 @@ final class LookupPane: NSObject, ShellPane, WKScriptMessageHandler {
 
     @objc private func siteChanged() { load(index: siteSelector.selectedSegment) }
 
-    /// 读出当前查询词。走全局那台朗读引擎 —— 和 ⌘⌥Q 是同一个声音、同一套
+    /// 读出当前查询词。走全局那台朗读引擎 —— 和 ⌃⌥7 是同一个声音、同一套
     /// 清洗和语种判定，也不会出现两边同时张嘴的情况。
     @objc private func speak() {
         if Speech.shared.isSpeaking {

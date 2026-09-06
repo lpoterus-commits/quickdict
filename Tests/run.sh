@@ -200,6 +200,28 @@ else
     diff <(printf '%s' "$want_seg") <(printf '%s' "$seg") | head -6 | sed 's/^/    /'
 fi
 
+echo "── speak key is a toggle"
+# 朗读键按下去该做什么。**光靠听分不出对错**，所以把决策抽成纯函数单独验。
+# 最要紧的一条是第一行：划完词按了朗读，那段文字还选着 ——
+# 这时再按一次的意思几乎一定是「停」，而不是从头重读。
+while IFS='|' read -r selection running cached want; do
+    [ -z "$want" ] && continue
+    got=$("$BIN" --speak-decide "$selection" "$running" "$cached" 2>/dev/null)
+    if [ "$got" = "$want" ]; then
+        pass=$((pass + 1))
+    else
+        fail=$((fail + 1))
+        echo "  FAIL 选中「$selection」正在读=$running 上一段「$cached」→ $got（期待 $want）"
+    fi
+done <<'CASES'
+사랑해요|1|사랑해요|stop
+|1|사랑해요|stop
+고마워요|1|사랑해요|speak:고마워요
+사랑해요|0||speak:사랑해요
+|0|사랑해요|speak:사랑해요
+|0||nothing
+CASES
+
 echo "── slash becomes a pause"
 # 斜杠在教材里是并列标记（-아/어서、가/이）。念到中间不断一下，
 # 两个词会黏成一个不存在的词。换成逗号是因为**两条引擎都认逗号**，

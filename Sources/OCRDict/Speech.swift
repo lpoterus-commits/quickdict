@@ -64,18 +64,29 @@ final class Speech: NSObject, @unchecked Sendable {
     /// 全局快捷键的入口。一颗键管三件事，按当下状态分流：
     /// 有选中 → 读它（正在读就掐掉重来）；没选中 → 正在读就停，闲着就重读上一段。
     func handleHotkey(selection: String, config: AppConfig) {
+        switch Self.outcome(selection: selection, running: running, cached: cached) {
+        case .stop: stop()
+        case .speak(let text): speak(text, config: config)
+        case .nothing: HUD.shared.show(t("hud.nothingToSpeak"))
+        }
+    }
+
+    enum Outcome: Equatable { case stop, speak(String), nothing }
+
+    /// 按下朗读键该做什么。
+    ///
+    /// 抽成纯函数是因为这几条分支光靠听分不出对错，得能单独验。
+    ///
+    /// 关键的一条：**正在读、而且选中的还是正在读的那一段，这一下就是「停」**。
+    /// 划完词按朗读之后那段文字还选着 —— 想停的时候手边正是这个状态，
+    /// 原来在这儿会从头重读，要停还得先点别处取消选中。
+    /// 选中的是**别的**文字才当「改读这段」，那样切着读也不用先停。
+    static func outcome(selection: String, running: Bool, cached: String) -> Outcome {
         let text = selection.trimmingCharacters(in: .whitespacesAndNewlines)
-        if !text.isEmpty {
-            speak(text, config: config)
-            return
-        }
-        if running {
-            stop()
-        } else if !cached.isEmpty {
-            speak(cached, config: config)
-        } else {
-            HUD.shared.show(t("hud.nothingToSpeak"))
-        }
+        if running, text.isEmpty || text == cached { return .stop }
+        if !text.isEmpty { return .speak(text) }
+        if !cached.isEmpty { return .speak(cached) }
+        return .nothing
     }
 
     func speak(_ text: String, config: AppConfig) {

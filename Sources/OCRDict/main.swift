@@ -162,6 +162,18 @@ if CommandLine.arguments.count >= 3, CommandLine.arguments[1] == "--login" {
     exit(0)
 }
 
+// 调试入口：--speak-decide <选中的文字> <0|1 正在读> <上一段> 打印按键该做什么
+if CommandLine.arguments.count >= 5, CommandLine.arguments[1] == "--speak-decide" {
+    switch Speech.outcome(selection: CommandLine.arguments[2],
+                          running: CommandLine.arguments[3] == "1",
+                          cached: CommandLine.arguments[4]) {
+    case .stop: print("stop")
+    case .speak(let text): print("speak:\(text)")
+    case .nothing: print("nothing")
+    }
+    exit(0)
+}
+
 // 调试入口：--tts-token 打印握手用的时间戳令牌，好和独立算法对账
 if CommandLine.arguments.contains("--tts-token") {
     print(EdgeSpeechEngine.securityToken())
